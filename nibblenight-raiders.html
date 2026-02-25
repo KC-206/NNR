@@ -433,8 +433,188 @@
   }
   .town-leave-btn:hover { transform: scale(1.05); }
 
-  /* ── FLOATING TEXT ── */
-  .float-text {
+  /* ── TITLE SCREEN ── */
+  #titleScreen {
+    background: #000;
+    z-index: 20;
+    gap: 0;
+    transition: opacity 0.8s ease;
+  }
+  #titleScreen.fade-out { opacity: 0; pointer-events: none; }
+  #titleCanvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .title-content {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0;
+    animation: titleEntrance 1.2s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  @keyframes titleEntrance {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .title-logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(3rem, 9vw, 7rem);
+    line-height: 1;
+    color: #fff;
+    text-shadow:
+      0 0 40px #8b5cf6,
+      0 0 80px #8b5cf660,
+      0 0 160px #8b5cf630,
+      0 4px 0 rgba(0,0,0,0.5);
+    letter-spacing: 3px;
+    animation: titleGlow 3s ease-in-out infinite alternate;
+  }
+  @keyframes titleGlow {
+    from { text-shadow: 0 0 30px #8b5cf6, 0 0 60px #8b5cf650, 0 4px 0 rgba(0,0,0,0.5); }
+    to   { text-shadow: 0 0 60px #c9a0ff, 0 0 120px #8b5cf680, 0 0 200px #8b5cf630, 0 4px 0 rgba(0,0,0,0.5); }
+  }
+  .title-subtitle-line {
+    font-size: clamp(0.7rem, 1.5vw, 1rem);
+    color: #6b7280; letter-spacing: 5px;
+    text-transform: uppercase; margin-top: 0.4em; margin-bottom: 2rem;
+    font-weight: 600;
+  }
+  .title-press {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: #c9a0ff;
+    animation: pressAnim 1.8s ease-in-out infinite;
+    letter-spacing: 2px;
+  }
+  @keyframes pressAnim {
+    0%,100% { opacity: 0.5; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.04); }
+  }
+  .title-save-badge {
+    margin-top: 2rem;
+    font-size: 0.75rem; color: #4b5563;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px; padding: 5px 14px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .title-save-badge span { color: #fbbf24; font-weight: 700; }
+  .title-version { position: absolute; bottom: 1rem; right: 1.5rem; font-size: 0.65rem; color: #374151; }
+
+  /* ── BOSS HP OVERLAY ── */
+  #bossHPBar {
+    position: absolute; bottom: 2.5rem; left: 50%;
+    transform: translateX(-50%);
+    width: min(500px, 80vw);
+    background: rgba(0,0,0,0.75);
+    border: 1px solid rgba(255,153,0,0.4);
+    border-radius: 14px; padding: 8px 14px;
+    display: none; pointer-events: none;
+    animation: bossBarIn 0.4s ease-out;
+  }
+  @keyframes bossBarIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+  .boss-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.85rem; color: #ff9900;
+    margin-bottom: 5px; text-align: center;
+    text-shadow: 0 0 12px #ff990060;
+  }
+  .boss-track {
+    height: 12px; background: rgba(255,255,255,0.08);
+    border-radius: 6px; overflow: hidden;
+  }
+  .boss-fill {
+    height: 100%; border-radius: 6px;
+    background: linear-gradient(90deg, #ef4444, #ff9900, #fbbf24);
+    transition: width 0.25s ease;
+  }
+
+  /* ── WAVE BADGE ── */
+  .wave-badge {
+    position: absolute; top: 1rem; left: 50%;
+    transform: translateX(-50%) translateY(-60px);
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem; color: #fff;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px; padding: 4px 16px;
+    pointer-events: none;
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.4s;
+    opacity: 0;
+  }
+  .wave-badge.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  /* ── STREAK COUNTER ── */
+  .streak-display {
+    position: absolute; top: 4.5rem; right: 1rem;
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.85rem; color: #f97316;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(249,115,22,0.25);
+    border-radius: 12px; padding: 4px 10px;
+    opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .streak-display.show { opacity: 1; }
+
+  /* ── SAVE NOTIFICATION ── */
+  .save-toast {
+    position: fixed; bottom: 2rem; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(0,0,0,0.85);
+    border: 1px solid rgba(74,222,128,0.3);
+    border-radius: 30px; padding: 8px 20px;
+    font-size: 0.8rem; color: #4ade80;
+    font-weight: 700; letter-spacing: 1px;
+    opacity: 0; pointer-events: none;
+    z-index: 100;
+    transition: all 0.3s ease;
+  }
+  .save-toast.show {
+    opacity: 1; transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── SCREEN TRANSITIONS ── */
+  .screen { transition: opacity 0.15s ease; }
+
+  /* ── UPGRADED CHAR CARD ── */
+  .char-card { width: 165px; }
+  .char-portrait {
+    width: 72px; height: 72px;
+    margin: 0 auto 0.5em;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.1);
+    overflow: hidden; display: flex;
+    align-items: center; justify-content: center;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+  .char-card.selected .char-portrait,
+  .char-card:hover .char-portrait { border-color: var(--color); }
+  .char-portrait img {
+    width: 100%; height: 100%; object-fit: contain;
+  }
+  .char-portrait-emoji { font-size: 2.8rem; line-height: 1; }
+  .char-unlocked { font-size: 0.6rem; color: #4ade80; font-weight: 800;
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.15em; }
+
+  /* ── IMPROVED LEVEL-UP ── */
+  .levelup-current {
+    font-size: 0.85rem; color: #6b7280; margin-bottom: 1.5em;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px; padding: 4px 16px;
+  }
+
+  /* ── IMPROVED GAMEOVER ── */
+  .gameover-best { font-size: 0.8rem; color: #fbbf24; margin-top: 0.5rem; }
+  .gameover-divider {
+    width: 200px; height: 1px;
+    background: rgba(255,255,255,0.08); margin: 1rem auto;
+  }
     position: absolute; pointer-events: none;
     font-weight: 800; font-size: 0.85rem; z-index: 6;
     animation: floatUp 1s ease-out forwards;
@@ -447,8 +627,23 @@
 </head>
 <body>
 
+<!-- TITLE SCREEN -->
+<div class="screen" id="titleScreen">
+  <canvas id="titleCanvas"></canvas>
+  <div class="title-content" id="titleContent">
+    <div class="title-logo" id="titleLogoText" style="display:none">NibbleNight<br>Raiders</div>
+    <div class="title-subtitle-line" id="titleSubLine" style="display:none">Roguelite · Autobattler · Survive the Light</div>
+    <div class="title-press">— Press SPACE to begin —</div>
+    <div style="margin-top:0.8rem;font-size:0.8rem;color:#4b5563;letter-spacing:2px">Press <span style="color:#8b5cf6;font-weight:800">M</span> to toggle music</div>
+    <div class="title-save-badge" id="titleSaveBadge" style="display:none">
+      💾 Save found &nbsp;|&nbsp; 🪙 <span id="titleSaveGold">0</span> gold &nbsp;|&nbsp; 🏆 Best: <span id="titleBestTime">--:--</span>
+    </div>
+  </div>
+  <div class="title-version">v0.1 · NibbleNight Raiders</div>
+</div>
+
 <!-- CHARACTER SELECT -->
-<div class="screen" id="selectScreen">
+<div class="screen hidden" id="selectScreen">
   <h1 class="game-title">NibbleNight Raiders</h1>
   <p class="subtitle">Roguelite · Autobattler · Survive the Light</p>
   <p class="select-label">Choose your Raider</p>
@@ -462,6 +657,12 @@
 <!-- SUPERMOVE FLASH -->
 <div id="superFlash" class="super-active-flash"></div>
 
+<!-- BOSS HP BAR -->
+<div id="bossHPBar">
+  <div class="boss-name" id="bossName">Grand Sunkeeper</div>
+  <div class="boss-track"><div class="boss-fill" id="bossFill" style="width:100%"></div></div>
+</div>
+
 <!-- HUD -->
 <div class="screen hidden" id="hud">
   <div class="hud-top">
@@ -472,8 +673,10 @@
     </div>
     <div class="timer-box" id="timerBox">00:00</div>
   </div>
+  <div class="wave-badge" id="waveBadge">Wave 1</div>
   <div class="gold-counter" id="goldCounter">🪙 0</div>
   <div class="kill-counter" id="killCounter">💀 0</div>
+  <div class="streak-display" id="streakDisplay">🔥 x0</div>
   <button class="mute-btn" id="muteBtn" title="Toggle sound">🔊</button>
   <div class="hud-bottom-left">
     <div class="energy-wrap">
@@ -493,6 +696,7 @@
 <div class="screen hidden" id="levelupScreen">
   <div class="levelup-title">⬆ Level Up!</div>
   <div class="levelup-sub">Choose an upgrade</div>
+  <div class="levelup-current" id="levelupCurrent">Level 1 → 2</div>
   <div class="upgrade-cards" id="upgradeCards"></div>
 </div>
 
@@ -524,10 +728,15 @@
 <div class="screen hidden" id="gameoverScreen">
   <div class="gameover-title">💀 Defeated!</div>
   <div class="gameover-stats" id="gameoverStats"></div>
+  <div class="gameover-best" id="gameoverBest"></div>
+  <div class="gameover-divider"></div>
   <button class="retry-btn" id="retryBtn">Try Again</button>
   <button class="retry-btn" id="visitTownBtn" style="background:linear-gradient(135deg,#d97706,#fbbf24);margin-top:0.5rem;box-shadow:0 6px 20px rgba(251,191,36,0.4)">🏘 Visit Town</button>
   <button class="retry-btn" id="menuBtn" style="background:linear-gradient(135deg,#8b5cf6,#c084fc);margin-top:0.5rem;box-shadow:0 6px 20px rgba(139,92,246,0.4)">Main Menu</button>
 </div>
+
+<!-- SAVE TOAST -->
+<div class="save-toast" id="saveToast">💾 Progress saved</div>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -672,71 +881,339 @@ const BOSS_TYPES = [
 // ═══════════════════════════════════════════════
 // HOW TO USE CUSTOM SPRITES:
 //   1. Place PNG files in the same folder as this HTML (or any accessible URL)
-//   2. Replace null values below with file paths, e.g. 'assets/squirrel.png'
-//   3. Recommended size: 64×64 or 128×128 pixels, transparent PNG
-//   4. The game auto-falls-back to emoji if a sprite fails to load
+//   2. Set the 'src' for the entity you want to replace (null = use emoji)
+//   3. Tune 'scale' (default 1.0) to make sprite bigger/smaller relative to hitbox
+//   4. Tune 'offsetY' (default 0) to shift sprite up/down (negative = up)
+//   5. Recommended size: 128×128 or 256×256 pixels, transparent PNG
+//   6. The game auto-falls back to emoji if a sprite fails to load
 //
-// SPRITE KEY REFERENCE:
-//   Raiders:  'squirrel' | 'beaver' | 'catthulu' | 'cobra' | 'honker'
-//   Enemies:  'sunsprite' | 'honeybee' | 'dewdrop' | 'daybloom' | 'gem'
-//   Bosses:   'boss_sunkeeper' | 'boss_blossom'
-//   Pickups:  'xpgem'
+// ENTITY KEY REFERENCE:
+//   Raiders:  squirrel | beaver | catthulu | cobra | honker
+//   Enemies:  sunsprite | honeybee | dewdrop | daybloom | gem
+//   Bosses:   boss_sunkeeper | boss_blossom
+//   UI:       titleBg (full-screen title background image)
 
-const SPRITE_PATHS = {
-  squirrel:     null,   // e.g. 'sprites/squirrel.png'
-  beaver:       null,
-  catthulu:     null,
-  cobra:        null,
-  honker:       null,
-  sunsprite:    null,
-  honeybee:     null,
-  dewdrop:      null,
-  daybloom:     null,
-  gem:          null,
-  boss_sunkeeper: null,
-  boss_blossom: null,
-  xpgem:        null,
+const SPRITE_CONFIG = {
+  // ── RAIDERS ──────────────────────────────────
+  // src:     path to PNG/JPG (null = use emoji fallback)
+  //          NOTE: use PNG with transparency for best results.
+  //          JPG files will show the background color.
+  // scale:   size multiplier relative to the hitbox
+  // offsetY: vertical shift in pixels (negative = up)
+  squirrel:       { src: null,            scale: 1.0,  offsetY: 0  },
+  beaver:         { src: 'beaver.jpg',    scale: 1.4,  offsetY: -6 }, // sprite sheet — animated
+  catthulu:       { src: null,            scale: 1.1,  offsetY: -2 },
+  cobra:          { src: null,            scale: 1.0,  offsetY: 0  },
+  honker:         { src: null,            scale: 1.0,  offsetY: 0  },
+  // ── ENEMIES ──────────────────────────────────
+  sunsprite:      { src: null,            scale: 0.9,  offsetY: 0  },
+  honeybee:       { src: null,            scale: 0.85, offsetY: 0  },
+  dewdrop:        { src: null,            scale: 1.0,  offsetY: 0  },
+  daybloom:       { src: null,            scale: 1.0,  offsetY: 0  },
+  gem:            { src: null,            scale: 0.95, offsetY: 0  },
+  // ── BOSSES ───────────────────────────────────
+  boss_sunkeeper: { src: null,            scale: 1.2,  offsetY: -4 },
+  boss_blossom:   { src: null,            scale: 1.1,  offsetY: -2 },
+  // ── UI ───────────────────────────────────────
+  titleBg:        { src: 'title_bg_img.png' },
 };
 
-const SPRITES = {}; // populated by loadSprites()
+const SPRITES = {}; // loaded images keyed by id
 
 function loadSprites() {
-  Object.entries(SPRITE_PATHS).forEach(([key, path]) => {
-    if (!path) return;
+  Object.entries(SPRITE_CONFIG).forEach(([key, cfg]) => {
+    if (!cfg.src) return;
     const img = new Image();
     img.onload  = () => { SPRITES[key] = img; console.log('✅ Sprite loaded:', key); };
-    img.onerror = () => { console.warn('⚠️ Sprite failed:', key, path); };
-    img.src = path;
+    img.onerror = () => { console.warn('⚠️ Sprite failed to load:', key, cfg.src); };
+    img.src = cfg.src;
   });
 }
 
-// Draw an entity: uses sprite if available, otherwise falls back to emoji.
-// Call inside a ctx.save() / ctx.restore() block with world-space translate already applied.
-function drawEntity(emoji, spriteKey, size, alpha = 1, poisoned = false) {
+// Draw an entity using its sprite if loaded, otherwise fall back to emoji.
+// Must be called inside ctx.save() / ctx.restore() with world-space translate applied.
+function drawEntity(emoji, spriteKey, hitboxSize, alpha = 1, poisoned = false) {
+  const cfg   = SPRITE_CONFIG[spriteKey] || {};
+  const scale = cfg.scale ?? 1.0;
+  const oy    = cfg.offsetY ?? 0;
   const sprite = SPRITES[spriteKey];
-  const s = size * 2.2;
+  const drawSize = hitboxSize * 2.2 * scale;
+
   ctx.globalAlpha = poisoned ? alpha * 0.55 : alpha;
+
   if (sprite && sprite.complete && sprite.naturalWidth > 0) {
-    ctx.drawImage(sprite, -s / 2, -s / 2, s, s);
+    ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2 + oy, drawSize, drawSize);
     if (poisoned) {
-      // Green tint overlay
       ctx.globalCompositeOperation = 'source-atop';
-      ctx.fillStyle = 'rgba(46,204,113,0.5)';
-      ctx.fillRect(-s / 2, -s / 2, s, s);
+      ctx.fillStyle = 'rgba(46,204,113,0.45)';
+      ctx.fillRect(-drawSize / 2, -drawSize / 2 + oy, drawSize, drawSize);
       ctx.globalCompositeOperation = 'source-over';
     }
   } else {
-    ctx.font = s + 'px serif';
+    ctx.font = (hitboxSize * 2.2 * scale) + 'px serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(emoji, 0, 0);
+    ctx.fillText(emoji, 0, oy);
   }
+
   ctx.globalAlpha = 1;
 }
 
 // ═══════════════════════════════════════════════
-//  AUDIO ENGINE  (Web Audio API — no external files)
+//  SPRITE ANIMATION SYSTEM
 // ═══════════════════════════════════════════════
+// Define sprite sheet animations per character.
+// Each entry maps to a sprite sheet image with a grid of frames.
+//
+// HOW TO ADD YOUR OWN SPRITE SHEET:
+//   1. Add entry to ANIM_SHEETS with your character's id
+//   2. Set frameW/frameH to match one frame's pixel size
+//   3. Define animations: row = grid row, start = first column, count = number of frames
+//   4. Make sure SPRITE_CONFIG[id].src points to the file
+//
+// FRAME COORDINATES: frames are addressed as grid[col][row]
+//   sx = (start + frameIndex) * frameW
+//   sy = row * frameH
+//
+// ─── BEAVER SPRITE SHEET ──────────────────────────
+//   Sheet: 1024×559px | 8 cols × 5 rows | each frame: 128×112px
+//   ┌──────────────────────────────────────────────────────┐
+//   │ Row 0: Front idle/walk      — 8 frames               │
+//   │ Row 1: Side-view walk       — 8 frames               │
+//   │ Row 2: Back walk (0-4) + Attack bats (5-7)           │
+//   │ Row 3: Hurt/knockback (0-1) + Charge attack (2-4)    │
+//   │ Row 4: Death lie-down (0-5) + Bat explosion (6-7)    │
+//   └──────────────────────────────────────────────────────┘
+
+const ANIM_SHEETS = {
+  beaver: {
+    frameW:  128,
+    frameH:  112,
+    scale:   1.4,
+    offsetY: -6,
+    // ── Animation definitions ─────────────────────────────────────────────
+    // row:   which row in the sprite sheet grid (0 = top)
+    // start: first column index
+    // count: number of frames to play
+    // fps:   frames per second
+    // loop:  false = play once and hold last frame, then animator.done = true
+    // flipX: true = mirror horizontally (use for left-facing from a right-facing row)
+    //
+    // State machine uses: idle_down/up/left/right, walk_down/up/left/right
+    // Fallback chain: if a named anim doesn't exist, falls back to nearest available
+    animations: {
+      // ── IDLE (stopped, facing a direction) ──
+      idle_down:   { row: 0, start: 0, count: 4, fps: 5  },          // front-facing idle
+      idle_up:     { row: 2, start: 0, count: 1, fps: 4  },          // back, first frame only
+      idle_right:  { row: 1, start: 0, count: 1, fps: 4  },          // side, first frame
+      idle_left:   { row: 1, start: 0, count: 1, fps: 4, flipX: true },
+
+      // ── WALK ──
+      walk_down:   { row: 0, start: 0, count: 4, fps: 9  },          // front walk (row 0)
+      walk_up:     { row: 2, start: 0, count: 5, fps: 10 },          // back walk
+      walk_right:  { row: 1, start: 0, count: 8, fps: 12 },          // side walk, facing right
+      walk_left:   { row: 1, start: 0, count: 8, fps: 12, flipX: true }, // mirrored
+
+      // ── COMBAT ──
+      attack:      { row: 2, start: 5, count: 3, fps: 16, loop: false },
+      hurt:        { row: 3, start: 0, count: 2, fps: 12, loop: false },
+      charge:      { row: 3, start: 2, count: 3, fps: 14, loop: false },
+
+      // ── DEATH ──
+      death:       { row: 4, start: 0, count: 6, fps: 7,  loop: false },
+    }
+  },
+  // ── ADD YOUR OWN SHEETS HERE ────────────────────────────────────────────
+  // Template:
+  // squirrel: {
+  //   frameW: 64, frameH: 64, scale: 1.2, offsetY: 0,
+  //   animations: {
+  //     idle_down:  { row: 0, start: 0, count: 4, fps: 6 },
+  //     walk_right: { row: 1, start: 0, count: 6, fps: 10 },
+  //     walk_left:  { row: 1, start: 0, count: 6, fps: 10, flipX: true },
+  //     walk_up:    { row: 2, start: 0, count: 6, fps: 10 },
+  //     walk_down:  { row: 3, start: 0, count: 6, fps: 10 },
+  //     attack:     { row: 4, start: 0, count: 4, fps: 14, loop: false },
+  //     hurt:       { row: 5, start: 0, count: 2, fps: 10, loop: false },
+  //     death:      { row: 6, start: 0, count: 5, fps: 7,  loop: false },
+  //   }
+  // },
+};
+
+// ── SpriteAnimator ────────────────────────────────
+class SpriteAnimator {
+  constructor(sheetKey) {
+    this.key     = sheetKey;
+    this.def     = ANIM_SHEETS[sheetKey];
+    this.img     = null;
+    this.current = 'idle_down';
+    this.frame   = 0;
+    this.timer   = 0;
+    this.done    = false;
+    this.facing  = 'down';   // last movement direction: up | down | left | right
+    this._afterAnim = null;
+
+    if (this.def && SPRITE_CONFIG[sheetKey] && SPRITE_CONFIG[sheetKey].src) {
+      const i = new Image();
+      i.onload = () => { this.img = i; };
+      i.src = SPRITE_CONFIG[sheetKey].src;
+    }
+  }
+
+  // Returns the animation definition, falling back through a priority chain
+  // if the exact name isn't defined in this sheet.
+  _resolve(name) {
+    const anims = this.def.animations;
+    if (anims[name]) return { key: name, def: anims[name] };
+    // Fallback: directional → generic variants
+    const fallbacks = {
+      idle_left:  ['idle_right', 'idle_down', 'walk_right', 'walk_down'],
+      idle_right: ['idle_down',  'walk_right', 'walk_down'],
+      idle_up:    ['idle_down',  'walk_up',    'walk_down'],
+      idle_down:  ['walk_down',  'idle_right', 'walk_right'],
+      walk_left:  ['walk_right', 'walk_down',  'idle_down'],
+      walk_right: ['walk_down',  'idle_right', 'idle_down'],
+      walk_up:    ['walk_down',  'walk_right', 'idle_down'],
+      walk_down:  ['walk_right', 'idle_down'],
+    };
+    for (const fb of (fallbacks[name] || [])) {
+      if (anims[fb]) return { key: fb, def: anims[fb] };
+    }
+    // Final fallback: first animation in the sheet
+    const first = Object.keys(anims)[0];
+    return { key: first, def: anims[first] };
+  }
+
+  // Play an animation by name. force=true restarts even if already playing.
+  play(name, force = false) {
+    if (!this.def) return;
+    const resolved = this._resolve(name);
+    if (this.current === resolved.key && !force) return;
+    this.current    = resolved.key;
+    this.frame      = 0;
+    this.timer      = 0;
+    this.done       = false;
+    this._afterAnim = null;
+  }
+
+  // Play a one-shot animation, then automatically transition to thenPlay.
+  // If thenPlay is omitted, updatePlayerAnimator handles the transition naturally.
+  playOnce(name, thenPlay = null) {
+    if (!this.def) return;
+    const resolved = this._resolve(name);
+    if (this.current === resolved.key) return;
+    this.current    = resolved.key;
+    this.frame      = 0;
+    this.timer      = 0;
+    this.done       = false;
+    this._afterAnim = thenPlay;
+  }
+
+  // Whether the current animation is a one-shot that should block state changes
+  isOneShot() {
+    if (!this.def) return false;
+    const animDef = this.def.animations[this.current];
+    return animDef && animDef.loop === false && !this.done;
+  }
+
+  update(dt) {
+    if (!this.def) return;
+    const animDef = this.def.animations[this.current];
+    if (!animDef) return;
+    const loop = animDef.loop !== false;
+    this.timer += dt;
+    const dur = 1 / (animDef.fps || 10);
+    while (this.timer >= dur) {
+      this.timer -= dur;
+      this.frame++;
+      if (this.frame >= animDef.count) {
+        if (loop) {
+          this.frame = 0;
+        } else {
+          this.frame = animDef.count - 1;
+          this.done  = true;
+          if (this._afterAnim) {
+            const next = this._afterAnim;
+            this._afterAnim = null;
+            this.play(next, true);
+          }
+        }
+      }
+    }
+  }
+
+  // Draw the current frame at world origin. Call inside ctx.save()/ctx.restore().
+  // Returns true if drawn, false if image not loaded yet (caller falls back to emoji).
+  draw(ctx, hitboxSize, alpha = 1, poisoned = false) {
+    if (!this.img || !this.def) return false;
+    const animDef = this.def.animations[this.current];
+    if (!animDef) return false;
+
+    const { frameW, frameH, scale = 1.0, offsetY = 0 } = this.def;
+    const sx    = (animDef.start + this.frame) * frameW;
+    const sy    = animDef.row * frameH;
+    const ds    = hitboxSize * 2.2 * scale;
+    const doFlip = animDef.flipX || false;
+
+    ctx.save();
+    ctx.globalAlpha = poisoned ? alpha * 0.55 : alpha;
+    if (doFlip) ctx.scale(-1, 1);
+
+    ctx.drawImage(this.img, sx, sy, frameW, frameH, -ds / 2, -ds / 2 + offsetY, ds, ds);
+
+    if (poisoned) {
+      ctx.globalCompositeOperation = 'source-atop';
+      ctx.fillStyle = 'rgba(46,204,113,0.45)';
+      ctx.fillRect(-ds / 2, -ds / 2 + offsetY, ds, ds);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+    return true;
+  }
+}
+
+// ── Player animation state machine ───────────────────
+// Chooses the correct directional animation based on movement and game state.
+// Direction priority: if moving diagonally, horizontal beats vertical when roughly equal.
+function updatePlayerAnimator(dt, moveX, moveY) {
+  if (!player.animator) return;
+  const anim = player.animator;
+  anim.update(dt);
+
+  // HURT: overrides everything (except death)
+  if (player.invTime > 0.4 && anim.current !== 'death') {
+    if (!anim.isOneShot() || anim.current !== 'hurt') {
+      anim.playOnce('hurt');
+    }
+    return;
+  }
+
+  // ONE-SHOTS (attack, hurt, charge): let them finish before overriding
+  if (anim.isOneShot()) return;
+
+  // Determine direction from movement input
+  const moving = moveX !== 0 || moveY !== 0;
+
+  if (moving) {
+    let dir;
+    if (Math.abs(moveX) > Math.abs(moveY) * 0.6) {
+      // Dominant horizontal
+      dir = moveX > 0 ? 'right' : 'left';
+    } else if (Math.abs(moveY) > Math.abs(moveX) * 0.6) {
+      // Dominant vertical
+      dir = moveY > 0 ? 'down' : 'up';
+    } else {
+      // True diagonal — pick horizontal
+      dir = moveX > 0 ? 'right' : 'left';
+    }
+    anim.facing = dir;
+    anim.play('walk_' + dir);
+  } else {
+    // Standing still — idle facing last direction
+    anim.play('idle_' + (anim.facing || 'down'));
+  }
+}
 let audioCtx = null;
 let masterGain = null;
 let musicNodes = [];
@@ -993,16 +1470,252 @@ function _musHihat(time) {
 function setMute(isMuted) {
   muted = isMuted;
   if (masterGain) masterGain.gain.value = muted ? 0 : 0.45;
-  if (bgMusic) bgMusic.volume = muted ? 0 : 0.4;
+  if (bgMusic)    bgMusic.volume    = muted ? 0 : 0.4;
+  if (titleMusic) titleMusic.volume = muted ? 0 : 0.35;
   document.getElementById('muteBtn').textContent = muted ? '🔇' : '🔊';
+}
+
+// ═══════════════════════════════════════════════
+//  SAVE SYSTEM  (localStorage)
+// ═══════════════════════════════════════════════
+const SAVE_KEY = 'nibblenight_save';
+
+function saveGame() {
+  try {
+    const data = {
+      gold,
+      townUpgrades,
+      bestTime:  bestTime  || 0,
+      totalKills: totalKills || 0,
+      totalRuns:  totalRuns  || 0,
+      v: 1,
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    showSaveToast();
+  } catch(e) { console.warn('Save failed:', e); }
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (data.v !== 1) return false;
+    gold         = data.gold         || 0;
+    townUpgrades = data.townUpgrades || {};
+    bestTime     = data.bestTime     || 0;
+    totalKills   = data.totalKills   || 0;
+    totalRuns    = data.totalRuns    || 0;
+    return true;
+  } catch(e) { return false; }
+}
+
+function resetSave() {
+  localStorage.removeItem(SAVE_KEY);
+  gold = 0; townUpgrades = {}; bestTime = 0; totalKills = 0; totalRuns = 0;
+}
+
+function showSaveToast() {
+  const el = document.getElementById('saveToast');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+let bestTime   = 0;
+let totalKills = 0;
+let totalRuns  = 0;
+
+// ═══════════════════════════════════════════════
+//  TITLE SCREEN
+// ═══════════════════════════════════════════════
+let titleCanvas, titleCtx;
+let titleParticles = [];
+let titleRaf = null;
+let titleAnimTime = 0;
+
+function initTitleScreen() {
+  titleCanvas = document.getElementById('titleCanvas');
+  titleCtx    = titleCanvas.getContext('2d');
+  titleCanvas.width  = window.innerWidth;
+  titleCanvas.height = window.innerHeight;
+
+  // Spawn floating particles
+  titleParticles = [];
+  for (let i = 0; i < 80; i++) {
+    titleParticles.push({
+      x: Math.random() * titleCanvas.width,
+      y: Math.random() * titleCanvas.height,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: -0.3 - Math.random() * 0.5,
+      size: 1 + Math.random() * 3,
+      alpha: 0.1 + Math.random() * 0.5,
+      color: Math.random() < 0.4 ? '#8b5cf6' :
+             Math.random() < 0.6 ? '#c084fc' : '#fff',
+      life: Math.random(),
+    });
+  }
+  animateTitleScreen();
+
+  // Show save info if exists
+  const hasSave = loadGame();
+  if (hasSave && (gold > 0 || bestTime > 0)) {
+    document.getElementById('titleSaveBadge').style.display = 'flex';
+    document.getElementById('titleSaveGold').textContent = gold;
+    const bm = Math.floor(bestTime/60).toString().padStart(2,'0');
+    const bs = Math.floor(bestTime%60).toString().padStart(2,'0');
+    document.getElementById('titleBestTime').textContent = bestTime > 0 ? `${bm}:${bs}` : '--:--';
+  }
+}
+
+function animateTitleScreen() {
+  titleAnimTime += 0.016;
+  const W = titleCanvas.width, H = titleCanvas.height;
+  titleCtx.clearRect(0, 0, W, H);
+
+  // ── Background: use title art image if loaded, else procedural fallback ──
+  if (SPRITES.titleBg && SPRITES.titleBg.complete && SPRITES.titleBg.naturalWidth > 0) {
+    // Scale image to cover the canvas, centred
+    const img = SPRITES.titleBg;
+    const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    const dw = img.naturalWidth  * scale;
+    const dh = img.naturalHeight * scale;
+    const dx = (W - dw) / 2;
+    const dy = (H - dh) / 2;
+    titleCtx.drawImage(img, dx, dy, dw, dh);
+
+    // Dark vignette overlay so UI text is readable
+    const vig = titleCtx.createRadialGradient(W/2, H/2, H*0.15, W/2, H/2, H*0.85);
+    vig.addColorStop(0, 'rgba(0,0,0,0)');
+    vig.addColorStop(1, 'rgba(0,0,0,0.72)');
+    titleCtx.fillStyle = vig;
+    titleCtx.fillRect(0, 0, W, H);
+
+    // Bottom gradient to ground the UI
+    const bot = titleCtx.createLinearGradient(0, H*0.7, 0, H);
+    bot.addColorStop(0, 'rgba(0,0,0,0)');
+    bot.addColorStop(1, 'rgba(5,3,15,0.85)');
+    titleCtx.fillStyle = bot;
+    titleCtx.fillRect(0, H*0.7, W, H*0.3);
+
+  } else {
+    // ── Procedural fallback (no image) ──
+    const bg = titleCtx.createRadialGradient(W*0.5, H*0.3, 0, W*0.5, H*0.5, W*0.8);
+    bg.addColorStop(0, '#1a0a2e');
+    bg.addColorStop(0.5, '#0d0818');
+    bg.addColorStop(1, '#050510');
+    titleCtx.fillStyle = bg;
+    titleCtx.fillRect(0, 0, W, H);
+
+    // Moon
+    const moonX = W * 0.78, moonY = H * 0.18;
+    const moonGrad = titleCtx.createRadialGradient(moonX, moonY, 0, moonX, moonY, 55);
+    moonGrad.addColorStop(0, 'rgba(255,250,230,0.95)');
+    moonGrad.addColorStop(0.7, 'rgba(230,220,255,0.6)');
+    moonGrad.addColorStop(1, 'rgba(139,92,246,0)');
+    titleCtx.fillStyle = moonGrad;
+    titleCtx.beginPath();
+    titleCtx.arc(moonX, moonY, 55, 0, Math.PI * 2);
+    titleCtx.fill();
+
+    // Treeline silhouette
+    titleCtx.fillStyle = 'rgba(5,3,12,0.95)';
+    titleCtx.beginPath();
+    titleCtx.moveTo(0, H);
+    const treeCount = Math.ceil(W / 28);
+    for (let i = 0; i <= treeCount; i++) {
+      const tx = (i / treeCount) * W;
+      const seed  = Math.sin(i * 7.3 + 1.2) * 0.5 + 0.5;
+      const seed2 = Math.sin(i * 13.1 + 5.5) * 0.5 + 0.5;
+      const baseH = H * (0.68 + seed * 0.12);
+      const tipH  = baseH - (20 + seed2 * 60);
+      titleCtx.lineTo(tx - 14, baseH);
+      titleCtx.lineTo(tx, tipH);
+      titleCtx.lineTo(tx + 14, baseH);
+    }
+    titleCtx.lineTo(W, H);
+    titleCtx.closePath();
+    titleCtx.fill();
+  }
+
+  // ── Floating sparkle particles (on top of everything) ──
+  titleParticles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    p.life += 0.004;
+    if (p.y < -10 || p.life > 1) {
+      p.x = Math.random() * W;
+      p.y = H + 10;
+      p.life = 0;
+    }
+    const a = p.alpha * Math.sin(p.life * Math.PI) * 0.7;
+    titleCtx.globalAlpha = a;
+    titleCtx.fillStyle = p.color;
+    titleCtx.shadowColor = p.color;
+    titleCtx.shadowBlur = 8;
+    titleCtx.beginPath();
+    titleCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    titleCtx.fill();
+  });
+  titleCtx.globalAlpha = 1;
+  titleCtx.shadowBlur = 0;
+
+  titleRaf = requestAnimationFrame(animateTitleScreen);
+}
+
+function stopTitleAnimation() {
+  if (titleRaf) { cancelAnimationFrame(titleRaf); titleRaf = null; }
+}
+
+function showTitleScreen() {
+  loadGame();
+  state = 'title';
+  showScreen('titleScreen');
+  initTitleScreen();
+  // NOTE: title music is started in leaveTitleScreen() after a user gesture,
+  // because browsers block audio that isn't triggered by an interaction.
+}
+
+function leaveTitleScreen() {
+  if (state !== 'title') return;
+  state = 'leaving_title'; // prevent double-fire
+
+  // Audio must start inside the user gesture handler — this is that handler
+  initAudio();
+  startTitleMusic();
+
+  const el = document.getElementById('titleScreen');
+  el.classList.add('fade-out');
+  stopTitleAnimation();
+  setTimeout(() => {
+    el.classList.add('hidden');
+    el.classList.remove('fade-out');
+    buildCharSelect();
+    showScreen('selectScreen');
+    state = 'select';
+  }, 600);
+}
+
+// ─── title music (separate from battle music) ───
+let titleMusic = null;
+function startTitleMusic() {
+  if (titleMusic) return;
+  titleMusic = new Audio('titlemusic.mp3');
+  titleMusic.loop = true;
+  titleMusic.volume = muted ? 0 : 0.35;
+  titleMusic.play().catch(() => {});
+}
+function stopTitleMusic() {
+  if (!titleMusic) return;
+  titleMusic.pause();
+  titleMusic.currentTime = 0;
+  titleMusic = null;
 }
 
 // ═══════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════
 let canvas, ctx;
-let state = 'select'; // select | playing | levelup | paused | town | gameover
-let prevState = 'playing'; // state before town/pause
+let state = 'title'; // title | select | playing | levelup | paused | town | gameover
+let prevState = 'playing';
 let selectedChar = null;
 let player, enemies, projectiles, xpGems, energyOrbs, goldCoins, floatTexts, particles;
 let camera = { x: 0, y: 0 };
@@ -1013,6 +1726,9 @@ let lastBossTime = 0;
 let xpToNext = 20;
 let totalXP = 0, runGold = 0;
 let pendingUpgrades = false;
+let killStreak = 0, streakTimer = 0;
+let waveNumber = 0, lastWaveShown = -1;
+let activeBoss = null;
 
 // ═══════════════════════════════════════════════
 //  CHARACTER SELECT UI
@@ -1026,8 +1742,13 @@ function buildCharSelect() {
     card.style.setProperty('--color', c.color);
     card.style.setProperty('--glow', c.glow);
     card.style.setProperty('--shadow', c.shadow);
+    const sprite = SPRITES[c.id];
+    const portraitHTML = sprite
+      ? `<img src="${SPRITE_CONFIG[c.id].src}" alt="${c.name}">`
+      : `<span class="char-portrait-emoji">${c.emoji}</span>`;
+
     card.innerHTML = `
-      <span class="char-emoji">${c.emoji}</span>
+      <div class="char-portrait">${portraitHTML}</div>
       <div class="char-name">${c.name}</div>
       <div class="char-desc">${c.desc}</div>
       <div style="margin-top:0.5em;font-size:0.65rem;color:#6b7280;background:rgba(255,255,255,0.04);border-radius:8px;padding:4px 6px;line-height:1.4">
@@ -1082,19 +1803,25 @@ function startGame() {
     energy: tb.energy, maxEnergy: 100,
     superReady: tb.energy >= 100,
     superCD: 0,
+    // Sprite animator — only created if a sheet is defined for this character
+    animator: ANIM_SHEETS[c.id] ? new SpriteAnimator(c.id) : null,
+    lastMoveX: 0, lastMoveY: 0,
   };
   enemies = []; projectiles = []; xpGems = []; energyOrbs = []; goldCoins = [];
   floatTexts = []; particles = [];
   kills = 0; elapsed = 0; lastSpawn = 0; spawnInterval = 2.0; lastBossTime = 0;
   xpToNext = 20; totalXP = 0; runGold = 0;
   keys = {}; justPressed = {};
+  killStreak = 0; streakTimer = 0;
+  waveNumber = 0; lastWaveShown = -1;
+  activeBoss = null;
   camera = { x: 0, y: 0 };
   gameStartTime = performance.now();
   lastFrame = performance.now();
   lastShootSfx = 0; lastXpSfx = 0; lastHurtSfx = 0;
 
   initAudio();
-  loadSprites();
+  stopTitleMusic();
   stopMusic();
   startMusic();
 
@@ -1107,7 +1834,7 @@ function startGame() {
 //  SCREEN MANAGEMENT
 // ═══════════════════════════════════════════════
 function showScreen(id) {
-  ['selectScreen','hud','levelupScreen','pauseScreen','townScreen','gameoverScreen'].forEach(s => {
+  ['titleScreen','selectScreen','hud','levelupScreen','pauseScreen','townScreen','gameoverScreen'].forEach(s => {
     document.getElementById(s).classList.add('hidden');
   });
   if (id) document.getElementById(id).classList.remove('hidden');
@@ -1145,7 +1872,53 @@ function update(dt) {
   spawnEnemies(dt);
   attackLogic(dt);
   regenLogic(dt);
+  updateStreak(dt);
+  updateWave();
+  updateBossBar();
   updateHUD();
+}
+
+function updateStreak(dt) {
+  if (killStreak > 0) {
+    streakTimer -= dt;
+    if (streakTimer <= 0) { killStreak = 0; }
+  }
+  const el = document.getElementById('streakDisplay');
+  if (killStreak >= 3) {
+    el.textContent = '🔥 x' + killStreak + ' Streak!';
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
+}
+
+function updateWave() {
+  const newWave = 1 + Math.floor(elapsed / 30);
+  if (newWave !== waveNumber) {
+    waveNumber = newWave;
+  }
+  if (waveNumber !== lastWaveShown) {
+    lastWaveShown = waveNumber;
+    const el = document.getElementById('waveBadge');
+    el.textContent = '🌊 Wave ' + waveNumber;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+}
+
+function updateBossBar() {
+  // Find active boss
+  const boss = enemies.find(e => e.boss);
+  const bar = document.getElementById('bossHPBar');
+  if (boss) {
+    activeBoss = boss;
+    bar.style.display = 'block';
+    document.getElementById('bossName').textContent = boss.name || 'Boss';
+    document.getElementById('bossFill').style.width = Math.max(0, (boss.hp / boss.maxHp) * 100) + '%';
+  } else if (activeBoss) {
+    activeBoss = null;
+    bar.style.display = 'none';
+  }
 }
 
 function movePlayer(dt) {
@@ -1158,9 +1931,12 @@ function movePlayer(dt) {
   if (len > 0) { dx /= len; dy /= len; }
   player.x += dx * player.speed * dt;
   player.y += dy * player.speed * dt;
+  player.lastMoveX = dx;
+  player.lastMoveY = dy;
   camera.x = player.x - canvas.width / 2;
   camera.y = player.y - canvas.height / 2;
   if (player.invTime > 0) player.invTime -= dt;
+  updatePlayerAnimator(dt, dx, dy);
 }
 
 function handleSupermoveInput() {
@@ -1239,6 +2015,9 @@ function attackLogic(dt) {
 }
 
 function fireWeapon() {
+  // Trigger attack animation (one-shot; state machine resumes walk/idle when done)
+  if (player.animator) player.animator.playOnce('attack');
+
   const w = player.weapon;
   const target = getNearestEnemy(w.range);
   const count = w.count || 1;
@@ -1349,6 +2128,9 @@ function damageEnemy(e, idx, dmg, lifesteal) {
   spawnFloatText(e.x, e.y - 20, '-' + Math.floor(dmg), '#fff');
   if (e.hp <= 0) {
     kills++;
+    killStreak++;
+    streakTimer = 4.0; // reset streak timeout
+    totalKills++;
     playSFX('enemy_die');
     // Drop XP gems
     const gemCount = e.boss ? 8 : 1;
@@ -1462,6 +2244,7 @@ function triggerLevelUp() {
 }
 
 function showLevelUpScreen() {
+  document.getElementById('levelupCurrent').textContent = `Level ${player.level - 1} → ${player.level}`;
   const container = document.getElementById('upgradeCards');
   container.innerHTML = '';
   // Pick 3 random upgrades
@@ -1516,6 +2299,7 @@ function spawnEnemies(dt) {
       y: player.y + Math.sin(angle) * r,
       hp: t.hp * scale, maxHp: t.hp * scale,
       speed: t.speed, xp: t.xp, dmg: t.dmg,
+      name: t.name,
       emoji: t.emoji, spriteKey: t.spriteKey,
       color: t.color, size: t.size, boss: false,
     });
@@ -1532,6 +2316,7 @@ function spawnEnemies(dt) {
       y: player.y + Math.sin(angle) * 600,
       hp: b.hp * bossScale, maxHp: b.hp * bossScale,
       speed: b.speed, xp: b.xp, dmg: b.dmg,
+      name: b.name,
       emoji: b.emoji, spriteKey: b.spriteKey,
       color: b.color, size: b.size, boss: true,
     });
@@ -1597,7 +2382,6 @@ function updateHUD() {
   // Supermove cooldown
   if (player.superCD > 0) player.superCD -= 1/60;
 }
-
 // ═══════════════════════════════════════════════
 //  RENDER
 // ═══════════════════════════════════════════════
@@ -1806,7 +2590,13 @@ function render() {
   }
   ctx.shadowColor = player.color;
   ctx.shadowBlur = 20;
-  drawEntity(player.emoji, selectedChar ? selectedChar.id : player.emoji, player.size);
+  // Use sprite animator if available, else fall back to drawEntity (sprite/emoji)
+  if (player.animator) {
+    const drawn = player.animator.draw(ctx, player.size);
+    if (!drawn) drawEntity(player.emoji, selectedChar ? selectedChar.id : player.emoji, player.size);
+  } else {
+    drawEntity(player.emoji, selectedChar ? selectedChar.id : player.emoji, player.size);
+  }
   ctx.shadowBlur = 0;
   ctx.restore();
 
@@ -1838,17 +2628,36 @@ function endGame() {
   state = 'gameover';
   stopMusic();
   playSFX('gameover');
+  document.getElementById('bossHPBar').style.display = 'none';
+
+  totalRuns++;
+  const isNewBest = elapsed > bestTime;
+  if (isNewBest) bestTime = elapsed;
+
+  saveGame();
+
   const mins = Math.floor(elapsed / 60).toString().padStart(2,'0');
   const secs = Math.floor(elapsed % 60).toString().padStart(2,'0');
+  const bm   = Math.floor(bestTime/60).toString().padStart(2,'0');
+  const bs   = Math.floor(bestTime%60).toString().padStart(2,'0');
+
   document.getElementById('gameoverStats').innerHTML = `
     Survived <span>${mins}:${secs}</span><br>
     Enemies defeated <span>${kills}</span><br>
     Level reached <span>${player.level}</span><br>
-    Total XP collected <span>${totalXP}</span><br>
+    Wave reached <span>${waveNumber}</span><br>
     Gold earned this run <span>🪙 ${runGold}</span><br>
-    Total gold saved <span>🪙 ${gold}</span><br>
+    Total gold <span>🪙 ${gold}</span><br>
     Raider <span>${selectedChar.emoji} ${selectedChar.name}</span>
   `;
+  const bestEl = document.getElementById('gameoverBest');
+  if (isNewBest && elapsed > 10) {
+    bestEl.textContent = '🏆 New Best Time! ' + bm + ':' + bs;
+  } else if (bestTime > 0) {
+    bestEl.textContent = '🏆 Best: ' + bm + ':' + bs + ' — Run #' + totalRuns;
+  } else {
+    bestEl.textContent = '';
+  }
   showScreen('gameoverScreen');
 }
 
@@ -1922,6 +2731,7 @@ function buildTownScreen() {
         gold -= cost;
         townUpgrades[u.id] = rank + 1;
         playSFX('levelup');
+        saveGame();
         buildTownScreen();
       };
     }
@@ -1941,6 +2751,25 @@ document.addEventListener('keydown', e => {
   if (!keys[e.key]) justPressed[e.key] = true;
   keys[e.key] = true;
   if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+  // M = toggle music/mute (works on title screen and in-game)
+  if (e.key === 'm' || e.key === 'M') {
+    initAudio();
+    if (state === 'title') {
+      // First M press starts title music; subsequent presses toggle mute
+      if (!titleMusic) {
+        startTitleMusic();
+        muted = false;
+      } else {
+        setMute(!muted);
+      }
+    } else {
+      setMute(!muted);
+    }
+    return;
+  }
+
+  // Title screen — SPACE only
+  if (state === 'title' && e.key === ' ') { leaveTitleScreen(); return; }
   // Pause toggle
   if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') {
     if (state === 'playing' || state === 'paused') togglePause();
@@ -1953,9 +2782,9 @@ document.addEventListener('keyup', e => { keys[e.key] = false; });
 // ═══════════════════════════════════════════════
 window.addEventListener('load', () => {
   canvas = document.getElementById('gameCanvas');
-  ctx = canvas.getContext('2d');
+  ctx    = canvas.getContext('2d');
 
-  // Touch / mobile movement
+  // Touch movement
   let touchId = null, touchStartX = 0, touchStartY = 0;
   canvas.addEventListener('touchstart', e => {
     const t = e.changedTouches[0];
@@ -1965,9 +2794,9 @@ window.addEventListener('load', () => {
     for (const t of e.changedTouches) {
       if (t.identifier !== touchId) continue;
       const dx = t.clientX - touchStartX, dy = t.clientY - touchStartY;
-      const threshold = 10;
-      keys['a'] = dx < -threshold; keys['d'] = dx > threshold;
-      keys['w'] = dy < -threshold; keys['s'] = dy > threshold;
+      const thr = 10;
+      keys['a'] = dx < -thr; keys['d'] = dx > thr;
+      keys['w'] = dy < -thr; keys['s'] = dy > thr;
     }
   }, {passive: true});
   canvas.addEventListener('touchend', () => {
@@ -1977,12 +2806,22 @@ window.addEventListener('load', () => {
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    if (titleCanvas) {
+      titleCanvas.width  = window.innerWidth;
+      titleCanvas.height = window.innerHeight;
+    }
   }
   resize();
   window.addEventListener('resize', resize);
 
-  buildCharSelect();
-  showScreen('selectScreen');
+  // Title screen: click or tap to proceed
+  // Title screen advances on SPACE only (handled in keydown above)
+
+  // Preload all sprites (including titleBg) before showing title
+  loadSprites();
+
+  // Show title screen (slight delay so titleBg image has a chance to load)
+  setTimeout(() => showTitleScreen(), 100);
 
   // Mute
   document.getElementById('muteBtn').onclick = () => setMute(!muted);
@@ -2009,12 +2848,12 @@ window.addEventListener('load', () => {
     document.querySelectorAll('.char-card').forEach(x => x.classList.remove('selected'));
   };
 
-  // Pause screen buttons
+  // Pause buttons
   document.getElementById('pauseResume').onclick = () => resumeGame();
   document.getElementById('pauseTown').onclick   = () => { initAudio(); openTown('paused'); };
   document.getElementById('pauseRetry').onclick  = () => { showScreen(null); startGame(); };
   document.getElementById('pauseMenu').onclick   = () => {
-    stopMusic(); state = 'select'; buildCharSelect();
+    stopMusic(); stopTitleMusic(); state = 'select'; buildCharSelect();
     showScreen('selectScreen');
     document.getElementById('startBtn').disabled = !selectedChar;
   };
