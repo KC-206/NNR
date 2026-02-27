@@ -6,22 +6,22 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-  background: #000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  overflow: hidden;
-  font-family: 'Courier New', monospace;
-  transform-origin: top center;  /* ← add these two lines */
-  zoom: 1.00;                    /* ← adjust % to fit your screen */
-}
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    transform-origin: top center;
+    zoom: 1.00;
+  }
   #gameContainer {
-  position: relative;
-  width: 800px;
-  height: 600px;  /* ← add this line */
-}
+    position: relative;
+    width: 800px;
+    height: 600px;
+  }
   #gameCanvas { display: block; image-rendering: pixelated; }
   #hudCanvas { display: block; image-rendering: pixelated; }
   #overlay { position: absolute; top: 0; left: 0; width: 800px; height: 480px; pointer-events: none; }
@@ -35,23 +35,49 @@
   }
   @keyframes quipFadeIn { from { opacity:0; transform: translateX(-50%) translateY(8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
 
+  /* ── INTRO SCREEN ── */
+  #introScreen {
+    position: absolute; top: 0; left: 0; width: 800px; height: 600px;
+    background: #000; z-index: 150; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    cursor: pointer;
+  }
+  #introScroll {
+    width: 680px; text-align: center; padding-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    animation: scrollUp 47s linear forwards;
+  }
+  @keyframes scrollUp {
+    from { transform: translateY(900px); }
+    to   { transform: translateY(-100%); }
+  }
+  #introScreen .intro-line { color: #ff8800; font-size: 15px; line-height: 2; margin: 4px 0; }
+  #introScreen .intro-big  { color: #ff6600; font-size: 22px; font-weight: bold; line-height: 2.2; text-shadow: 0 0 12px #ff4400; }
+  #introScreen .intro-dim  { color: #884400; font-size: 13px; line-height: 2; }
+  #introScreen .intro-skip {
+    position: absolute; bottom: 14px; right: 20px;
+    color: #444; font-size: 11px; font-family: 'Courier New', monospace;
+    animation: blinkText 1s infinite;
+  }
+  @keyframes blinkText { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
   /* ##BACKGROUND IMAGE HERE — replace none with url("lauriebg.jpg") */
-#titleScreen {
-  position: absolute; top: 0; left: 0;
-  width: 800px;
-  height: 600px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  z-index: 100; color: #fff; overflow: hidden;
-  background-image: url("lauriebg.jpg");
-  background-size: 100% 100%;        /* ← change this */
-  background-position: top left;     /* ← change this */
-  background-repeat: no-repeat;
-}
-#titleBgFallback {
-  position: absolute; inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 0;
-}
+  /* ── TITLE SCREEN ── */
+  #titleScreen {
+    position: absolute; top: 0; left: 0;
+    width: 800px; height: 600px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 100; color: #fff; overflow: hidden;
+    background-image: url("lauriebg.jpg");
+    background-size: 100% 100%;
+    background-position: top left;
+    background-repeat: no-repeat;
+  }
+  #titleBgFallback {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 0;
+  }
   #titleScanlines {
     position: absolute; inset: 0; z-index: 2; pointer-events: none;
     background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px);
@@ -60,10 +86,7 @@
   @keyframes scanMove { from { background-position: 0 0; } to { background-position: 0 100px; } }
   #steamCanvas { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
   #titleContent { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; margin-top: 220px; }
-  #titleScreen h1 {
-    font-size: 30px; color: #ff6600; margin-bottom: 6px;
-    animation: titlePulse 2s ease-in-out infinite;
-  }
+  #titleScreen h1 { font-size: 30px; color: #ff6600; margin-bottom: 6px; animation: titlePulse 2s ease-in-out infinite; }
   @keyframes titlePulse {
     0%,100% { text-shadow: 0 0 10px #ff6600, 0 0 30px #ff4400, 0 0 60px #ff2200; }
     50%      { text-shadow: 0 0 20px #ffaa00, 0 0 50px #ff6600, 0 0 90px #ff4400; }
@@ -80,7 +103,7 @@
   }
   @keyframes btnPulse { 0%,100%{box-shadow:0 0 10px #ff440055;}50%{box-shadow:0 0 28px #ff6600aa,inset 0 0 10px #ff440033;} }
   #startBtn:hover { background: #ff6600; color: #000; box-shadow: 0 0 40px #ff8800; }
-  #versionBadge { margin-top: 18px; color: #aaa; font-size: 10px; letter-spacing: 1px; text-shadow: 0 0 3px #000; }
+  #versionBadge { margin-top: 18px; color: #aaa; font-size: 14px; letter-spacing: 1px; text-shadow: 0 0 3px #000; }
   #versionBadge span { color: #cc8844; }
 
   #muteBtn {
@@ -90,21 +113,31 @@
   }
   #muteBtn:hover { background: #2a1000; }
 
-  #winScreen {
-    position: absolute; top: 0; left: 0; width: 800px; height: 600px;
-    background: rgba(0,0,0,0.95); display: none; flex-direction: column;
-    align-items: center; justify-content: center; z-index: 200; overflow: hidden;
-  }
+  /* ── WIN SCREEN ── */
+#winScreen {
+  position: absolute; top: 0; left: 0; width: 800px; height: 600px;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center; z-index: 200; overflow: hidden;
+  background-image: url("lauriewin.png");
+  background-size: 100% 100%;
+  background-position: top left;
+  background-repeat: no-repeat;
+}
   #winScreen h1 { font-size: 34px; color: #ff6600; animation: titlePulse 1.5s infinite; }
   #winScreen .winQuote { color: #ff8844; font-size: 20px; margin-top: 18px; font-style: italic; }
   #winScreen .winSub { color: #666; margin-top: 10px; font-size: 14px; }
   #confettiCanvas { position: absolute; inset: 0; pointer-events: none; }
 
-  #gameoverScreen {
-    position: absolute; top: 0; left: 0; width: 800px; height: 600px;
-    background: rgba(0,0,0,0.96); display: none; flex-direction: column;
-    align-items: center; justify-content: center; z-index: 200; overflow: hidden;
-  }
+  /* ── GAME OVER SCREEN ── */
+#gameoverScreen {
+  position: absolute; top: 0; left: 0; width: 800px; height: 600px;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center; z-index: 200; overflow: hidden;
+  background-image: url("laurielose.png");
+  background-size: 100% 100%;
+  background-position: top left;
+  background-repeat: no-repeat;
+}
   #gameoverScreen h1 { font-size: 56px; color: #ff0000; text-shadow: 0 0 20px #ff0000, 0 0 60px #880000; letter-spacing: 4px; }
   #gameoverScreen p { color: #aa5500; margin: 12px 0; font-size: 15px; }
   #staticCanvas { position: absolute; inset: 0; pointer-events: none; opacity: 0.07; }
@@ -126,8 +159,52 @@
   <canvas id="hudCanvas" width="800" height="120"></canvas>
   <div id="overlay"><div id="quipBox"></div></div>
   <button id="muteBtn" onclick="toggleMute()">&#128266; SFX ON</button>
+<div id="introScreen" onclick="skipIntro()">
+  <div id="introScroll">
+    <p class="intro-dim">&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;</p>
+    <p class="intro-big">JESSICORN HUNTRESS PRODUCTIONS</p>
+    <p class="intro-dim">presents</p>
+    <br><br>
+    <p class="intro-line">THE YEAR IS 2026...</p>
+    <br>
 
-  <div id="titleScreen">
+    <p class="intro-line">TRIXIE — the Cactus Queen of the Western Desert —</p>
+    <p class="intro-line">was wandering the Desert and found something.</p>
+	<p class="intro-line">It had fallen from the sky and was glowing green.</p>
+	<br><br>
+	<p class="intro-line">TRIXIE took that glowing space cactus and</p>
+	<p class="intro-line">she put it somewhere she shouldn't have.</p>
+    <br>    <br>
+	<p class="intro-line">TRIXIE contracted intergalactic SPACE CRABS</p>
+	<p class="intro-line">which caused her to mutate and gain</p>
+	<p class="intro-line">unspeakable powers we best not speak of.</p>
+	<br>
+    <p class="intro-line">Her army of spitter cacti march on the city.</p>
+    <p class="intro-line">Her needles know no mercy.</p>
+    <p class="intro-line">Her skin-care routine is surprisingly robust.</p>
+    <br><br>
+    <p class="intro-line">One woman stands between Trixie</p>
+    <p class="intro-line">and total decaf domination.</p>
+    <br>
+    <p class="intro-big">Her name is LAURIE~.</p>
+    <br>
+    <p class="intro-line">Armed with a bottomless thermos of coffee,</p>
+    <p class="intro-line">an inexhaustible supply of baguettes,</p>
+    <p class="intro-line">and a giant atomic lizard on speed dial...</p>
+    <br>
+    <p class="intro-line">...she is REALLY not happy about this.</p>
+    <br><br>
+		<p class="intro-line">WAKE UP LAURIE~ The world needs you.</p>
+	<br><br>
+    <p class="intro-dim">&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;</p>
+    <br><br>
+    <p class="intro-big">☕ LAURIE~ SAVES THE WORLD ☕</p>
+    <p class="intro-big">(FROM TRIXIE)</p>
+    <br><br><br><br>
+  </div>
+  <p class="intro-skip">CLICK OR PRESS ANY KEY TO SKIP</p>
+</div>
+  <div id="titleScreen" style="display:none">
     <div id="titleBgFallback"></div>
     <canvas id="steamCanvas" width="800" height="600"></canvas>
     <div id="titleScanlines"></div>
@@ -144,23 +221,24 @@
     </div>
   </div>
 
-<div id="winScreen" style="display:none;flex-direction:column">
-  <canvas id="confettiCanvas" width="800" height="600"></canvas>
-  <img src="laurievomit.gif" style="width:300px; margin-bottom:20px; image-rendering:pixelated;">
-  <h1>☕ WORLD SAVED ☕</h1>
-  <p class="winQuote">"You're still dead to me."</p>
-  <p class="winSub">— Laurie~, standing over the crumbled cactus queen</p>
-  <button class="gameBtn winBtn" onclick="location.reload()">▶ PLAY AGAIN</button>
+<div id="winScreen" style="display:none; flex-direction:column;">
+  <div style="position:absolute; inset:0; background:rgba(0,0,0,0.45); z-index:0;"></div>
+  <canvas id="confettiCanvas" width="800" height="600" style="z-index:3;"></canvas>
+  <img src="laurievomit.gif" style="width:250px; position:absolute; bottom:50px; right:5px; image-rendering:pixelated; z-index:2;">
+  <h1 style="z-index:2;">☕ WORLD SAVED ☕</h1>
+  <p class="winQuote" style="z-index:2;">"Trixie - You're still dead to me."</p>
+  <button class="gameBtn winBtn" style="z-index:2;" onclick="location.reload()">▶ PLAY AGAIN</button>
 </div>
 
-  <div id="gameoverScreen">
-    <canvas id="staticCanvas" width="800" height="600"></canvas>
-	  <img src="trixiewin.gif" style="width:300px; margin-bottom:20px; image-rendering:pixelated;">
-    <h1>GAME OVER</h1>
-    <p>Trixie's prickles were too much...</p>
-    <p style="color:#553300;font-size:13px;">The world remains un-saved. For now.</p>
-    <button class="gameBtn" onclick="location.reload()">&#9654; TRY AGAIN</button>
-  </div>
+<div id="gameoverScreen">
+  <div style="position:absolute; inset:0; background:rgba(0,0,0,0.45); z-index:0;"></div>
+  <canvas id="staticCanvas" width="800" height="600" style="z-index:3;"></canvas>
+  <img src="trixiewin.gif" style="width:150px; position:absolute; bottom:50px; right:5px; image-rendering:pixelated; z-index:2;">
+  <h1 style="z-index:2;">GAME OVER</h1>
+<p style="z-index:2; color:#ffcc88; text-shadow: 2px 2px 6px #000, 0 0 12px #000;">Trixie's prickles were too much...</p>
+<p style="z-index:2; color:#aa6633; font-size:13px; text-shadow: 2px 2px 6px #000, 0 0 12px #000;">The world remains un-saved. For now.</p>
+  <button class="gameBtn" style="z-index:2;" onclick="location.reload()">&#9654; TRY AGAIN</button>
+</div>
 </div>
 
 <script>
@@ -409,8 +487,8 @@ function sfxTalk(numWahs) {
     filter.frequency.linearRampToValueAtTime(400,start+wahDur);
     filter.Q.value = 4;
 g.gain.setValueAtTime(0, start);
-g.gain.linearRampToValueAtTime(0.6, start + 0.01);   // ← was 0.28
-g.gain.linearRampToValueAtTime(0.5, start + wahDur * 0.8);  // ← was 0.22
+g.gain.linearRampToValueAtTime(0.8, start + 0.01);   // ← was 0.28
+g.gain.linearRampToValueAtTime(0.7, start + wahDur * 0.8);  // ← was 0.22
 g.gain.exponentialRampToValueAtTime(0.001, start + wahDur + 0.02);
     osc.connect(filter); filter.connect(g); g.connect(sfxGain); osc.start(start); osc.stop(start+wahDur+0.05);
   }
@@ -513,7 +591,7 @@ function updateMouth(){
 const trixieQuips=["You wouldn't like me when I'm angry!","Damn you, Huntress!","Embrace the prickle, Laurie!","Your coffee means NOTHING to me!","I am TRIXIE. I am the CACTUS!","Your baguette can't hurt my thorns!","You'll never de-caf-feinate my plans!"];
 const laurieQuips_kill=["Needs more brew.","That's a latte damage.","Espresso yourself!","Stay down, prickles.","Decaf? More like de-gone.","That's one venti problem solved.","I like my enemies like my coffee — flat.","Bold roast, bolder fists.","You just got double-shotted.","No refills for you.","Grounds for dismissal.","Get off my lawn!", "Percolate THAT.","I've fought bigger things than you.","My kaiju friend says hi.","You're not even a mini-zilla."];
 const laurieQuips_bomb=["Let's get this bread.","Gluten-free? Nope.","Freshly baked destruction!","Sorry, it's not sourdough.","Extra crispy.","Baked at 450 degrees of pain.","The boulangerie of doom delivers!","C'est la guerre, c'est la vie.","Carbs are back on the menu."];
-const laurieQuips_gojira=["Time for a monster mash!","GOJIRA GO!!!","Kaiju delivery, special order!","Sorry, my lizard friend is peckish.","He's very large and very angry. You're welcome.","Nobody outscales Gojira.","From the depths of my stomach, I summon thee!","Atomically yours.","Radiation level: extra hot. Like my coffee.","Tokyo survived. You won't."];
+const laurieQuips_gojira=["Time for a monster mash!","GOJIRA GO!!!","Kaiju delivery, special order!","Sorry, my lizard friend is peckish.","He's very large and very angry. You're welcome.","Nobody outscales Gojira.","Say hello to my Big Green Friend!","Atomically yours.","Radiation level: extra hot. Like my coffee.","Tokyo survived. You won't."];
 const laurieQuips_pickup=["Coffee heals... somehow.","Fully caffeinated.","Back at 100%, baby.","Topped up and tuned in.","This double-double hits different."];
 let quipTimer=0;
 const quipBox=document.getElementById('quipBox');
@@ -548,10 +626,41 @@ let projectiles=[],explosions=[],gojiraActive=false,gojiraTimer=0,lastNeedleSfx=
 //  INPUT
 // ══════════════════════════════════════════════════════════════
 const keys={};
-document.addEventListener('keydown',e=>{keys[e.code]=true;if(!gameRunning)return;if(e.code==='KeyG')throwGrenade();if(e.code==='KeyE')activateGojira();e.preventDefault();});
+document.addEventListener('keydown',e=>{
+  keys[e.code]=true;
+  if(!gameRunning)return;
+  if(e.code==='KeyG')throwGrenade();
+  if(e.code==='KeyE')activateGojira();
+  if(e.code==='KeyJ'){player.health=100;player.armor=100;triggerHudFlash('#00ff88');showQuip('Cheat code activated! Nawty Nawty! 😈','#00ff88','laurie');}
+  e.preventDefault();
+});
 document.addEventListener('keyup',e=>{keys[e.code]=false;});
 canvas.addEventListener('mousedown',()=>{if(gameRunning)player.shooting=true;});
 canvas.addEventListener('mouseup',()=>{player.shooting=false;});
+
+
+// ── INTRO CUTSCENE ────────────────────────────────────────────
+const introScreen = document.getElementById('introScreen');
+document.addEventListener('keydown', function skipOnKey(e) {
+  if (introScreen.style.display !== 'none') {
+    skipIntro();
+    document.removeEventListener('keydown', skipOnKey);
+  }
+});
+
+function skipIntro() {
+  introScreen.style.transition = 'opacity 0.6s';
+  introScreen.style.opacity = '0';
+  setTimeout(() => {
+    introScreen.style.display = 'none';
+    document.getElementById('titleScreen').style.display = 'flex';
+  }, 600);
+}
+
+// Auto-advance after scroll finishes (28 seconds matches the CSS animation)
+setTimeout(() => {
+  if (introScreen.style.display !== 'none') skipIntro();
+}, 48000 );
 
 // ══════════════════════════════════════════════════════════════
 //  START
@@ -795,7 +904,7 @@ function update(dt){
   weaponBob+=0.1;
   if(player.shooting&&player.shootTimer<=0){spawnCoffeeProjectile();player.shootTimer=SHOOT_DELAY;sfxCoffeeShot();}
   if(player.shootTimer>0)player.shootTimer--;
-player.energy = Math.min(100, player.energy + (100 / (60 * 15)));
+player.energy = Math.min(100, player.energy + (100 / (60 * 10)));
   if(player.grenadeTimer>0)player.grenadeTimer--;
   if(quipTimer>0){quipTimer--;if(quipTimer===0)quipBox.style.display='none';}
   if(player.invincible>0)player.invincible--;
