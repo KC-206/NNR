@@ -121,6 +121,7 @@
 </head>
 <body>
 <div id="gameContainer">
+  <audio id="bgMusic" src="mysong.mp3" loop preload="auto"></audio>
   <canvas id="gameCanvas" width="800" height="480"></canvas>
   <canvas id="hudCanvas" width="800" height="120"></canvas>
   <div id="overlay"><div id="quipBox"></div></div>
@@ -370,7 +371,9 @@ function initAudio() {
 function toggleMute() {
   muted = !muted;
   if (sfxGain) sfxGain.gain.value = muted ? 0 : 0.7;
-  document.getElementById('muteBtn').textContent = muted ? '\U0001F507 SFX OFF' : '\U0001F50A SFX ON';
+  const music = document.getElementById('bgMusic');
+  if (music) music.volume = muted ? 0 : 1;
+  document.getElementById('muteBtn').textContent = muted ? '🔇 SFX OFF' : '🔊 SFX ON';
 }
 function playTone(freq,type,startTime,duration,gainVal) {
   if (!audioCtx||muted) return;
@@ -403,8 +406,10 @@ function sfxTalk(numWahs) {
     filter.frequency.linearRampToValueAtTime(1800,start+wahDur*0.5);
     filter.frequency.linearRampToValueAtTime(400,start+wahDur);
     filter.Q.value = 4;
-    g.gain.setValueAtTime(0,start); g.gain.linearRampToValueAtTime(0.28,start+0.01);
-    g.gain.linearRampToValueAtTime(0.22,start+wahDur*0.8); g.gain.exponentialRampToValueAtTime(0.001,start+wahDur+0.02);
+g.gain.setValueAtTime(0, start);
+g.gain.linearRampToValueAtTime(0.6, start + 0.01);   // ← was 0.28
+g.gain.linearRampToValueAtTime(0.5, start + wahDur * 0.8);  // ← was 0.22
+g.gain.exponentialRampToValueAtTime(0.001, start + wahDur + 0.02);
     osc.connect(filter); filter.connect(g); g.connect(sfxGain); osc.start(start); osc.stop(start+wahDur+0.05);
   }
 }
@@ -550,11 +555,15 @@ canvas.addEventListener('mouseup',()=>{player.shooting=false;});
 //  START
 // ══════════════════════════════════════════════════════════════
 let startTransition=0;
-function startGame(){
-  initAudio(); steamRunning=false;
-  const ts=document.getElementById('titleScreen');
-  ts.style.transition='opacity 0.4s'; ts.style.opacity='0';
-  setTimeout(()=>{ts.style.display='none';gameRunning=true;loop();},400);
+function startGame() {
+  initAudio();
+  steamRunning = false;
+  const music = document.getElementById('bgMusic');
+  music.volume = 0.4;
+  music.play();
+  const ts = document.getElementById('titleScreen');
+  ts.style.transition = 'opacity 0.4s'; ts.style.opacity = '0';
+  setTimeout(()=>{ts.style.display='none'; gameRunning=true; loop();}, 400);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -661,15 +670,20 @@ function drawHUD(){
   hud.fillStyle='#1a0a00';hud.fillRect(0,0,W,HUD_H);
   hud.strokeStyle='#ff6600';hud.lineWidth=2;hud.strokeRect(1,1,W-2,HUD_H-2);
   if(hudFlashAlpha>0.01){hud.fillStyle=hudFlashColor;hud.globalAlpha=hudFlashAlpha;hud.fillRect(2,2,W-4,HUD_H-4);hud.globalAlpha=1;hudFlashAlpha*=0.82;}
+
   hud.fillStyle='#ff2200';hud.font='bold 11px Courier New';hud.fillText('HEALTH',15,18);
   drawBar(hud,15,24,120,18,player.health,100,'#ff2200','#440000');
   hud.fillStyle='#fff';hud.font='bold 18px Courier New';hud.fillText(Math.max(0,player.health)+'%',15,60);
+
   hud.fillStyle='#4488ff';hud.font='bold 11px Courier New';hud.fillText('ARMOR',155,18);
   drawBar(hud,155,24,120,18,player.armor,100,'#4488ff','#001144');
-  hud.fillStyle='#fff';hud.font='bold 18px Courier New';hud.fillText(Math.max(0,player.armor)+'%',155,60);
+  hud.fillStyle='#fff';hud.font='bold 18px Courier New';hud.fillText(Math.max(0,Math.floor(player.armor))+'%',155,60);
+
   hud.fillStyle='#aaaa00';hud.font='bold 11px Courier New';hud.fillText('BAGUETTES',295,18);
   hud.fillStyle='#fff';hud.font='bold 28px Courier New';hud.fillText('x'+player.grenades,320,55);
+
   drawFace(hud,375,10,100,100);
+
   const gReady=player.energy>=100;
   hud.fillStyle=gReady?'#ffff00':'#ff6600';hud.font='bold 11px Courier New';hud.fillText('GOJIRA GO!',490,18);
   drawBar(hud,490,24,140,18,player.energy,100,gReady?'#ffff00':'#ff6600','#220011');
@@ -678,8 +692,11 @@ function drawHUD(){
     for(let i=0;i<6;i++){const sx2=490+140+Math.sin(now*0.008+i*1.1)*8,sy2=24+9+Math.cos(now*0.01+i*0.9)*7;hud.fillStyle='hsl('+((now/10+i*60)%360)+',100%,60%)';hud.fillRect(sx2,sy2,2,2);}
     hud.fillStyle='#ffff00';hud.font='bold 13px Courier New';if(Math.floor(Date.now()/300)%2===0)hud.fillText('[ E ] READY!!!',490,60);
   }else{hud.fillStyle='#ff6600';hud.font='bold 13px Courier New';hud.fillText(Math.floor(player.energy)+'%',490,60);}
+
   if(player.hasKey){hud.fillStyle='#ffdd00';hud.font='bold 13px Courier New';hud.fillText('KEY',658,18);}
-  hud.fillStyle='#888';hud.font='bold 11px Courier New';hud.fillText('SCORE',650,50);hud.fillStyle='#fff';hud.font='bold 14px Courier New';hud.fillText(player.score,650,68);
+  hud.fillStyle='#888';hud.font='bold 11px Courier New';hud.fillText('SCORE',650,50);
+  hud.fillStyle='#fff';hud.font='bold 14px Courier New';hud.fillText(player.score,650,68);
+
   hud.fillStyle='#444';hud.font='9px Courier New';hud.fillText('WASD=Move  G=Grenade  E=Gojira  Space/Click=Shoot',15,HUD_H-8);
 }
 function drawBar(c,x,y,w,h,val,max,fillColor,bgColor){
