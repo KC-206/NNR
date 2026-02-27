@@ -795,7 +795,7 @@ function update(dt){
   weaponBob+=0.1;
   if(player.shooting&&player.shootTimer<=0){spawnCoffeeProjectile();player.shootTimer=SHOOT_DELAY;sfxCoffeeShot();}
   if(player.shootTimer>0)player.shootTimer--;
-  player.energy=Math.min(100,player.energy+(100/(60*60))*dt*60);
+player.energy = Math.min(100, player.energy + (100 / (60 * 15)));
   if(player.grenadeTimer>0)player.grenadeTimer--;
   if(quipTimer>0){quipTimer--;if(quipTimer===0)quipBox.style.display='none';}
   if(player.invincible>0)player.invincible--;
