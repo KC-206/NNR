@@ -808,7 +808,11 @@ function drawHUD(){
   hud.fillStyle='#888';hud.font='bold 11px Courier New';hud.fillText('SCORE',650,50);
   hud.fillStyle='#fff';hud.font='bold 14px Courier New';hud.fillText(player.score,650,68);
 
-  hud.fillStyle='#444';hud.font='9px Courier New';hud.fillText('WASD=Move  G=Grenade  E=Gojira  Space/Click=Shoot',15,HUD_H-8);
+hud.font = '9px Courier New';
+hud.fillStyle = 'rgba(0,0,0,0.6)';
+hud.fillText('WASD=Move  G=Grenade  E=Gojira  Space/Click=Shoot', 15, HUD_H-8);
+hud.fillStyle = '#ffcc88';
+hud.fillText('WASD=Move  G=Grenade  E=Gojira  Space/Click=Shoot', 15, HUD_H-8);
 }
 function drawBar(c,x,y,w,h,val,max,fillColor,bgColor){
   c.fillStyle=bgColor;c.fillRect(x,y,w,h);
