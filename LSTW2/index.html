@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laurie 2: DECAF RISING</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    @keyframes scrollUp {
+      0%   { transform: translateY(40%); }
+      100% { transform: translateY(-100%); }
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow:0 0 15px rgba(200,112,0,0.4); }
+      50%      { box-shadow:0 0 35px rgba(255,160,0,0.9); }
+    }
+    @keyframes flicker {
+      0%,94%,96%,100% { opacity:1; }
+      95%  { opacity:0.7; }
+      97%  { opacity:0.8; }
+    }
+    @keyframes titlePulse {
+      0%,100% { text-shadow:0 0 20px #ff8000, 0 0 40px #ff4000; }
+      50%     { text-shadow:0 0 40px #ffb000, 0 0 80px #ff8000, 0 0 120px #ff4000; }
+    }
+    #screen-transition.active { display:flex !important; }
+    #screen-title.active      { display:flex !important; }
+  </style>
+</head>
+<body>
+
+<div id="devlog"
+     style="position:fixed;bottom:4px;left:4px;
+            background:rgba(0,0,0,0.7);color:#0f0;
+            font:10px monospace;padding:4px 6px;
+            max-width:320px;max-height:120px;
+            overflow:auto;z-index:9999;display:none;"></div>
+  <div id="screen-container">
+
+    <!-- 1. INTRO -->
+    <div id="screen-intro" class="screen active">
+      <canvas id="canvas-intro" width="800" height="600"
+        style="position:absolute;top:0;left:0;z-index:1;opacity:0.4;"></canvas>
+
+      <div style="position:absolute;top:0;left:0;width:800px;height:600px;
+                  z-index:2;overflow:hidden;
+                  -webkit-mask-image:linear-gradient(to bottom,
+                    transparent 0%,black 12%,black 82%,transparent 100%);
+                  mask-image:linear-gradient(to bottom,
+                    transparent 0%,black 12%,black 82%,transparent 100%);">
+        <div id="intro-scroll-content"
+             style="text-align:center;padding:0 80px;
+                    font-family:'Courier New',monospace;
+                    animation:scrollUp 22s linear forwards;">
+
+          <div style="font-size:40px;font-weight:bold;color:#f0a000;
+                      letter-spacing:4px;margin-bottom:20px;line-height:1.3;">
+            ☕ LAURIE 2 ☕<br>
+            <span style="font-size:20px;color:#d06000;letter-spacing:8px;">DECAF RISING</span>
+          </div>
+
+          <div style="color:#d0b060;line-height:2.4;font-size:15px;margin-top:20px;">
+            <p>A year has passed since Laurie banished Pricilla to the Void Dimension...</p>
+            <p>But the desert never forgets.</p>
+            <p>Deep beneath the Cactus Wastes, Pricilla has returned —<br>
+               angrier, more caffeinated, and commanding a grotesque army<br>
+               of mutant desert flora.</p>
+            <p>Her weapon: <span style="color:#ff6040;font-weight:bold;">DECAF</span>.
+               A sinister brew that drains the will to fight,<br>
+               leaving warriors sluggish and bereft of espresso-fueled courage.</p>
+            <p>Only one barista-warrior stands between civilization<br>
+               and a world of lukewarm disappointment.</p>
+            <p style="font-size:22px;color:#f0d080;letter-spacing:3px;font-weight:bold;
+                      margin:20px 0;">LAURIE PIPPA MCSHOT</p>
+            <p>Armed with her trusty Coffee Shot pistol, a Baguette Launcher,<br>
+               and an ancient power known only as...</p>
+            <p style="font-size:26px;color:#40ff80;
+                      text-shadow:0 0 15px #00ff60;letter-spacing:5px;margin:20px 0;">
+               THE GOJIRA STRIKE</p>
+            <p>She will fight through three hellish zones:</p>
+            <p style="margin:16px 0;">
+              🌵 THE CACTUS FLATS<br>
+              🔥 THE MOLTEN CORRIDORS<br>
+              💀 PRICILLA'S LAIR
+            </p>
+          </div>
+          <div style="height:400px;"></div>
+        </div>
+      </div>
+
+      <div id="intro-skip-hint"
+           style="position:absolute;bottom:20px;left:0;right:0;text-align:center;
+                  z-index:3;font-family:'Courier New',monospace;font-size:12px;
+                  color:#806040;letter-spacing:2px;
+                  animation:pulse 2s ease-in-out infinite;">
+        CLICK OR PRESS ANY KEY TO SKIP ▶
+      </div>
+    </div>
+
+    <!-- 2. TITLE -->
+    <div id="screen-title" class="screen"
+         style="flex-direction:column;gap:0;
+                background:radial-gradient(ellipse at 50% 60%,#1a0a02 0%,#050200 100%);">
+
+      <!-- Background image -->
+	<img src="titlebg.png" alt=""
+		 style="position:absolute;top:0;left:0;width:800px;height:600px;
+				object-fit:contain;z-index:1;opacity:0.55;">
+
+      <!-- Star canvas on top of image -->
+      <canvas id="canvas-title" width="800" height="600"
+        style="position:absolute;top:0;left:0;z-index:2;opacity:0.4;"></canvas>
+
+      <div style="position:absolute;top:0;left:0;width:800px;height:600px;
+                  z-index:3;display:flex;flex-direction:column;
+                  align-items:center;justify-content:center;gap:24px;">
+
+        <div style="font-family:'Courier New',monospace;font-size:18px;
+                    color:#c87020;letter-spacing:6px;margin-bottom:-16px;">
+          ✦ &nbsp; A PIPPA MCSHOT ADVENTURE &nbsp; ✦</div>
+
+        <div style="font-family:'Courier New',monospace;font-size:72px;
+                    font-weight:bold;color:#f0a000;letter-spacing:4px;
+                    text-align:center;line-height:1;
+                    animation:titlePulse 2.5s ease-in-out infinite;">
+          LAURIE 2
+        </div>
+        <div style="font-family:'Courier New',monospace;font-size:28px;
+                    color:#d06000;letter-spacing:10px;margin-top:-8px;">
+          DECAF RISING
+        </div>
+
+        <div style="font-size:48px;margin:8px 0;">☕</div>
+
+        <button id="btn-start" class="retro-btn"
+                style="font-size:20px;padding:16px 40px;letter-spacing:4px;
+                       animation:pulse 1.5s ease-in-out infinite;margin-top:8px;">
+          ☕ &nbsp; PRESS TO BREW &nbsp; ☕
+        </button>
+
+        <div style="font-family:'Courier New',monospace;font-size:11px;
+                    color:#503818;letter-spacing:2px;margin-top:8px;">
+          WASD · MOUSE LOOK · SPACE/CLICK TO SHOOT · J FOR CHEAT
+        </div>
+
+        <div style="position:absolute;bottom:14px;right:20px;
+                    font-family:'Courier New',monospace;font-size:10px;color:#3a2010;">
+          v2.0 &nbsp;·&nbsp; EXTRA HOT EDITION
+        </div>
+      </div>
+    </div>
+
+ <!-- 3. TRANSITION -->
+    <div id="screen-transition" class="screen">
+
+      <!-- Level‑specific background images (hidden by default) -->
+      <img src="l1.png" alt="" id="transition-bg-1"
+           style="position:absolute;top:0;left:0;width:800px;height:600px;
+                  object-fit:contain;z-index:1;opacity:0.55;display:none;">
+      <img src="l2.png" alt="" id="transition-bg-2"
+           style="position:absolute;top:0;left:0;width:800px;height:600px;
+                  object-fit:contain;z-index:1;opacity:0.55;display:none;">
+      <img src="l3.png" alt="" id="transition-bg-3"
+           style="position:absolute;top:0;left:0;width:800px;height:600px;
+                  object-fit:contain;z-index:1;opacity:0.55;display:none;">
+
+      <div id="transition-content">
+        <div id="transition-level-num">LEVEL 1</div>
+        <div id="transition-level-name">THE CACTUS FLATS</div>
+        <div id="transition-blurb">A scorched desert wasteland.</div>
+        <button id="btn-continue" class="retro-btn">CONTINUE ▶</button>
+      </div>
+    </div>
+
+
+    <!-- 4. GAME OVER -->
+    <div id="screen-gameover" class="screen">
+      <canvas id="canvas-gameover" width="800" height="600"
+        style="position:absolute;top:0;left:0;z-index:1;"></canvas>
+      <div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;
+                  display:flex;flex-direction:column;align-items:center;
+                  justify-content:center;gap:18px;
+                  background-image:repeating-linear-gradient(0deg,
+                    rgba(0,0,0,0.15) 0px,rgba(0,0,0,0.15) 1px,
+                    transparent 1px,transparent 4px);
+                  font-family:'Courier New',monospace;">
+        <div style="font-size:70px;color:#cc2020;letter-spacing:8px;
+                    text-shadow:0 0 30px #ff0000,0 0 60px #880000;
+                    animation:flicker 0.12s infinite;">GAME OVER</div>
+        <div style="font-size:18px;color:#ff8080;letter-spacing:3px;">
+          PRICILLA WINS... THIS TIME.</div>
+        <div style="font-size:13px;color:#806060;font-style:italic;
+                    max-width:500px;text-align:center;">
+          "I told you. Decaf was always the answer."</div>
+        <div id="gameover-stats" style="font-size:12px;color:#604040;"></div>
+        <button id="btn-restart" class="retro-btn">TRY AGAIN</button>
+      </div>
+    </div>
+
+    <!-- 5. WIN -->
+    <div id="screen-win" class="screen">
+      <canvas id="canvas-confetti" width="800" height="600"
+        style="position:absolute;top:0;left:0;z-index:1;pointer-events:none;"></canvas>
+      <div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;
+                  display:flex;flex-direction:column;align-items:center;
+                  justify-content:center;gap:20px;
+                  font-family:'Courier New',monospace;pointer-events:none;">
+        <div style="font-size:58px;color:#f0d080;letter-spacing:4px;text-align:center;
+                    text-shadow:0 0 20px #f0a000,0 0 50px #c06000;line-height:1.2;">
+          WORLD SAVED<br>
+          <span style="font-size:26px;color:#c08040;letter-spacing:6px;">(AGAIN)</span>
+        </div>
+        <div style="font-size:38px;">☕ ☕ ☕ ☕ ☕</div>
+        <div style="font-size:14px;color:#a09050;font-style:italic;
+                    text-align:center;max-width:500px;line-height:2;">
+          "Justice is just espresso with better aim."<br>
+          — Laurie Pippa McShot</div>
+        <div id="win-stats" style="font-size:12px;color:#807040;"></div>
+        <button id="btn-play-again" class="retro-btn"
+                style="pointer-events:all;">PLAY AGAIN</button>
+      </div>
+    </div>
+
+    <!-- 6. GAME -->
+    <div id="screen-game" class="screen">
+      <canvas id="canvas-game" width="800" height="600"
+        style="position:absolute;top:0;left:0;z-index:1;"></canvas>
+      <canvas id="canvas-hud"  width="800" height="600"
+        style="position:absolute;top:0;left:0;z-index:2;pointer-events:none;"></canvas>
+      <canvas id="canvas-transition-overlay" width="800" height="600"
+        style="position:absolute;top:0;left:0;z-index:3;pointer-events:none;"></canvas>
+
+      <div id="flash-overlay"
+        style="position:absolute;top:0;left:0;width:100%;height:100%;
+               z-index:3;pointer-events:none;opacity:0;transition:opacity 0.05s;"></div>
+      <div id="damage-numbers"
+        style="position:absolute;top:0;left:0;width:100%;height:100%;
+               z-index:4;pointer-events:none;"></div>
+      <div id="quip-container"
+        style="position:absolute;bottom:50px;left:0;right:0;z-index:5;
+               pointer-events:none;display:flex;flex-direction:column;
+               align-items:center;gap:6px;">
+        <div id="quip-player" class="quip-bubble player-quip"></div>
+        <div id="quip-enemy"  class="quip-bubble enemy-quip"></div>
+      </div>
+      <div id="controls-hint"
+        style="position:absolute;bottom:4px;left:0;right:0;text-align:center;
+               font-size:10px;color:#604020;letter-spacing:1px;z-index:5;
+               pointer-events:none;font-family:'Courier New',monospace;">
+        WASD·MOVE &nbsp; MOUSE·LOOK &nbsp; Q/E·TURN &nbsp;
+        CLICK/SPACE·SHOOT &nbsp; G·BAGUETTE &nbsp; X·GOJIRA &nbsp;
+        M·MAP &nbsp; J·CHEAT
+      </div>
+    </div>
+
+  </div><!-- /screen-container -->
+
+  <!-- BGM — plays everywhere, loops -->
+  <audio id="bgm" src="mysong.mp3" loop preload="auto"></audio>
+
+  <script src="js/constants.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/maps.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/enemies.js"></script>
+  <script src="js/projectiles.js"></script>
+  <script src="js/pickups.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/screens.js"></script>
+  <script src="js/main.js"></script>
+
+  <script>
+    // ── Start BGM — plays everywhere, handles autoplay policy ──
+    (function() {
+      const bgm = document.getElementById('bgm');
+      bgm.volume = 0.5;
+
+      function tryPlay() {
+        bgm.play().catch(() => {});
+      }
+
+      // Try immediately (works if page was interacted with)
+      tryPlay();
+
+      // Fallback: start on first user gesture
+      ['click','keydown','mousedown','touchstart'].forEach(evt => {
+        document.addEventListener(evt, function handler() {
+          tryPlay();
+          document.removeEventListener(evt, handler);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
