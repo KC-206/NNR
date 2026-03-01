@@ -574,7 +574,7 @@ function showGojiraModeActivated() {
   function showPlayerQuip(text) {
     if (!text) return;
     const el = document.getElementById('quip-player');
-    el.textContent = '💬 Pippa: ' + text;
+    el.textContent = '💬 Laurie: ' + text;
     el.classList.add('visible');
     Audio2.playQuipSound(true);
     startTalking(3);

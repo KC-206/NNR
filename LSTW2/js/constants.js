@@ -165,7 +165,7 @@ PLAYER_GOJIRA_QUIPS: [
   "DECAF THIS!",
 ],
   PRICILLA_QUIPS_IDLE: [
-    "You can't stop DECAF, Pippa!",
+    "You can't stop DECAF, Laurie!",
     "Your beans are WEAK!",
     "I've already won. You just don't know it yet.",
     "How's the headache from withdrawal? 😈",
