@@ -5,7 +5,7 @@
 const HUD = (() => {
 
   let hudCanvas, hudCtx;
-  let minimapVisible = false;
+  let minimapVisible = true;
   let minimapExplored = new Set();
 
   // ── Talking animation ─────────────────────────────────
@@ -344,29 +344,56 @@ const HUD = (() => {
     ctx.fillText('WASD=Move  Space=Shoot  G=Baguette  E=Gojira  TAB=Map  M=Mute', 10, hudCanvas.height - 5);
 
     // ── Boss bar (appears just above the HUD) ──
-    const boss = enemies.find(e => e.type === 'pricilla' && !e.dead);
+      const boss = enemies.find(e => e.type === 'pricilla' && !e.dead);
     if (boss) {
-      const bx = Math.floor(C.SCREEN_W/2) - 200;
-      const by = HY - 46;
-      const bw = 400, bh = 18;
+      const bw   = 400, bh = 18;
+      const bx   = Math.floor(C.SCREEN_W / 2) - bw / 2;
+      const by   = 32;                            // TOP of screen
       const bPct = boss.hp / boss.maxHp;
-      ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(bx-4, by-4, bw+8, bh+30);
-      ctx.fillStyle = '#1a0008';          ctx.fillRect(bx, by, bw, bh);
-      const bGrd = ctx.createLinearGradient(bx, 0, bx+bw, 0);
-      bGrd.addColorStop(0, '#400020'); bGrd.addColorStop(0.5, '#cc0060'); bGrd.addColorStop(1, '#ff80c0');
-      ctx.fillStyle = bGrd; ctx.fillRect(bx, by, bw * bPct, bh);
-      ctx.strokeStyle = '#ff00aa'; ctx.lineWidth = 2; ctx.strokeRect(bx, by, bw, bh);
+
+      // dark backdrop
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(bx - 4, by - 22, bw + 8, bh + 30);
+
+      // bar background
+      ctx.fillStyle = '#1a0008';
+      ctx.fillRect(bx, by, bw, bh);
+
+      // bar fill
+      const bGrd = ctx.createLinearGradient(bx, 0, bx + bw, 0);
+      bGrd.addColorStop(0,   '#400020');
+      bGrd.addColorStop(0.5, '#cc0060');
+      bGrd.addColorStop(1,   '#ff80c0');
+      ctx.fillStyle = bGrd;
+      ctx.fillRect(bx, by, bw * bPct, bh);
+
+      // outline
+      ctx.strokeStyle = '#ff00aa';
+      ctx.lineWidth   = 2;
+      ctx.strokeRect(bx, by, bw, bh);
+
+      // phase pips
       [C.PRICILLA_PHASE2_HP / C.PRICILLA_HP, C.PRICILLA_PHASE3_HP / C.PRICILLA_HP].forEach(frac => {
         const pipX = bx + bw * frac;
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(pipX, by); ctx.lineTo(pipX, by+bh); ctx.stroke();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(pipX, by);
+        ctx.lineTo(pipX, by + bh);
+        ctx.stroke();
       });
-      ctx.fillStyle = '#ffd0e8'; ctx.font = 'bold 12px Courier New'; ctx.textAlign = 'center';
-      ctx.fillText('✦ PRICILLA ✦  ' + Math.ceil(boss.hp) + ' / ' + boss.maxHp, bx+bw/2, by+bh+14);
+
+      // label ABOVE the bar
+      ctx.fillStyle = '#ffd0e8';
+      ctx.font      = 'bold 12px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillText('✦ PRICILLA ✦  ' + Math.ceil(boss.hp) + ' / ' + boss.maxHp,
+                   bx + bw / 2, by - 6);
       ctx.textAlign = 'left';
     }
 
     if (minimapVisible) drawMinimap(ctx, player, levelIndex);
+
   }
 
   // ── Bar helpers ───────────────────────────────────────

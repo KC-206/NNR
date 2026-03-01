@@ -180,75 +180,100 @@ const Screens = (() => {
     document.getElementById('btn-continue').onclick = proceed;
   }
 
-  // ── 4. GAME OVER ──────────────────────────────────────
-  let gameoverRunning = false;
-  function showGameOver(score, kills) {
-    show('gameover');
-    gameoverRunning = true;
-    if (document.pointerLockElement) document.exitPointerLock();
-    document.getElementById('gameover-stats').textContent =
-      'SCORE: ' + score + '  |  ENEMIES SLAIN: ' + kills;
-    const canvas = document.getElementById('canvas-gameover');
-    const ctx    = canvas.getContext('2d');
-    (function drawNoise() {
-      if (!gameoverRunning) return;
-      ctx.fillStyle = 'rgba(8,0,0,0.88)';
-      ctx.fillRect(0,0,800,600);
-      const img = ctx.createImageData(800,600);
-      const d = img.data;
-      for (let i=0;i<d.length;i+=4) {
-        const v = Math.random()<0.04 ? Math.random()*60 : 0;
-        d[i]=v*1.5; d[i+1]=v*0.3; d[i+2]=v*0.3; d[i+3]=80;
-      }
-      ctx.putImageData(img,0,0);
-      if (Math.random()<0.08) {
-        ctx.fillStyle='rgba(255,50,50,0.12)';
-        ctx.fillRect(0,Math.random()*600,800,2+Math.random()*5);
-      }
-      requestAnimationFrame(drawNoise);
-    })();
-    document.getElementById('btn-restart').onclick = () => {
-      gameoverRunning = false;
-      GameState.restartGame();
-    };
-  }
+ // ── 4. GAME OVER ──────────────────────────────────────
+let gameoverRunning = false;
+function showGameOver(score, kills) {
+  show('gameover');
+  gameoverRunning = true;
+  if (document.pointerLockElement) document.exitPointerLock();
+
+  const g1 = document.getElementById('gameover-bg-1');
+  const g2 = document.getElementById('gameover-bg-2');
+  const g3 = document.getElementById('gameover-bg-3');
+  if (g1) g1.style.display = 'none';
+  if (g2) g2.style.display = 'none';
+  if (g3) g3.style.display = 'none';
+
+  // Use the current levelIndex directly (0,1,2)
+  const idx = GameState.currentLevelIndex;   // no "|| 0" here
+
+  if (idx === 0 && g1)      g1.style.display = 'block';   // died in level 1
+  else if (idx === 1 && g2) g2.style.display = 'block';   // died in level 2
+  else if (g3)              g3.style.display = 'block';   // died in level 3 or anything else
+
+  document.getElementById('gameover-stats').textContent =
+    'SCORE: ' + score + '  |  ENEMIES SLAIN: ' + kills;
+
+  const canvas = document.getElementById('canvas-gameover');
+  const ctx    = canvas.getContext('2d');
+
+  (function drawNoise() {
+    if (!gameoverRunning) return;
+    ctx.fillStyle = 'rgba(8,0,0,0.6)';   // semi‑transparent so BG shows through
+    ctx.fillRect(0,0,800,600);
+    const img = ctx.createImageData(800,600);
+    const d = img.data;
+    for (let i=0;i<d.length;i+=4) {
+      const v = Math.random()<0.04 ? Math.random()*60 : 0;
+      d[i]=v*1.5; d[i+1]=v*0.3; d[i+2]=v*0.3; d[i+3]=80;
+    }
+    ctx.putImageData(img,0,0);
+    if (Math.random()<0.08) {
+      ctx.fillStyle='rgba(255,50,50,0.12)';
+      ctx.fillRect(0,Math.random()*600,800,2+Math.random()*5);
+    }
+    requestAnimationFrame(drawNoise);
+  })();
+
+  document.getElementById('btn-restart').onclick = () => {
+    gameoverRunning = false;
+    GameState.restartGame();
+  };
+}
+
 
   // ── 5. WIN ────────────────────────────────────────────
-  let winRunning = false;
-  function showWin(score, kills) {
-    show('win');
-    winRunning = true;
-    if (document.pointerLockElement) document.exitPointerLock();
-    document.getElementById('win-stats').textContent =
-      'SCORE: ' + score + '  |  ENEMIES ELIMINATED: ' + kills;
-    Audio2.playWinFanfare();
-    const canvas = document.getElementById('canvas-confetti');
-    const ctx    = canvas.getContext('2d');
-    const colors = ['#f0d080','#ff8040','#40ff80','#4080ff','#ff40c0','#ffe040'];
-    const pieces = Array.from({length: C.CONFETTI_COUNT}, () => ({
-      x:Math.random()*800, y:Math.random()*-200,
-      vx:(Math.random()-0.5)*2, vy:1.5+Math.random()*2,
-      rot:Math.random()*Math.PI*2, rotV:(Math.random()-0.5)*0.2,
-      w:6+Math.random()*10, h:4+Math.random()*6,
-      color:colors[Math.floor(Math.random()*colors.length)],
-    }));
-    (function drawConfetti() {
-      if (!winRunning) return;
-      ctx.clearRect(0,0,800,600);
-      for (const p of pieces) {
-        p.x+=p.vx; p.y+=p.vy; p.rot+=p.rotV;
-        if (p.y>650){p.y=-20;p.x=Math.random()*800;}
-        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
-        ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
-        ctx.restore();
-      }
-      requestAnimationFrame(drawConfetti);
-    })();
-    document.getElementById('btn-play-again').onclick = () => {
-      winRunning = false;
-      GameState.restartGame();
-    };
-  }
+ let winRunning = false;
+function showWin(score, kills) {
+  show('win');
+  winRunning = true;
+  if (document.pointerLockElement) document.exitPointerLock();
+
+  document.getElementById('win-stats').textContent =
+    'SCORE: ' + score + '  |  ENEMIES ELIMINATED: ' + kills;
+
+  Audio2.playWinFanfare();
+
+  const canvas = document.getElementById('canvas-confetti');
+  const ctx    = canvas.getContext('2d');
+  const colors = ['#f0d080','#ff8040','#40ff80','#4080ff','#ff40c0','#ffe040'];
+  const pieces = Array.from({length: C.CONFETTI_COUNT}, () => ({
+    x:Math.random()*800, y:Math.random()*-200,
+    vx:(Math.random()-0.5)*2, vy:1.5+Math.random()*2,
+    rot:Math.random()*Math.PI*2, rotV:(Math.random()-0.5)*0.2,
+    w:6+Math.random()*10, h:4+Math.random()*6,
+    color:colors[Math.floor(Math.random()*colors.length)],
+  }));
+
+  (function drawConfetti() {
+    if (!winRunning) return;
+    ctx.clearRect(0,0,800,600);
+    for (const p of pieces) {
+      p.x += p.vx; p.y += p.vy; p.rot += p.rotV;
+      if (p.y > 650) { p.y = -20; p.x = Math.random()*800; }
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    }
+    requestAnimationFrame(drawConfetti);
+  })();
+
+  document.getElementById('btn-play-again').onclick = () => {
+    winRunning = false;
+    GameState.restartGame();
+  };
+}
+
 
   // ── Flash overlay ─────────────────────────────────────
   let flashTimer = null;
@@ -261,7 +286,7 @@ const Screens = (() => {
   }
 
   // ── Level dissolve (rows) before transition screen ───
-    function dissolveToTransition(levelIndex, levelData, onContinue) {
+  function dissolveToTransition(levelIndex, levelData, onContinue) {
     const gameCanvas = document.getElementById('canvas-game');
     const hudCanvas  = document.getElementById('canvas-hud');
     const overlay    = document.getElementById('canvas-transition-overlay');
@@ -283,82 +308,81 @@ const Screens = (() => {
     overlay.style.opacity = '1';
     overlay.style.display = 'block';
 
- const rowHeight = 6;                  // try 6–8 for chunky bands
-const numRows   = Math.ceil(H / rowHeight);
-const duration  = 700;
-const start     = performance.now();
+    const rowHeight = 6;
+    const numRows   = Math.ceil(H / rowHeight);
+    const duration  = 700;
+    const start     = performance.now();
 
-// Track which rows we've filled already
-const filled = new Array(numRows).fill(false);
-function step(now) {
-  const t = Math.min(1, (now - start) / duration);
+    const filled = new Array(numRows).fill(false);
 
-  octx.save();
-  octx.globalCompositeOperation = 'source-over';
+    function step(now) {
+      const t = Math.min(1, (now - start) / duration);
 
-  // Phase 1: top and bottom move towards the middle
-  const half       = (numRows / 2) | 0;
-  const phase1End  = 0.6;                 // 60% of time for the meet-in-middle motion
-  const progress   = Math.min(1, t / phase1End);
-  const maxOffset  = half;                // how many rows from center each side travels
-  const offset     = Math.floor(progress * maxOffset);
+      octx.save();
+      octx.globalCompositeOperation = 'source-over';
 
-  for (let i = 0; i < offset; i++) {
-    // top side: row index i
-    const topIndex = i;
-    if (topIndex >= 0 && topIndex < numRows && !filled[topIndex]) {
-      const y     = topIndex * rowHeight;
-      const alpha = 0.8 + 0.2 * (i / maxOffset);      // 0.8–1.0
-      octx.fillStyle = 'rgba(0, 0, 0,' + alpha + ')';
-      octx.fillRect(0, y, W, rowHeight);
-      filled[topIndex] = true;
-    }
+      // Phase 1: top and bottom move towards the middle
+      const half      = (numRows / 2) | 0;
+      const phase1End = 0.6;
+      const progress  = Math.min(1, t / phase1End);
+      const maxOffset = half;
+      const offset    = Math.floor(progress * maxOffset);
 
-    // bottom side: row index from bottom
-    const bottomIndex = numRows - 1 - i;
-    if (bottomIndex >= 0 && bottomIndex < numRows && !filled[bottomIndex]) {
-      const y     = bottomIndex * rowHeight;
-      const alpha = 0.8 + 0.2 * (i / maxOffset);      // 0.8–1.0
-      octx.fillStyle = 'rgba(0, 0, 0,' + alpha + ')';
-      octx.fillRect(0, y, W, rowHeight);
-      filled[bottomIndex] = true;
-    }
-  }
-
-  // Phase 2: fill any remaining gaps toward their nearest side
-  if (t >= phase1End) {
-    const p2 = (t - phase1End) / (1 - phase1End);
-    for (let r = 0; r < numRows; r++) {
-      if (!filled[r]) {
-        const distTop    = r;
-        const distBottom = numRows - 1 - r;
-        const distMin    = Math.min(distTop, distBottom);
-        const maxDist    = half;
-
-        if (distMin <= p2 * maxDist) {
-          const y     = r * rowHeight;
-          const alpha = 0.7 + 0.3 * (1 - distMin / maxDist);  // 0.7–1.0
+      for (let i = 0; i < offset; i++) {
+        const topIndex = i;
+        if (topIndex >= 0 && topIndex < numRows && !filled[topIndex]) {
+          const y     = topIndex * rowHeight;
+          const alpha = 0.8 + 0.2 * (i / maxOffset);
           octx.fillStyle = 'rgba(0, 0, 0,' + alpha + ')';
           octx.fillRect(0, y, W, rowHeight);
-          filled[r] = true;
+          filled[topIndex] = true;
+        }
+
+        const bottomIndex = numRows - 1 - i;
+        if (bottomIndex >= 0 && bottomIndex < numRows && !filled[bottomIndex]) {
+          const y     = bottomIndex * rowHeight;
+          const alpha = 0.8 + 0.2 * (i / maxOffset);
+          octx.fillStyle = 'rgba(0, 0, 0,' + alpha + ')';
+          octx.fillRect(0, y, W, rowHeight);
+          filled[bottomIndex] = true;
         }
       }
+
+      // Phase 2: fill any remaining gaps toward their nearest side
+      if (t >= phase1End) {
+        const p2 = (t - phase1End) / (1 - phase1End);
+        for (let r = 0; r < numRows; r++) {
+          if (!filled[r]) {
+            const distTop    = r;
+            const distBottom = numRows - 1 - r;
+            const distMin    = Math.min(distTop, distBottom);
+            const maxDist    = half;
+
+            if (distMin <= p2 * maxDist) {
+              const y     = r * rowHeight;
+              const alpha = 0.7 + 0.3 * (1 - distMin / maxDist);
+              octx.fillStyle = 'rgba(0, 0, 0,' + alpha + ')';
+              octx.fillRect(0, y, W, rowHeight);
+              filled[r] = true;
+            }
+          }
+        }
+      }
+
+      octx.restore();
+
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+        overlay.style.opacity  = '0';
+        overlay.style.display  = 'none';
+        showTransition(levelIndex, levelData, onContinue);
+      }
     }
-  }
-
-  octx.restore();
-
-  if (t < 1) {
-    requestAnimationFrame(step);
-  } else {
-    overlay.style.opacity  = '0';
-    overlay.style.display  = 'none';
-    showTransition(levelIndex, levelData, onContinue);
-  }
-}
 
     requestAnimationFrame(step);
-}
+  }
+
   return {
     show,
     initIntro,

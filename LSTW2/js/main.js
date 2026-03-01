@@ -6,12 +6,12 @@ const GameState = (() => {
 
   const state = {
     screen:     'intro',
-    levelIndex:  0,
-    running:     false,
-    lastTime:    0,
-    killCount:   0,
-    frameCount:  0,
-    exitWarned:  false,
+    levelIndex: 0,
+    running:    false,
+    lastTime:   0,
+    killCount:  0,
+    frameCount: 0,
+    exitWarned: false,
   };
 
   function _loadLevel(index) {
@@ -20,7 +20,7 @@ const GameState = (() => {
     Player.state.y      = levelData.playerStart.y;
     Player.state.angle  = levelData.playerStart.angle;
     Player.state.hasKey = false;
-    state.exitWarned    = false;  
+    state.exitWarned    = false;
     Enemies.spawnForLevel(levelData);
     Pickups.spawnForLevel(levelData);
     Projectiles.reset();
@@ -29,15 +29,17 @@ const GameState = (() => {
   }
 
   function startGame() {
-    state.levelIndex      = 0;
-    state.killCount       = 0;
-    Player.state.hp           = C.PLAYER_START_HP;
-    Player.state.armor        = C.PLAYER_START_ARMOR;
-    Player.state.baguettes    = C.BAGUETTE_START_AMMO;
+    state.levelIndex        = 0;
+    state.killCount         = 0;
+    Player.state.hp         = C.PLAYER_START_HP;
+    Player.state.armor      = C.PLAYER_START_ARMOR;
+    Player.state.baguettes  = C.BAGUETTE_START_AMMO;
     Player.state.gojiraCharge = 0;
-    Player.state.score        = 0;
+    Player.state.score      = 0;
+
     const levelData = _loadLevel(0);
     state.screen = 'transition';
+
     Screens.showTransition(0, levelData, () => {
       Audio2.playMusic(0);
       state.screen   = 'game';
@@ -47,21 +49,24 @@ const GameState = (() => {
     });
   }
 
-function nextLevel() {
-  state.running = false;
-  state.levelIndex++;
-  if (state.levelIndex >= Maps.getLevelCount()) { setWin(); return; }
+  function nextLevel() {
+    state.running = false;
+    state.levelIndex++;
+    if (state.levelIndex >= Maps.getLevelCount()) {
+      setWin();
+      return;
+    }
 
-  const levelData = _loadLevel(state.levelIndex);
+    const levelData = _loadLevel(state.levelIndex);
 
-  Screens.dissolveToTransition(state.levelIndex, levelData, () => {
-    Audio2.playMusic(state.levelIndex);
-    state.screen   = 'game';
-    state.running  = true;
-    state.lastTime = performance.now();
-    requestAnimationFrame(loop);
-  });
-}
+    Screens.dissolveToTransition(state.levelIndex, levelData, () => {
+      Audio2.playMusic(state.levelIndex);
+      state.screen   = 'game';
+      state.running  = true;
+      state.lastTime = performance.now();
+      requestAnimationFrame(loop);
+    });
+  }
 
   function setGameOver() {
     if (state.screen === 'gameover') return;
@@ -99,8 +104,11 @@ function nextLevel() {
     Projectiles.update(dt, Enemies.getAll());
     Pickups.update(dt);
 
-    const doors = Maps.getDoors();
-    const onExit = doors.isExit(Math.floor(Player.state.x), Math.floor(Player.state.y));
+    const doors  = Maps.getDoors();
+    const onExit = doors.isExit(
+      Math.floor(Player.state.x),
+      Math.floor(Player.state.y)
+    );
 
     if (onExit) {
       if (Player.state.hasKey) {
@@ -114,15 +122,20 @@ function nextLevel() {
       state.exitWarned = false;
     }
 
-
     Renderer.render(Player.state, Maps.getLevel());
     HUD.draw(Player.state, state.levelIndex, Enemies.getAll());
     requestAnimationFrame(loop);
   }
 
   return {
-    get currentScreen() { return state.screen; },
-    startGame, nextLevel, setGameOver, setWin, restartGame, addKill,
+    get currentScreen()     { return state.screen; },
+    get currentLevelIndex() { return state.levelIndex; },
+    startGame,
+    nextLevel,
+    setGameOver,
+    setWin,
+    restartGame,
+    addKill,
   };
 })();
 

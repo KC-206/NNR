@@ -184,6 +184,7 @@ const Enemies = (() => {
       this.phase       = 1;
       this._lastFire   = 0;
       this.introPlayed = false;
+      this.quipCooldown = 0;
 
       switch (cfg.type) {
         case 'spitter':
@@ -230,7 +231,11 @@ const Enemies = (() => {
       Audio2.playEnemyHurt();
 
       if (this.type === 'pricilla') {
-        HUD.showEnemyQuip(Utils.randomQuip(C.PRICILLA_QUIPS_HURT));
+        // Only quip if cooldown is over and pass a random chance
+        if (this.quipCooldown <= 0 && Math.random() < 0.4) {
+          HUD.showEnemyQuip(Utils.randomQuip(C.PRICILLA_QUIPS_HURT));
+          this.quipCooldown = 3.0;   // 3 seconds before she can quip again
+        }
         if (this.hp <= C.PRICILLA_PHASE3_HP && this.phase < 3) {
           this.phase = 3;
           HUD.showEnemyQuip(Utils.randomQuip(C.PRICILLA_QUIPS_PHASE3));
@@ -270,6 +275,9 @@ const Enemies = (() => {
     }
 
     update(dt, px, py) {
+      if (this.quipCooldown > 0) {
+        this.quipCooldown -= dt;
+      }
       if (this.state === 'death') {
         this.deathTimer -= dt;
         return;

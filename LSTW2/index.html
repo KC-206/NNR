@@ -103,9 +103,9 @@
                 background:radial-gradient(ellipse at 50% 60%,#1a0a02 0%,#050200 100%);">
 
       <!-- Background image -->
-	<img src="titlebg.png" alt=""
-		 style="position:absolute;top:0;left:0;width:800px;height:600px;
-				object-fit:contain;z-index:1;opacity:0.55;">
+      <img src="titlebg.png" alt=""
+           style="position:absolute;top:0;left:0;width:800px;height:600px;
+                  object-fit:contain;z-index:1;opacity:0.55;">
 
       <!-- Star canvas on top of image -->
       <canvas id="canvas-title" width="800" height="600"
@@ -150,7 +150,7 @@
       </div>
     </div>
 
- <!-- 3. TRANSITION -->
+    <!-- 3. TRANSITION -->
     <div id="screen-transition" class="screen">
 
       <!-- Level‑specific background images (hidden by default) -->
@@ -172,57 +172,115 @@
       </div>
     </div>
 
+     <!-- 4. GAME OVER -->
+    <div id="screen-gameover" class="screen" style="position:relative;">
+      <!-- Level-specific loss backgrounds -->
+      <img src="L1losebg.jpg" alt="" id="gameover-bg-1"
+           style="position:absolute;top:0;left:0;width:800px;height:600px;
+                  object-fit:cover;z-index:0;opacity:1;display:none;">
+      <img src="L2losebg.jpg" alt="" id="gameover-bg-2"
+           style="position:absolute;top:0;left:0;width:800px;height:600px;
+                  object-fit:cover;z-index:0;opacity:1;display:none;">
+      <img src="L3losebg.png" alt="" id="gameover-bg-3"
+           style="position:absolute;top:0;left:0;width:800px;height:600px;
+                  object-fit:cover;z-index:0;opacity:1;display:none;">
 
-    <!-- 4. GAME OVER -->
-    <div id="screen-gameover" class="screen">
       <canvas id="canvas-gameover" width="800" height="600"
         style="position:absolute;top:0;left:0;z-index:1;"></canvas>
+
       <div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;
                   display:flex;flex-direction:column;align-items:center;
-                  justify-content:center;gap:18px;
+                  justify-content:flex-start;gap:18px;
+                  padding-top:120px;
                   background-image:repeating-linear-gradient(0deg,
                     rgba(0,0,0,0.15) 0px,rgba(0,0,0,0.15) 1px,
                     transparent 1px,transparent 4px);
                   font-family:'Courier New',monospace;">
-        <div style="font-size:70px;color:#cc2020;letter-spacing:8px;
-                    text-shadow:0 0 30px #ff0000,0 0 60px #880000;
-                    animation:flicker 0.12s infinite;">GAME OVER</div>
-        <div style="font-size:18px;color:#ff8080;letter-spacing:3px;">
-          PRICILLA WINS... THIS TIME.</div>
-        <div style="font-size:13px;color:#806060;font-style:italic;
-                    max-width:500px;text-align:center;">
-          "I told you. Decaf was always the answer."</div>
-        <div id="gameover-stats" style="font-size:12px;color:#604040;"></div>
-        <button id="btn-restart" class="retro-btn">TRY AGAIN</button>
+
+        <div style="font-size:80px;color:#ff4040;letter-spacing:10px;
+                    text-shadow:0 0 30px #ff0000,0 0 80px #ff4000;
+                    animation:flicker 0.12s infinite;">
+          <!--GAME OVER-->
+        </div>
+
+        <div style="font-size:20px;color:#ffb0b0;letter-spacing:4px;">
+          PRICILLA WINS... THIS TIME.
+        </div>
+
+        <div style="font-size:14px;color:#f0d0d0;font-style:italic;
+                    max-width:500px;text-align:center;
+                    text-shadow:0 0 6px rgba(0,0,0,0.8);">
+          "I told you. Decaf was always the answer."
+        </div>
+
+        <div id="gameover-stats"
+             style="font-size:13px;color:#ffb080;letter-spacing:2px;"></div>
+
+        <!-- spacer pushes button down -->
+        <div style="flex:1;"></div>
+
+        <button id="btn-restart" class="retro-btn"
+                style="margin-bottom:40px;">
+          TRY AGAIN
+        </button>
       </div>
     </div>
 
     <!-- 5. WIN -->
-    <div id="screen-win" class="screen">
+    <div id="screen-win" class="screen" style="position:relative;">
+      <!-- Single win background (after beating all 3 levels) -->
+      <img src="winbg.png" alt="" id="win-bg"
+           style="position:absolute;top:0;left:0;width:800px;height:600px;
+                  object-fit:cover;z-index:0;opacity:1;display:block;">
+
       <canvas id="canvas-confetti" width="800" height="600"
         style="position:absolute;top:0;left:0;z-index:1;pointer-events:none;"></canvas>
+
       <div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;
                   display:flex;flex-direction:column;align-items:center;
-                  justify-content:center;gap:20px;
+                  justify-content:flex-start;gap:20px;
+                  padding-top:120px;
                   font-family:'Courier New',monospace;pointer-events:none;">
-        <div style="font-size:58px;color:#f0d080;letter-spacing:4px;text-align:center;
-                    text-shadow:0 0 20px #f0a000,0 0 50px #c06000;line-height:1.2;">
-          WORLD SAVED<br>
-          <span style="font-size:26px;color:#c08040;letter-spacing:6px;">(AGAIN)</span>
+
+        <!-- Title -->
+        <div style="font-size:64px;color:#ffe8a0;letter-spacing:6px;text-align:center;
+                    text-shadow:0 0 20px #f0a000,0 0 60px #c06000;line-height:1.2;">
+          WORLD SAVED
+          <br>
+          <span style="font-size:26px;color:#ffcc80;letter-spacing:6px;">
+            (AGAIN)
+          </span>
         </div>
-        <div style="font-size:38px;">☕ ☕ ☕ ☕ ☕</div>
-        <div style="font-size:14px;color:#a09050;font-style:italic;
-                    text-align:center;max-width:500px;line-height:2;">
+
+        <div style="font-size:40px;">☕ ☕ ☕ ☕ ☕</div>
+
+        <!-- Quote -->
+        <div style="font-size:15px;color:#ffe8c0;font-style:italic;
+                    text-align:center;max-width:520px;line-height:2;
+                    text-shadow:0 0 8px rgba(0,0,0,0.8);">
           "Justice is just espresso with better aim."<br>
-          — Laurie Pippa McShot</div>
-        <div id="win-stats" style="font-size:12px;color:#807040;"></div>
+          — Laurie Pippa McShot
+        </div>
+
+        <!-- Stats -->
+        <div id="win-stats"
+             style="font-size:13px;color:#ffdd99;letter-spacing:2px;
+                    text-shadow:0 0 6px rgba(0,0,0,0.9);">
+        </div>
+
+        <!-- Spacer pushes button to bottom -->
+        <div style="flex:1;"></div>
+
+        <!-- Button -->
         <button id="btn-play-again" class="retro-btn"
-                style="pointer-events:all;">PLAY AGAIN</button>
+                style="pointer-events:all;margin-bottom:40px;">
+          PLAY AGAIN
+        </button>
       </div>
     </div>
 
     <!-- 6. GAME -->
-    <div id="screen-game" class="screen">
+    <div id="screen-game" class="screen" style="position:relative;">
       <canvas id="canvas-game" width="800" height="600"
         style="position:absolute;top:0;left:0;z-index:1;"></canvas>
       <canvas id="canvas-hud"  width="800" height="600"
@@ -237,7 +295,7 @@
         style="position:absolute;top:0;left:0;width:100%;height:100%;
                z-index:4;pointer-events:none;"></div>
       <div id="quip-container"
-        style="position:absolute;bottom:50px;left:0;right:0;z-index:5;
+        style="position:absolute;bottom:70px;left:0;right:0;z-index:5;
                pointer-events:none;display:flex;flex-direction:column;
                align-items:center;gap:6px;">
         <div id="quip-player" class="quip-bubble player-quip"></div>
@@ -252,6 +310,7 @@
         M·MAP &nbsp; J·CHEAT
       </div>
     </div>
+
 
   </div><!-- /screen-container -->
 
@@ -281,10 +340,8 @@
         bgm.play().catch(() => {});
       }
 
-      // Try immediately (works if page was interacted with)
       tryPlay();
 
-      // Fallback: start on first user gesture
       ['click','keydown','mousedown','touchstart'].forEach(evt => {
         document.addEventListener(evt, function handler() {
           tryPlay();

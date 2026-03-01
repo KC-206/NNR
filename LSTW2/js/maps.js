@@ -200,6 +200,7 @@ const Maps = (() => {
         { type: 'roller',  x: 9.5,  y: 16.5 },
         { type: 'barrel',  x: 15.5, y: 15.5 },
         { type: 'spitter', x: 18.5, y: 10.5 },
+        { type: 'pricilla', x: 10.5, y: 14.5 },
       ],
       pickups: [
         { type: 'coffee',  x: 3.5,  y: 3.5  },
