@@ -151,6 +151,7 @@ const Renderer = (() => {
     const enemies = Enemies.getAll();
     const pickups = Pickups.getAll();
     const projs   = Projectiles.getAll();
+    const doors   = Maps.getDoors();
     const midY    = C.SCREEN_H / 2;
     const time    = performance.now() / 1000;
 
@@ -167,6 +168,12 @@ const Renderer = (() => {
       if (proj) sprites.push({...proj, kind:'pickup', ref:pk});
     }
     for (const p of projs) {
+      // ── FIX: cull any projectile sitting inside a wall tile ──
+      // Without this, projectiles that reached a wall last frame
+      // still render for one frame at wall depth, then their
+      // remaining vx/vy slides them left/right across the wall surface.
+      if (doors.isWall(Math.floor(p.x), Math.floor(p.y))) continue;
+
       const proj = Utils.project(p.x, p.y, px, py, ang);
       if (proj) sprites.push({...proj, kind:'proj', ref:p});
     }
@@ -213,96 +220,105 @@ const Renderer = (() => {
         ctx.globalAlpha = 1;
       }
 
-      else if (kind === 'proj') {
-        if (dist > zBuffer[zIdx] + 1.5) continue;
+ else if (kind === 'proj') {
+  // ── FIX: tightened from +1.5 to +0.1 ──
+  if (dist > zBuffer[zIdx] + 0.1) continue;
 
-        const r = Utils.clamp(scale * 0.25, 2, 14);
+  const r      = Utils.clamp(scale * 0.5, 4, 22);
+  // ── MORE CENTERED: was 0.80, nudged toward midY ──
+  const bottom = C.SCREEN_H * 0.68;
+  const t      = Utils.clamp(dist / 8, 0, 1);
+  const cy     = bottom - (bottom - midY) * t;
 
-        const midY   = C.SCREEN_H / 2;
-        const bottom = C.SCREEN_H * 0.80;
-        const t      = Utils.clamp(dist / 8, 0, 1);
-        const cy     = bottom - (bottom - midY) * t;
+  if (ref.kind === 'coffee') {
+    const now   = performance.now() / 1000;
+    const pulse = Math.sin(now * 8 + ref.age * 12) * 0.15 + 0.85;
+    const gr    = r * 2.2 * pulse;
 
-        if (ref.kind === 'coffee') {
-          const img = Pickups.getSprite('armor');
-          if (!img) {
-            ctx.fillStyle = '#3a1a00';
-            ctx.beginPath(); ctx.arc(sx, cy, r, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = '#c08040';
-            ctx.beginPath(); ctx.arc(sx - r*0.3, cy - r*0.3, r*0.4, 0, Math.PI*2); ctx.fill();
-          } else {
-            const baseSize = 18;
-            const sw = baseSize * (r / 6);
-            const sh = baseSize * (r / 6);
-            const dx = sx - sw / 2;
-            const dy = cy - sh / 2;
-            if (dx + sw < 0 || dx > C.SCREEN_W) continue;
-            ctx.globalAlpha = 1;
-            ctx.drawImage(img, dx, dy, sw, sh);
-          }
-        } else if (ref.kind === 'lightning') {
-          const gr = Math.min(r * 1.5, 18);
-          const grd = ctx.createRadialGradient(sx, cy, 0, sx, cy, gr * 2);
-          grd.addColorStop(0,   'rgba(180,255,100,1)');
-          grd.addColorStop(0.4, 'rgba(0,255,80,0.8)');
-          grd.addColorStop(1,   'rgba(0,180,50,0)');
-          ctx.fillStyle = grd;
-          ctx.beginPath(); ctx.arc(sx, cy, gr * 2, 0, Math.PI*2); ctx.fill();
-          ctx.strokeStyle = 'rgba(220,255,150,0.9)';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(sx - gr, cy);
-          for (let i = 1; i <= 6; i++) {
-            ctx.lineTo(
-              sx - gr + (i / 6) * gr * 2,
-              cy + (Math.random() - 0.5) * gr
-            );
-          }
-          ctx.lineTo(sx + gr, cy);
-          ctx.stroke();
-        } else if (ref.kind === 'enemyshot') {
-          const grd = ctx.createRadialGradient(sx, cy, 0, sx, cy, r*1.5);
-          grd.addColorStop(0, 'rgba(100,255,100,1)');
-          grd.addColorStop(1, 'rgba(0,200,0,0)');
-          ctx.fillStyle = grd;
-          ctx.beginPath(); ctx.arc(sx, cy, r*1.5, 0, Math.PI*2); ctx.fill();
-        } else if (ref.kind === 'baguette') {
-          ctx.fillStyle = '#d4a050';
-          ctx.fillRect(sx - r, cy - r*0.4, r*2, r*0.8);
-        } else if (ref.kind === 'gojira') {
-          const gr  = Math.min(r, 10);
-          const grd = ctx.createRadialGradient(sx, cy, 0, sx, cy, gr*2);
-          grd.addColorStop(0, 'rgba(0,255,100,0.9)');
-          grd.addColorStop(1, 'rgba(0,100,50,0)');
-          ctx.fillStyle = grd;
-          ctx.beginPath(); ctx.arc(sx, cy, gr*2, 0, Math.PI*2); ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-      }
+    // Outer warm glow
+    const outerGrd = ctx.createRadialGradient(sx, cy, 0, sx, cy, gr * 2.5);
+    outerGrd.addColorStop(0,   'rgba(200, 100, 20, 0.45)');
+    outerGrd.addColorStop(0.5, 'rgba(160, 60, 10, 0.2)');
+    outerGrd.addColorStop(1,   'rgba(80, 30, 0, 0)');
+    ctx.fillStyle = outerGrd;
+    ctx.beginPath(); ctx.arc(sx, cy, gr * 2.5, 0, Math.PI * 2); ctx.fill();
+
+    // Mid coffee glow
+    const midGrd = ctx.createRadialGradient(sx, cy, 0, sx, cy, gr);
+    midGrd.addColorStop(0,   'rgba(255, 180, 60, 1)');
+    midGrd.addColorStop(0.4, 'rgba(200, 100, 20, 0.9)');
+    midGrd.addColorStop(1,   'rgba(100, 40, 5, 0)');
+    ctx.fillStyle = midGrd;
+    ctx.beginPath(); ctx.arc(sx, cy, gr, 0, Math.PI * 2); ctx.fill();
+
+    // Bright hot core
+    const coreGrd = ctx.createRadialGradient(sx, cy, 0, sx, cy, gr * 0.45);
+    coreGrd.addColorStop(0,   'rgba(255, 240, 180, 1)');
+    coreGrd.addColorStop(0.5, 'rgba(255, 200, 80, 0.9)');
+    coreGrd.addColorStop(1,   'rgba(200, 120, 20, 0)');
+    ctx.fillStyle = coreGrd;
+    ctx.beginPath(); ctx.arc(sx, cy, gr * 0.45, 0, Math.PI * 2); ctx.fill();
+
+    // Specular catchlight
+    ctx.fillStyle = 'rgba(255, 255, 220, 0.85)';
+    ctx.beginPath();
+    ctx.arc(sx - gr * 0.18, cy - gr * 0.18, gr * 0.14, 0, Math.PI * 2);
+    ctx.fill();
+
+  } else if (ref.kind === 'lightning') {
+    ctx.globalAlpha = 1;
+    Projectiles.drawLightningProjectile(ctx, sx, cy, ref);
+
+  } else if (ref.kind === 'enemyshot') {
+    const grd = ctx.createRadialGradient(sx, cy, 0, sx, cy, r * 1.5);
+    grd.addColorStop(0, 'rgba(100,255,100,1)');
+    grd.addColorStop(1, 'rgba(0,200,0,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(sx, cy, r * 1.5, 0, Math.PI * 2); ctx.fill();
+
+  } else if (ref.kind === 'baguette') {
+    ctx.fillStyle = '#d4a050';
+    ctx.fillRect(sx - r, cy - r * 0.4, r * 2, r * 0.8);
+
+  } else if (ref.kind === 'gojira') {
+    const gr  = Math.min(r, 10);
+    const grd = ctx.createRadialGradient(sx, cy, 0, sx, cy, gr * 2);
+    grd.addColorStop(0, 'rgba(0,255,100,0.9)');
+    grd.addColorStop(1, 'rgba(0,100,50,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(sx, cy, gr * 2, 0, Math.PI * 2); ctx.fill();
+  }
+
+  ctx.globalAlpha = 1;
+}
 
     }
   }
 
   // ── Particle Rendering ────────────────────────────────
-  function renderParticles(px, py, ang) {
-    const particles = Projectiles.getParticles();
-    const midY = C.SCREEN_H / 2;
-    for (const pt of particles) {
-      const proj = Utils.project(pt.x, pt.y, px, py, ang);
-      if (!proj) continue;
-      const { sx, dist } = proj;
-      if (!isFinite(sx)) continue;
-      const scale = Math.min(proj.scale, 6);
-      const zIdx  = Utils.clamp(Math.floor(sx), 0, C.SCREEN_W - 1);
-      if (dist > zBuffer[zIdx] + 0.5) continue;
-      const alpha = pt.life / pt.maxLife;
-      const r     = Utils.clamp(scale * pt.size * 8, 1, 8);
-      ctx.globalAlpha = alpha * 0.8;
-      ctx.fillStyle = `rgb(${pt.r|0},${pt.g|0},${pt.b|0})`;
-      ctx.beginPath(); ctx.arc(sx, midY, r, 0, Math.PI*2); ctx.fill();
-    }
-    ctx.globalAlpha = 1;
+function renderParticles(px, py, ang) {
+  const particles = Projectiles.getParticles();
+  const doors = Maps.getDoors(); // ← ADD THIS
+  const midY = C.SCREEN_H / 2;
+  for (const pt of particles) {
+    // ── FIX: skip particles sitting inside a wall tile ──
+    if (doors.isWall(Math.floor(pt.x), Math.floor(pt.y))) continue; // ← ADD THIS
+
+    const proj = Utils.project(pt.x, pt.y, px, py, ang);
+    if (!proj) continue;
+    const { sx, dist } = proj;
+    if (!isFinite(sx)) continue;
+    const scale = Math.min(proj.scale, 6);
+    const zIdx  = Utils.clamp(Math.floor(sx), 0, C.SCREEN_W - 1);
+    if (dist > zBuffer[zIdx] + 0.5) continue;
+    const alpha = pt.life / pt.maxLife;
+    const r     = Utils.clamp(scale * pt.size * 8, 1, 8);
+    ctx.globalAlpha = alpha * 0.8;
+    ctx.fillStyle = `rgb(${pt.r|0},${pt.g|0},${pt.b|0})`;
+    ctx.beginPath(); ctx.arc(sx, midY, r, 0, Math.PI*2); ctx.fill();
   }
+  ctx.globalAlpha = 1;
+}
 
   return { init, render };
 })();

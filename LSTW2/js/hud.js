@@ -55,117 +55,189 @@ const HUD = (() => {
     c.fillStyle = '#1a0800'; c.fillRect(0,0,w,h);
     c.strokeStyle = '#ff6600'; c.lineWidth = 2; c.strokeRect(0,0,w,h);
 
-    if (inGojira) {
-      // ── GOJIRA GIRL PORTRAIT ─────────────────────────
-      // Frame / armor
-      c.fillStyle = '#002010';
-      c.fillRect(8,14,84,78);
-      c.fillStyle = '#003820';
-      c.fillRect(10,16,80,74);
-      c.fillStyle = '#004828';
-      c.fillRect(14,20,72,66);
+if (inGojira) {
+  // ── GOJIRA PORTRAIT (friendlier pixel art) ──────────────
 
-      // Spiky dorsal plates
-      c.fillStyle = '#40ff80';
-      const spikeY = 18;
-      [18, 28, 38, 48, 58, 68, 78].forEach((sx,i) => {
-        c.beginPath();
-        c.moveTo(sx, spikeY + 6 + (i%2?0:2));
-        c.lineTo(sx+4, spikeY);
-        c.lineTo(sx+8, spikeY+6);
-        c.closePath();
-        c.fill();
-      });
+  // === DORSAL SPIKES ===
+  c.fillStyle = '#2a4a2e';
+  c.beginPath(); c.moveTo(50,6); c.lineTo(44,22); c.lineTo(56,22); c.closePath(); c.fill();
+  c.fillStyle = '#243e28';
+  [[37,10],[63,10]].forEach(([x,y]) => {
+    c.beginPath(); c.moveTo(x,y); c.lineTo(x-4,22); c.lineTo(x+4,22); c.closePath(); c.fill();
+  });
+  c.fillStyle = '#1e3422';
+  [[24,16],[76,16]].forEach(([x,y]) => {
+    c.beginPath(); c.moveTo(x,y); c.lineTo(x-3,24); c.lineTo(x+3,24); c.closePath(); c.fill();
+  });
 
-      // Head base
-      c.fillStyle = '#145534';
-      c.beginPath();
-      c.ellipse(52, 48, 30, 24, 0, 0, Math.PI*2); c.fill();
 
-      // Snout
-      c.beginPath();
-      c.moveTo(54,48);
-      c.lineTo(82,44);
-      c.lineTo(82,56);
-      c.lineTo(54,54);
-      c.closePath();
-      c.fill();
+  // === HEAD BASE — rounder, softer ===
+  c.fillStyle = '#2e4e32';
+  // Main head as a rounder rect
+  c.beginPath();
+  c.roundRect(14, 22, 72, 64, 12);
+  c.fill();
 
-      // Jaw
-      c.fillStyle = '#0f3a24';
-      c.beginPath();
-      c.moveTo(54,54);
-      c.lineTo(82,56);
-      c.lineTo(82,64);
-      c.lineTo(52,64);
-      c.closePath();
-      c.fill();
+  // Subtle scale shading — two tone, not too harsh
+  c.fillStyle = '#263e2a';
+  c.beginPath(); c.roundRect(16, 24, 32, 28, 8); c.fill(); // left cheek
+  c.beginPath(); c.roundRect(52, 24, 32, 28, 8); c.fill(); // right cheek
+  c.fillStyle = '#324c36';
+  c.beginPath(); c.roundRect(34, 22, 32, 18, 6); c.fill(); // forehead highlight
+ 
+// === PINK BOW 🎀 (drawn after head so it covers spikes) ===
+  const bowX = 50, bowY = 20;
 
-      // Eye glow
-      c.fillStyle = '#e8ffe8';
-      c.fillRect(34,40,10,6);
-      c.fillStyle = '#40ff80';
-      c.fillRect(36,41,6,4);
+  // Bow left loop
+  c.fillStyle = '#ff6eb4';
+  c.beginPath();
+  c.moveTo(bowX, bowY + 2);
+  c.lineTo(bowX - 20, bowY - 10);
+  c.lineTo(bowX - 22, bowY + 6);
+  c.lineTo(bowX - 5, bowY + 8);
+  c.closePath();
+  c.fill();
 
-      // Brow ridge
-      c.fillStyle = '#0c311e';
-      c.beginPath();
-      c.moveTo(30,38);
-      c.lineTo(46,36);
-      c.lineTo(46,38);
-      c.lineTo(30,40);
-      c.closePath();
-      c.fill();
+  // Bow right loop
+  c.beginPath();
+  c.moveTo(bowX, bowY + 2);
+  c.lineTo(bowX + 20, bowY - 10);
+  c.lineTo(bowX + 22, bowY + 6);
+  c.lineTo(bowX + 5, bowY + 8);
+  c.closePath();
+  c.fill();
 
-      // Nostrils
-      c.fillStyle = '#02140b';
-      c.fillRect(70,48,3,3);
-      c.fillRect(74,47,3,3);
+  // Bow shading (darker pink on loops)
+  c.fillStyle = '#c73d80';
+  c.beginPath();
+  c.moveTo(bowX - 3, bowY + 4);
+  c.lineTo(bowX - 20, bowY - 2);
+  c.lineTo(bowX - 20, bowY + 6);
+  c.lineTo(bowX - 5, bowY + 8);
+  c.closePath();
+  c.fill();
+  c.beginPath();
+  c.moveTo(bowX + 3, bowY + 4);
+  c.lineTo(bowX + 20, bowY - 2);
+  c.lineTo(bowX + 20, bowY + 6);
+  c.lineTo(bowX + 5, bowY + 8);
+  c.closePath();
+  c.fill();
 
-      // Teeth along top jaw
-      c.fillStyle = '#fdf8e5';
-      for (let i=0;i<6;i++) {
-        c.beginPath();
-        c.moveTo(56 + i*4, 54);
-        c.lineTo(58 + i*4, 54);
-        c.lineTo(57 + i*4, 58);
-        c.closePath();
-        c.fill();
-      }
+  // Bow highlights
+  c.fillStyle = '#ffaad4';
+  c.fillRect(bowX - 16, bowY - 4, 7, 5);
+  c.fillRect(bowX + 10, bowY - 4, 7, 5);
 
-      // Inner mouth / energy glow
-      c.fillStyle = '#12000a';
-      c.fillRect(54,58,28,8);
-      c.fillStyle = '#40ffb0';
-      c.fillRect(56,60,24,4);
+  // Center knot (covers spike base)
+  c.fillStyle = '#ff6eb4';
+  c.beginPath(); c.roundRect(bowX - 6, bowY - 4, 12, 12, 3); c.fill();
+  c.fillStyle = '#c73d80';
+  c.beginPath(); c.roundRect(bowX - 3, bowY - 1, 6, 6, 2); c.fill();
+  c.fillStyle = '#ffaad4';
+  c.fillRect(bowX - 2, bowY, 3, 3);
 
-      // Lower teeth
-      c.fillStyle = '#fdf8e5';
-      for (let i=0;i<5;i++) {
-        c.beginPath();
-        c.moveTo(58 + i*4, 66);
-        c.lineTo(60 + i*4, 66);
-        c.lineTo(59 + i*4, 62);
-        c.closePath();
-        c.fill();
-      }
+  // === BROW RIDGES — softer, slight tilt not extreme ===
+  c.fillStyle = '#1a2e1c';
+  c.beginPath();
+  c.moveTo(18,38); c.lineTo(38,33); c.lineTo(38,38); c.lineTo(18,40);
+  c.closePath(); c.fill();
+  c.beginPath();
+  c.moveTo(82,38); c.lineTo(62,33); c.lineTo(62,38); c.lineTo(82,40);
+  c.closePath(); c.fill();
 
-      // Neck / shoulders
-      c.fillStyle = '#145534';
-      c.fillRect(22,64,20,18);
-      c.fillRect(42,66,32,20);
+  // === EYE SOCKETS ===
+  c.fillStyle = '#0d150e';
+  c.beginPath(); c.roundRect(20, 36, 20, 14, 4); c.fill();
+  c.beginPath(); c.roundRect(60, 36, 20, 14, 4); c.fill();
 
-      // Chest plate highlight
-      c.fillStyle = '#40ff80';
-      c.fillRect(32,82,28,6);
+  // Eye glow — rich purple, more luminous
+  c.fillStyle = '#6a0d99';
+  c.beginPath(); c.roundRect(21, 37, 18, 12, 3); c.fill();
+  c.beginPath(); c.roundRect(61, 37, 18, 12, 3); c.fill();
 
-      // ── Animated jaw using mouthTalking/mouthOpenness ──
-      const jawOpen = mouthTalking ? Math.floor(mouthOpenness * 8) : 0;
-      c.fillStyle = '#0b2919';
-      c.fillRect(52, 64, 30, 8 + jawOpen);
+  c.fillStyle = '#c060ee';
+  c.beginPath(); c.roundRect(22, 38, 14, 9, 3); c.fill();
+  c.beginPath(); c.roundRect(62, 38, 14, 9, 3); c.fill();
 
-      return; // done drawing Gojira portrait
-    }
+  // Bright iris center
+  c.fillStyle = '#e8a0ff';
+  c.beginPath(); c.roundRect(25, 39, 8, 6, 2); c.fill();
+  c.beginPath(); c.roundRect(65, 39, 8, 6, 2); c.fill();
+
+  // Pupil — softer oval, not harsh slit
+  c.fillStyle = '#1a0028';
+  c.beginPath(); c.roundRect(28, 39, 3, 6, 1); c.fill();
+  c.beginPath(); c.roundRect(68, 39, 3, 6, 1); c.fill();
+
+  // Catchlight (makes eyes feel alive)
+  c.fillStyle = '#ffffff';
+  c.fillRect(26, 39, 2, 2);
+  c.fillRect(66, 39, 2, 2);
+
+  // === SNOUT — softer, rounder ===
+  c.fillStyle = '#2a4a2e';
+  c.beginPath(); c.roundRect(34, 50, 32, 18, 8); c.fill();
+  // Nostrils
+  c.fillStyle = '#0e1e10';
+  c.beginPath(); c.roundRect(38, 56, 7, 5, 2); c.fill();
+  c.beginPath(); c.roundRect(55, 56, 7, 5, 2); c.fill();
+  // Snout highlight
+  c.fillStyle = '#3a5e3e';
+  c.beginPath(); c.roundRect(40, 51, 20, 6, 3); c.fill();
+
+  // === CHEEK HIGHLIGHTS ===
+  c.fillStyle = '#3a5e40';
+  c.beginPath(); c.roundRect(18, 48, 14, 10, 4); c.fill();
+  c.beginPath(); c.roundRect(68, 48, 14, 10, 4); c.fill();
+
+  // === UPPER JAW — not too deep ===
+  c.fillStyle = '#263e2a';
+  c.fillRect(18, 68, 64, 8);
+
+  // Upper teeth — fewer, more spaced, not wall-of-horror
+  c.fillStyle = '#ece8cc';
+  for (let i = 0; i < 7; i++) {
+    const tx = 22 + i * 9;
+    c.beginPath();
+    c.moveTo(tx, 69); c.lineTo(tx+6, 69); c.lineTo(tx+3, 75);
+    c.closePath(); c.fill();
+  }
+
+  // === ANIMATED JAW ===
+  const jawOpen = mouthTalking ? Math.floor(mouthOpenness * 10) : 1;
+
+  // Inner mouth — dark but not pitch black
+  c.fillStyle = '#120a18';
+  c.fillRect(20, 75, 60, 6 + jawOpen);
+
+  // Subtle inner glow (hint of atomic breath potential)
+  c.fillStyle = '#1e0a2a';
+  c.fillRect(28, 77, 44, 2 + Math.floor(jawOpen * 0.5));
+
+  // Lower teeth — smaller, tidier
+  c.fillStyle = '#ece8cc';
+  const lowerY = 80 + jawOpen;
+  for (let i = 0; i < 6; i++) {
+    const tx = 24 + i * 9;
+    c.beginPath();
+    c.moveTo(tx, lowerY); c.lineTo(tx+6, lowerY); c.lineTo(tx+3, lowerY-5);
+    c.closePath(); c.fill();
+  }
+
+  // === LOWER JAW / CHIN — rounded ===
+  c.fillStyle = '#2a4a2e';
+  c.beginPath(); c.roundRect(18, lowerY, 64, 10, [0,0,6,6]); c.fill();
+
+  // === NECK ===
+  c.fillStyle = '#263e2a';
+  c.fillRect(30, lowerY + 8, 40, 12);
+  // Neck highlight
+  c.fillStyle = '#2e4a32';
+  c.fillRect(38, lowerY + 10, 24, 8);
+
+  return;
+}
 
     // ── ORIGINAL HUMAN PORTRAIT ─────────────────────────
     c.fillStyle = '#3d1f00';

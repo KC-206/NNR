@@ -17,7 +17,7 @@ const Player = (() => {
     bobPhase: 0,
     _lastShot: 0,
     _lastBaguette: 0,
-    gojiraMode: false,       // NEW: is Gojira Mode active?
+    gojiraMode: false,
   };
 
   const keys = {};
@@ -87,7 +87,7 @@ const Player = (() => {
 
   function tryFireLightning() {
     const now = performance.now();
-    if (now - state._lastShot < C.COFFEE_COOLDOWN * 0.6) return; // faster fire rate
+    if (now - state._lastShot < C.COFFEE_COOLDOWN * 0.6) return;
     state._lastShot = now;
 
     const dirX  = Math.cos(state.angle);
@@ -120,7 +120,7 @@ const Player = (() => {
   }
 
   function tryActivateGojira() {
-    if (state.gojiraMode) return; // already active
+    if (state.gojiraMode) return;
     if (state.gojiraCharge < 100) {
       HUD.showPlayerQuip("Gojira not ready!");
       return;
@@ -134,7 +134,7 @@ const Player = (() => {
     Audio2.playGojira();
     Screens.showDamageFlash('rgba(0,255,100,0.4)');
     addShakeTrauma(0.5);
-    HUD.showGojiraModeActivated();   // new HUD call — see hud.js
+    HUD.showGojiraModeActivated();
     HUD.showPlayerQuip("☢️ GOJIRA MODE!! ☢️");
   }
 
@@ -148,7 +148,6 @@ const Player = (() => {
   // ── Damage / Healing ──────────────────────────────────
   function takeDamage(amount) {
     if (state.gojiraMode) {
-      // Damage drains Gojira Energy instead of HP
       state.gojiraCharge -= amount;
       addShakeTrauma(0.3);
       Audio2.playGojiraRoar();
@@ -235,7 +234,6 @@ const Player = (() => {
     state.shakeX = (Math.random()*2-1) * shk * C.SHAKE_MAGNITUDE;
     state.shakeY = (Math.random()*2-1) * shk * C.SHAKE_MAGNITUDE;
 
-    // Gojira mode passive drain
     if (state.gojiraMode) {
       state.gojiraCharge -= C.GOJIRA_MODE_DRAIN_RATE * dt;
       if (state.gojiraCharge <= 0) {
@@ -265,145 +263,373 @@ const Player = (() => {
     }
   }
 
-  function _drawGojiraWeapon(ctx, cx, base, now) {
-    // Giant green clawed hand / maw suggestion
-    const pulse = Math.sin(now / 180) * 0.15;
-    const W = C.SCREEN_W;
-    const HY = C.SCREEN_H - C.HUD_H;
+  // ── Gojira Weapon ─────────────────────────────────────
+ function _drawGojiraWeapon(ctx, cx, base, now, firingT = 0) {
+  const pulse  = Math.sin(now / 180) * 0.15;
+  const pulse2 = Math.sin(now / 90)  * 0.5 + 0.5;
 
-    // Glow aura
-    const grd = ctx.createRadialGradient(cx, base - 40, 10, cx, base - 40, 160);
-    grd.addColorStop(0, `rgba(0,255,100,${0.25 + pulse})`);
+  // ── NECK / SHOULDERS ──
+  ctx.fillStyle = '#1a3224';
+  ctx.fillRect(cx - 50, base - 30, 100, 32);
+  // Shoulder slope left
+  ctx.fillStyle = '#1e3828';
+  ctx.beginPath();
+  ctx.moveTo(cx - 50, base - 30);
+  ctx.lineTo(cx - 90, base - 10);
+  ctx.lineTo(cx - 90, base + 2);
+  ctx.lineTo(cx - 50, base - 14);
+  ctx.closePath();
+  ctx.fill();
+  // Shoulder slope right
+  ctx.beginPath();
+  ctx.moveTo(cx + 50, base - 30);
+  ctx.lineTo(cx + 90, base - 10);
+  ctx.lineTo(cx + 90, base + 2);
+  ctx.lineTo(cx + 50, base - 14);
+  ctx.closePath();
+  ctx.fill();
+
+  // ── BACK OF HEAD — large rounded mass ──
+  ctx.fillStyle = '#1e3828';
+  ctx.beginPath();
+  ctx.ellipse(cx, base - 80, 72, 60, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Scale texture rows across back of head
+  ctx.fillStyle = '#162e20';
+  for (let row = 0; row < 4; row++) {
+    for (let col = -3; col <= 3; col++) {
+      const sx = cx + col * 26 + (row % 2) * 13;
+      const sy = base - 50 - row * 22;
+      // Clamp to rough ellipse shape
+      const dx = (sx - cx) / 72;
+      const dy = (sy - (base - 80)) / 60;
+      if (dx*dx + dy*dy > 0.85) continue;
+      ctx.beginPath();
+      ctx.ellipse(sx, sy, 9, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Subtle head highlight
+  ctx.fillStyle = '#243e2c';
+  ctx.beginPath();
+  ctx.ellipse(cx + 10, base - 100, 28, 22, -0.3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ── DORSAL SPIKES running down the spine ──
+  // Spikes get smaller toward bottom (perspective)
+  const spineSpikes = [
+    { y: base - 155, h: 55, w: 13 },
+    { y: base - 140, h: 44, w: 11 },
+    { y: base - 122, h: 36, w: 10 },
+    { y: base - 104, h: 28, w:  9 },
+    { y: base -  86, h: 20, w:  7 },
+  ];
+
+  spineSpikes.forEach(({ y, h, w }, i) => {
+    const spikeGlow = 0.12 + pulse + firingT * 0.5;
+    // Glow behind spike
+    ctx.fillStyle = `rgba(120,40,200,${spikeGlow})`;
+    ctx.beginPath();
+    ctx.moveTo(cx - w - 4, y + h);
+    ctx.lineTo(cx + w + 4, y + h);
+    ctx.lineTo(cx,         y - 10);
+    ctx.closePath();
+    ctx.fill();
+    // Spike body dark
+    ctx.fillStyle = '#1a3020';
+    ctx.beginPath();
+    ctx.moveTo(cx - w, y + h);
+    ctx.lineTo(cx + w, y + h);
+    ctx.lineTo(cx,     y);
+    ctx.closePath();
+    ctx.fill();
+    // Spike highlight edge
+    ctx.fillStyle = '#2e5038';
+    ctx.beginPath();
+    ctx.moveTo(cx, y + h);
+    ctx.lineTo(cx + w, y + h);
+    ctx.lineTo(cx, y);
+    ctx.closePath();
+    ctx.fill();
+  });
+
+  // ── PINK BOW 🎀 — sits above top spike ──
+  const bowX = cx;
+  const bowY = base - 130;
+
+  ctx.fillStyle = '#ff6eb4';
+  ctx.beginPath();
+  ctx.moveTo(bowX, bowY + 2);
+  ctx.lineTo(bowX - 20, bowY - 10);
+  ctx.lineTo(bowX - 22, bowY + 6);
+  ctx.lineTo(bowX - 5,  bowY + 8);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(bowX, bowY + 2);
+  ctx.lineTo(bowX + 20, bowY - 10);
+  ctx.lineTo(bowX + 22, bowY + 6);
+  ctx.lineTo(bowX + 5,  bowY + 8);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#c73d80';
+  ctx.beginPath();
+  ctx.moveTo(bowX - 3, bowY + 4);
+  ctx.lineTo(bowX - 20, bowY - 2);
+  ctx.lineTo(bowX - 20, bowY + 6);
+  ctx.lineTo(bowX - 5,  bowY + 8);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(bowX + 3, bowY + 4);
+  ctx.lineTo(bowX + 20, bowY - 2);
+  ctx.lineTo(bowX + 20, bowY + 6);
+  ctx.lineTo(bowX + 5,  bowY + 8);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#ffaad4';
+  ctx.fillRect(bowX - 16, bowY - 4, 7, 5);
+  ctx.fillRect(bowX + 10, bowY - 4, 7, 5);
+
+  ctx.fillStyle = firingT > 0 ? `rgba(220,100,255,${0.6 + firingT * 0.4})` : '#ff6eb4';
+  ctx.beginPath(); ctx.roundRect(bowX - 6, bowY - 4, 12, 12, 3); ctx.fill();
+  ctx.fillStyle = '#c73d80';
+  ctx.beginPath(); ctx.roundRect(bowX - 3, bowY - 1, 6, 6, 2); ctx.fill();
+  ctx.fillStyle = '#ffaad4';
+  ctx.fillRect(bowX - 2, bowY, 3, 3);
+
+  // ── IDLE: ENERGY GLOW around spikes ──
+  if (firingT < 0.8) {
+    const idleAlpha = (1 - firingT) * 0.6;
+    const swirl = now / 400;
+    // Soft purple aura drifting up along the spine
+    for (let i = 0; i < 4; i++) {
+      const angle  = swirl * (0.8 + i * 0.3) + i * 1.2;
+      const ox     = cx + Math.cos(angle) * 18;
+      const oy     = base - 100 + Math.sin(angle * 0.5) * 30;
+      const grd    = ctx.createRadialGradient(ox, oy, 0, ox, oy, 14);
+      grd.addColorStop(0, `rgba(180,60,255,${idleAlpha})`);
+      grd.addColorStop(1, 'rgba(100,0,180,0)');
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(ox, oy, 14, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ── FIRING: BEAM shoots up from between the spikes ──
+  if (firingT > 0) {
+    const beamAlpha = Math.min(firingT * 1.5, 1.0);
+    const beamW     = 20 + firingT * 30;
+    const beamOriginY = base - 155;
+
+    // Outer glow cone going upward
+    const outerGrd = ctx.createLinearGradient(cx, beamOriginY, cx, beamOriginY - 320);
+    outerGrd.addColorStop(0,   `rgba(180,40,255,${beamAlpha * 0.6})`);
+    outerGrd.addColorStop(0.5, `rgba(120,20,200,${beamAlpha * 0.3})`);
+    outerGrd.addColorStop(1,   'rgba(80,0,160,0)');
+    ctx.fillStyle = outerGrd;
+    ctx.beginPath();
+    ctx.moveTo(cx - beamW,       beamOriginY);
+    ctx.lineTo(cx + beamW,       beamOriginY);
+    ctx.lineTo(cx + beamW * 2.2, beamOriginY - 320);
+    ctx.lineTo(cx - beamW * 2.2, beamOriginY - 320);
+    ctx.closePath();
+    ctx.fill();
+
+    // Main beam
+    const mainGrd = ctx.createLinearGradient(cx, beamOriginY, cx, beamOriginY - 300);
+    mainGrd.addColorStop(0,    `rgba(255,220,255,${beamAlpha})`);
+    mainGrd.addColorStop(0.15, `rgba(210,80,255,${beamAlpha * 0.95})`);
+    mainGrd.addColorStop(0.6,  `rgba(140,20,240,${beamAlpha * 0.7})`);
+    mainGrd.addColorStop(1,    'rgba(80,0,180,0)');
+    ctx.fillStyle = mainGrd;
+    ctx.beginPath();
+    ctx.moveTo(cx - beamW * 0.4, beamOriginY);
+    ctx.lineTo(cx + beamW * 0.4, beamOriginY);
+    ctx.lineTo(cx + beamW * 0.9, beamOriginY - 300);
+    ctx.lineTo(cx - beamW * 0.9, beamOriginY - 300);
+    ctx.closePath();
+    ctx.fill();
+
+    // White hot core
+    const coreGrd = ctx.createLinearGradient(cx, beamOriginY, cx, beamOriginY - 200);
+    coreGrd.addColorStop(0,   `rgba(255,255,255,${beamAlpha})`);
+    coreGrd.addColorStop(0.3, `rgba(240,180,255,${beamAlpha * 0.9})`);
+    coreGrd.addColorStop(1,   'rgba(180,40,255,0)');
+    ctx.fillStyle = coreGrd;
+    ctx.beginPath();
+    ctx.moveTo(cx - 8,  beamOriginY);
+    ctx.lineTo(cx + 8,  beamOriginY);
+    ctx.lineTo(cx + 18, beamOriginY - 200);
+    ctx.lineTo(cx - 18, beamOriginY - 200);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+  // ── Human / Barista Weapon ────────────────────────────
+  function _drawHumanWeapon(ctx, cx, base, now, gojiraReady) {
+  const SKIN    = '#d4956a';
+  const SHADOW  = '#b8754a';
+  const SHIRT   = '#4a7a9b';
+  const SHIRT_D = '#2e5a7a';
+  const APRON   = '#e8d8a0';
+  const APRON_D = '#c8b880';
+  const HAIR    = '#3a2010';
+  const HAIR_H  = '#5a3820'; // hair highlight
+
+  // ── TORSO — shirt ──
+  ctx.fillStyle = SHIRT;
+  ctx.fillRect(cx - 44, base - 80, 88, 72);
+  ctx.fillStyle = SHIRT_D;
+  ctx.fillRect(cx - 44, base - 80, 10, 72);
+  ctx.fillRect(cx + 34,  base - 80, 10, 72);
+
+  // ── APRON BACK STRAPS (just the crossed straps visible from behind) ──
+  ctx.fillStyle = APRON_D;
+  // Cross strap left-to-right
+  ctx.fillRect(cx - 20, base - 80, 8, 36);
+  ctx.fillRect(cx + 12,  base - 80, 8, 36);
+
+  // ── BACK OF HEAD ──
+  // Neck
+  ctx.fillStyle = SKIN;
+  ctx.fillRect(cx - 10, base - 100, 20, 22);
+  ctx.fillStyle = SHADOW;
+  ctx.fillRect(cx - 10, base - 100, 4, 22);
+  ctx.fillRect(cx + 6,  base - 100, 4, 22);
+
+  // Head base
+  ctx.fillStyle = SKIN;
+  ctx.beginPath();
+  ctx.ellipse(cx, base - 120, 28, 24, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Long hair — main body falling down over shoulders
+  ctx.fillStyle = HAIR;
+  // Top of head
+  ctx.fillRect(cx - 28, base - 148, 56, 30);
+  ctx.beginPath();
+  ctx.ellipse(cx, base - 148, 28, 12, 0, Math.PI, Math.PI * 2);
+  ctx.fill();
+  // Hair falling left side
+  ctx.fillRect(cx - 34, base - 140, 18, 70);
+  ctx.beginPath();
+  ctx.ellipse(cx - 26, base - 72, 9, 6, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  // Hair falling right side
+  ctx.fillRect(cx + 16, base - 140, 18, 70);
+  ctx.beginPath();
+  ctx.ellipse(cx + 26, base - 72, 9, 6, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+  // Hair center back
+  ctx.fillRect(cx - 12, base - 140, 24, 60);
+
+  // Hair highlights
+  ctx.fillStyle = HAIR_H;
+  ctx.fillRect(cx - 6, base - 146, 6, 50);
+  ctx.fillRect(cx + 4, base - 140, 4, 40);
+
+  // Hair ends / wisps
+  ctx.fillStyle = HAIR;
+  ctx.fillRect(cx - 30, base - 80, 8, 16);
+  ctx.fillRect(cx + 22,  base - 80, 8, 16);
+  ctx.fillRect(cx - 10, base - 82, 20, 14);
+
+  // Small ear peek through hair (left side)
+  ctx.fillStyle = SKIN;
+  ctx.fillRect(cx - 30, base - 126, 5, 8);
+  ctx.fillStyle = SHADOW;
+  ctx.fillRect(cx - 30, base - 124, 3, 4);
+
+  // ── LEFT ARM — relaxed at side ──
+  ctx.fillStyle = SHIRT;
+  ctx.fillRect(cx - 60, base - 76, 18, 50);
+  ctx.fillStyle = SHIRT_D;
+  ctx.fillRect(cx - 60, base - 76, 5, 50);
+  ctx.fillStyle = SKIN;
+  ctx.fillRect(cx - 62, base - 30, 22, 16);
+  ctx.fillStyle = SHADOW;
+  ctx.fillRect(cx - 62, base - 18, 22, 4);
+
+  // ── RIGHT ARM — raised, holding cup ──
+  ctx.fillStyle = SHIRT;
+  ctx.fillRect(cx + 28, base - 90, 20, 48);
+  ctx.fillStyle = SHIRT_D;
+  ctx.fillRect(cx + 44, base - 90, 4, 48);
+  // Forearm
+  ctx.fillStyle = SKIN;
+  ctx.fillRect(cx + 30, base - 120, 16, 34);
+  ctx.fillStyle = SHADOW;
+  ctx.fillRect(cx + 42, base - 120, 4, 34);
+  // Hand gripping cup
+  ctx.fillStyle = SKIN;
+  ctx.fillRect(cx + 28, base - 128, 20, 14);
+  ctx.fillStyle = SHADOW;
+  ctx.fillRect(cx + 28, base - 118, 20, 4);
+
+  // ── CUP ──
+  const cupW = 32;
+  const cupH = 42;
+  const cupX = cx + 18;
+  const cupY = base - 154;
+
+  // Gojira ready aura
+  if (gojiraReady) {
+    const pulse = 0.12 + Math.sin(now / 200) * 0.08;
+    const grd = ctx.createRadialGradient(cupX + cupW/2, cupY + cupH/2, 4, cupX + cupW/2, cupY + cupH/2, 80);
+    grd.addColorStop(0, `rgba(0,255,100,${pulse + 0.15})`);
     grd.addColorStop(1, 'rgba(0,255,100,0)');
     ctx.fillStyle = grd;
-    ctx.fillRect(cx - 160, base - 200, 320, 200);
+    ctx.fillRect(cupX - 50, cupY - 20, 160, 120);
+  }
 
-    // Claws — three thick tapered rects fanning out
-    const clawColor = '#1a6630';
-    const clawTip   = '#40ff80';
-    [
-      { offX: -60, rot: -0.35 },
-      { offX:   0, rot:  0    },
-      { offX:  60, rot:  0.35 },
-    ].forEach(({ offX, rot }) => {
-      ctx.save();
-      ctx.translate(cx + offX, base - 20);
-      ctx.rotate(rot);
-      ctx.fillStyle = clawColor;
-      ctx.fillRect(-14, -120, 28, 110);
-      // Tip
-      ctx.fillStyle = clawTip;
-      ctx.beginPath();
-      ctx.moveTo(-14, -120);
-      ctx.lineTo( 14, -120);
-      ctx.lineTo(  0, -155);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    });
+  // Cup body
+  ctx.fillStyle = gojiraReady ? '#0a2a14' : '#f4eed8';
+  ctx.fillRect(cupX, cupY, cupW, cupH);
+  // Band
+  ctx.fillStyle = gojiraReady ? '#00cc60' : '#cc3300';
+  ctx.fillRect(cupX + 2, cupY + 12, cupW - 4, 12);
+  // Band shine
+  ctx.fillStyle = gojiraReady ? '#80ffc0' : '#ffffff';
+  ctx.fillRect(cupX + 6, cupY + 15, 6, 5);
+  // Base taper
+  ctx.fillStyle = gojiraReady ? '#0a2a14' : '#f4eed8';
+  ctx.fillRect(cupX + 2, cupY + cupH - 5, cupW - 4, 5);
+  // Lid
+  ctx.fillStyle = '#c8c0a0';
+  ctx.fillRect(cupX - 2, cupY, cupW + 4, 6);
+  ctx.fillStyle = '#b0a888';
+  ctx.fillRect(cupX - 1, cupY - 4, cupW + 2, 5);
+  // Lid tab
+  ctx.fillStyle = '#d0c8a8';
+  ctx.fillRect(cupX + cupW/2 - 4, cupY - 6, 8, 3);
+  // Handle
+  ctx.fillStyle = '#c8c0a0';
+  ctx.fillRect(cupX + cupW,     cupY + 8,  8, 4);
+  ctx.fillRect(cupX + cupW,     cupY + 26, 8, 4);
+  ctx.fillRect(cupX + cupW + 5, cupY + 8,  3, 22);
 
-    // Lightning charge effect between claws
-    ctx.strokeStyle = `rgba(180,255,80,${0.4 + pulse * 2})`;
+  // Gojira ready border
+  if (gojiraReady) {
+    ctx.strokeStyle = `rgba(0,255,100,${0.4 + Math.sin(now / 180) * 0.4})`;
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cx - 60, base - 80);
-    for (let i = 0; i < 8; i++) {
-      ctx.lineTo(
-        cx - 60 + (i / 7) * 120 + (Math.random() - 0.5) * 20,
-        base - 80 + (Math.random() - 0.5) * 40
-      );
-    }
-    ctx.lineTo(cx + 60, base - 80);
-    ctx.stroke();
+    ctx.strokeRect(cupX - 2, cupY - 2, cupW + 4, cupH + 4);
   }
 
-  function _drawHumanWeapon(ctx, cx, base, now, gojiraReady) {
-    const SKIN   = '#d4956a';
-    const SLEEVE = '#2a3a8a';
-    const DARK   = '#1a2a6a';
-
-    const tW = 160, tH = 90;
-    const tX = cx - tW / 2, tY = base - tH;
-    ctx.fillStyle = SLEEVE;
-    ctx.fillRect(tX, tY, tW, tH);
-    ctx.fillStyle = DARK;
-    ctx.fillRect(tX,        tY, tW,  6);
-    ctx.fillRect(tX,        tY, 5,   tH);
-    ctx.fillRect(tX+tW-5,   tY, 5,   tH);
-    ctx.fillStyle = '#cc2200';
-    ctx.fillRect(cx - 12, tY + 2, 24, 5);
-
-    ctx.fillStyle = SLEEVE;
-    ctx.fillRect(tX - 44, tY + 8,  48, 26);
-    ctx.fillStyle = DARK;
-    ctx.fillRect(tX - 44, tY + 8,  48,  4);
-    ctx.fillStyle = SLEEVE;
-    ctx.fillRect(tX - 46, tY + 32, 32, 22);
-    ctx.fillStyle = SKIN;
-    ctx.fillRect(cx - 52, base - 54, 28, 18);
-    ctx.fillStyle = '#c08058';
-    ctx.fillRect(cx - 52, base - 40, 6, 5);
-    ctx.fillRect(cx - 44, base - 40, 6, 5);
-    ctx.fillRect(cx - 36, base - 40, 6, 5);
-
-    ctx.fillStyle = SLEEVE;
-    ctx.fillRect(tX + tW - 4, tY + 8, 48, 26);
-    ctx.fillStyle = DARK;
-    ctx.fillRect(tX + tW - 4, tY + 8, 48,  4);
-    ctx.fillStyle = SLEEVE;
-    ctx.fillRect(tX + tW + 14, tY + 32, 32, 22);
-    ctx.fillStyle = SKIN;
-    ctx.fillRect(cx + 24, base - 54, 28, 18);
-    ctx.fillStyle = '#c08058';
-    ctx.fillRect(cx + 24, base - 40, 6, 5);
-    ctx.fillRect(cx + 32, base - 40, 6, 5);
-    ctx.fillRect(cx + 40, base - 40, 6, 5);
-
-    const cupW = 40, cupH = 50;
-    const cupX = cx - cupW / 2;
-    const cupY = base - 68;
-
-    if (gojiraReady) {
-      const pulse = 0.12 + Math.sin(now / 200) * 0.08;
-      const grd = ctx.createRadialGradient(cx, cupY + cupH/2, 4, cx, cupY + cupH/2, 90);
-      grd.addColorStop(0, `rgba(0,255,100,${pulse + 0.1})`);
-      grd.addColorStop(1, 'rgba(0,255,100,0)');
-      ctx.fillStyle = grd;
-      ctx.fillRect(cx - 90, cupY - 30, 180, 130);
-    }
-
-    ctx.fillStyle = gojiraReady ? '#0a2a14' : '#f4eed8';
-    ctx.fillRect(cupX, cupY, cupW, cupH);
-    ctx.fillStyle = gojiraReady ? '#00cc60' : '#cc3300';
-    ctx.fillRect(cupX + 3, cupY + 14, cupW - 6, 14);
-    ctx.fillStyle = gojiraReady ? '#80ffc0' : '#ffffff';
-    ctx.fillRect(cx - 4, cupY + 18, 8, 6);
-    ctx.fillStyle = gojiraReady ? '#0a2a14' : '#f4eed8';
-    ctx.fillRect(cupX + 3, cupY + cupH - 6, cupW - 6, 6);
-    ctx.fillStyle = '#c8c0a0';
-    ctx.fillRect(cupX - 3, cupY,     cupW + 6, 7);
-    ctx.fillStyle = '#b0a888';
-    ctx.fillRect(cupX - 2, cupY - 5, cupW + 4, 6);
-    ctx.fillStyle = '#d0c8a8';
-    ctx.fillRect(cx - 5,   cupY - 7, 10,       3);
-    ctx.fillStyle = '#c8c0a0';
-    ctx.fillRect(cupX + cupW,     cupY + 10, 10,  5);
-    ctx.fillRect(cupX + cupW,     cupY + 30, 10,  5);
-    ctx.fillRect(cupX + cupW + 6, cupY + 10, 4,  25);
-
-    if (gojiraReady) {
-      ctx.strokeStyle = `rgba(0,255,100,${0.4 + Math.sin(now / 180) * 0.4})`;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(cupX - 2, cupY - 2, cupW + 4, cupH + 4);
-    }
-
-    const sOff  = Math.sin(now / 380) * 3;
-    const sAlph = 0.35 + Math.sin(now / 290) * 0.15;
-    ctx.fillStyle = `rgba(255,255,255,${sAlph})`;
-    ctx.fillRect(cx - 10 + sOff,      cupY - 18, 4, 13);
-    ctx.fillRect(cx + 2  - sOff,      cupY - 22, 4, 17);
-    ctx.fillRect(cx - 18 + sOff * .5, cupY - 13, 3,  8);
-  }
+  // ── STEAM ──
+  const sOff  = Math.sin(now / 380) * 3;
+  const sAlph = 0.35 + Math.sin(now / 290) * 0.15;
+  ctx.fillStyle = `rgba(255,255,255,${sAlph})`;
+  ctx.fillRect(cupX + 6  + sOff,       cupY - 16, 4, 12);
+  ctx.fillRect(cupX + 14 - sOff * 0.5, cupY - 20, 4, 16);
+  ctx.fillRect(cupX + 22 + sOff,       cupY - 12, 3,  8);
+}
 
   return {
     state, initInput, update, drawWeapon,

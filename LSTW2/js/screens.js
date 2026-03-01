@@ -55,46 +55,62 @@ const Screens = (() => {
     }, 23000);
   }
 
-  function _runIntroCanvas() {
-    const canvas = document.getElementById('canvas-intro');
-    const ctx    = canvas.getContext('2d');
-    let frame    = 0;
-    function tick() {
-      if (!introRunning) return;
-      ctx.fillStyle = '#0a0402';
-      ctx.fillRect(0, 0, 800, 600);
-      for (let i = 0; i < 80; i++) {
-        const x = (i * 137.5 + frame * 0.2) % 800;
-        const y = (i * 73.1) % 300;
-        const bright = 0.3 + Math.sin(i + frame * 0.04) * 0.3;
-        ctx.fillStyle = 'rgba(240,232,208,' + bright + ')';
-        ctx.fillRect(x|0, y|0, 1, 1);
-      }
-      ctx.fillStyle = '#1a0c06';
-      ctx.beginPath(); ctx.moveTo(0, 600);
-      for (let x = 0; x <= 800; x += 20) {
-        const y = 430 + Math.sin(x*0.015 + frame*0.01)*25
-                      + Math.sin(x*0.008 + frame*0.007)*18;
-        ctx.lineTo(x, y);
-      }
-      ctx.lineTo(800,600); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#150a04';
-      [80,200,380,560,700].forEach(cx => {
-        const cy = 400 + Math.sin(cx*0.05)*15;
-        ctx.fillRect(cx-5,cy-60,10,60);
-        ctx.fillRect(cx-20,cy-40,15,8);
-        ctx.fillRect(cx+5, cy-30,15,8);
-        ctx.fillRect(cx-5, cy-80,10,25);
-      });
-      ctx.fillStyle = '#fffde0';
-      ctx.beginPath(); ctx.arc(680,80,35,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#0a0402';
-      ctx.beginPath(); ctx.arc(668,75,32,0,Math.PI*2); ctx.fill();
-      frame++;
-      requestAnimationFrame(tick);
+ function _runIntroCanvas() {
+  const canvas = document.getElementById('canvas-intro');
+  const ctx    = canvas.getContext('2d');
+  let frame    = 0;
+
+  function tick() {
+    if (!introRunning) return;
+
+    // 1) Brighter dusk gradient instead of near‑black
+    const g = ctx.createLinearGradient(0, 0, 0, 600);
+    g.addColorStop(0.0, '#302440');  // top sky (not black)
+    g.addColorStop(0.4, '#3b2c4c');  // mid sky
+    g.addColorStop(1.0, '#5b3f30');  // warm desert glow
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 800, 600);
+
+    // 2) Softer, fewer stars
+    for (let i = 0; i < 80; i++) {
+      const x = (i * 137.5 + frame * 0.2) % 800;
+      const y = (i * 73.1) % 300; // upper half of sky
+      const bright = 0.4 + Math.sin(i + frame * 0.04) * 0.2;
+      ctx.fillStyle = 'rgba(240,232,208,' + bright + ')';
+      ctx.fillRect(x | 0, y | 0, 1, 1);
     }
+
+    // 3) Ground silhouette (same shapes, slightly lighter colors)
+    ctx.fillStyle = '#3a2116';
+    ctx.beginPath(); ctx.moveTo(0, 600);
+    for (let x = 0; x <= 800; x += 20) {
+      const y = 430 + Math.sin(x * 0.015 + frame * 0.01) * 25
+                      + Math.sin(x * 0.008 + frame * 0.007) * 18;
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(800, 600); ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = '#2b170f';
+    [80, 200, 380, 560, 700].forEach(cx => {
+      const cy = 400 + Math.sin(cx * 0.05) * 15;
+      ctx.fillRect(cx - 5,  cy - 60, 10, 60);
+      ctx.fillRect(cx - 20, cy - 40, 15,  8);
+      ctx.fillRect(cx + 5,  cy - 30, 15,  8);
+      ctx.fillRect(cx - 5,  cy - 80, 10, 25);
+    });
+
+    // 4) Moon, slightly softer
+    ctx.fillStyle = '#f4e8d0';
+    ctx.beginPath(); ctx.arc(680, 80, 35, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#3b2c4c';
+    ctx.beginPath(); ctx.arc(668, 75, 32, 0, Math.PI * 2); ctx.fill();
+
+    frame++;
     requestAnimationFrame(tick);
   }
+
+  requestAnimationFrame(tick);
+}
 
   // ── 2. TITLE ──────────────────────────────────────────
   let titleCanvasRunning = false;

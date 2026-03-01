@@ -42,7 +42,8 @@ const Projectiles = (() => {
       alive: true, owner:'player', age:0,
     });
   }
-// Gojira Lightning Attack //
+
+  // Gojira Lightning Attack
   function spawnLightning(x, y, angle) {
     list.push({
       kind: 'lightning', x, y,
@@ -51,6 +52,8 @@ const Projectiles = (() => {
       damage: C.GOJIRA_LIGHTNING_DAMAGE,
       splash: C.GOJIRA_LIGHTNING_SPLASH,
       alive: true, owner: 'player', age: 0,
+      boltSeed: Math.random() * 1000,  // unique seed per bolt for jagged shape
+      boltFlicker: 0,                  // timer to re-randomize bolt shape
     });
   }
 
@@ -63,20 +66,9 @@ const Projectiles = (() => {
     });
   }
 
-  // ── Particles — spawn sparingly ───────────────────────
+  // ── Particles — disabled, kept for explosion fx only ──
   function spawnTrailParticle(x, y, kind) {
-    if (particles.length >= MAX_PARTICLES) return; // don't add if at cap
-    const isEnemy = kind === 'enemyshot';
-    particles.push({
-      x, y,
-      vx: (Math.random()-0.5)*0.03,
-      vy: (Math.random()-0.5)*0.03,
-      life: C.TRAIL_LIFE, maxLife: C.TRAIL_LIFE,
-      r: isEnemy ? 0   : 80,
-      g: isEnemy ? 200 : 50,
-      b: isEnemy ? 0   : 0,
-      size: 0.05,
-    });
+    return; // trails disabled — caused phantom wall projections
   }
 
   function spawnExplosion(x, y, radius, color) {
@@ -104,7 +96,8 @@ const Projectiles = (() => {
       if (!p.alive || p.owner !== 'player') continue;
       for (const e of enemies) {
         if (e.dead) continue;
-        const d2 = Utils.dist2(p.x, p.y, e.x, e.y);
+        const d2    = Utils.dist2(p.x, p.y, e.x, e.y);
+        // lightning is direct hit only — no AOE splash
         const isAoe = p.kind === 'baguette' || p.kind === 'gojira';
         const hitR  = isAoe ? (p.splash * p.splash) : 0.36;
 
@@ -125,8 +118,10 @@ const Projectiles = (() => {
               }
             }
             spawnExplosion(p.x, p.y, p.splash,
-              p.kind === 'gojira' ? [0,255,100] : [255,140,30]);
+              p.kind === 'gojira' ? [0, 255, 100] : [255, 140, 30]
+            );
           } else {
+            // direct hit (coffee, lightning, enemyshot)
             e.hit(p.damage);
             HUD.spawnDmgNum(
               C.SCREEN_W/2 + (Math.random()*50-25),
@@ -157,9 +152,11 @@ const Projectiles = (() => {
     for (const p of list) {
       if (!p.alive) continue;
       if (doors.isWall(Math.floor(p.x), Math.floor(p.y))) {
-        if (p.kind === 'baguette' || p.kind === 'gojira') {
-          spawnExplosion(p.x, p.y, p.splash,
-            p.kind === 'gojira' ? [0,255,100] : [255,140,30]);
+        // lightning vanishes silently — no explosion particles at wall
+        if (p.kind === 'baguette') {
+          spawnExplosion(p.x, p.y, p.splash, [255, 140, 30]);
+        } else if (p.kind === 'gojira') {
+          spawnExplosion(p.x, p.y, p.splash, [0, 255, 100]);
         }
         p.alive = false;
       }
@@ -172,8 +169,13 @@ const Projectiles = (() => {
       if (!p.alive) continue;
       p.age += dt;
 
-      if (Math.random() < 0.12 && particles.length < MAX_PARTICLES) {
-        spawnTrailParticle(p.x, p.y, p.kind);
+      // Lightning bolt shape flickers ~25fps
+      if (p.kind === 'lightning') {
+        p.boltFlicker += dt;
+        if (p.boltFlicker > 0.04) {
+          p.boltSeed    = Math.random() * 1000;
+          p.boltFlicker = 0;
+        }
       }
 
       if (p.kind === 'baguette') {
@@ -212,12 +214,69 @@ const Projectiles = (() => {
     particles = particles.filter(pt => pt.life > 0);
   }
 
-  function reset()         { list = []; particles = []; }
-  function getAll()        { return list; }
-  function getParticles()  { return particles; }
+  // ── Draw helper (call from your renderer) ─────────────
+  // screenX/Y = the projected screen position of the projectile
+  function drawLightningProjectile(ctx, screenX, screenY, proj) {
+    // Seeded jitter for the crackling ring — stable between flickers
+    let seed = proj.boltSeed;
+    const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+
+    const r = 14;
+
+    // Outer soft glow
+    const outerGrd = ctx.createRadialGradient(screenX, screenY, 0, screenX, screenY, r * 3);
+    outerGrd.addColorStop(0,   'rgba(220,100,255,0.6)');
+    outerGrd.addColorStop(0.5, 'rgba(160,40,255,0.25)');
+    outerGrd.addColorStop(1,   'rgba(100,0,200,0)');
+    ctx.fillStyle = outerGrd;
+    ctx.beginPath();
+    ctx.arc(screenX, screenY, r * 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Crackling jagged ring — spikes radiating outward from center
+    const SPIKES = 10;
+    ctx.strokeStyle = 'rgba(240,180,255,0.85)';
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = 'round';
+    for (let i = 0; i < SPIKES; i++) {
+      const baseAngle = (i / SPIKES) * Math.PI * 2;
+      const jitter    = (rand() - 0.5) * 0.4;
+      const ang       = baseAngle + jitter;
+      const len       = r * (0.7 + rand() * 0.9);
+      ctx.beginPath();
+      ctx.moveTo(screenX, screenY);
+      // Mid-point kink for jaggedness
+      const midLen = len * 0.5;
+      const kink   = (rand() - 0.5) * r * 0.6;
+      ctx.lineTo(
+        screenX + Math.cos(ang) * midLen + Math.cos(ang + Math.PI/2) * kink,
+        screenY + Math.sin(ang) * midLen + Math.sin(ang + Math.PI/2) * kink
+      );
+      ctx.lineTo(
+        screenX + Math.cos(ang) * len,
+        screenY + Math.sin(ang) * len
+      );
+      ctx.stroke();
+    }
+
+    // Bright hot core
+    const coreGrd = ctx.createRadialGradient(screenX, screenY, 0, screenX, screenY, r * 0.8);
+    coreGrd.addColorStop(0,   'rgba(255,255,255,1)');
+    coreGrd.addColorStop(0.4, 'rgba(230,160,255,0.9)');
+    coreGrd.addColorStop(1,   'rgba(180,40,255,0)');
+    ctx.fillStyle = coreGrd;
+    ctx.beginPath();
+    ctx.arc(screenX, screenY, r * 0.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function reset()        { list = []; particles = []; }
+  function getAll()       { return list; }
+  function getParticles() { return particles; }
 
   return {
     spawnPlayerShot, spawnBaguette, spawnGojira, spawnEnemyShot, spawnLightning,
     update, reset, getAll, getParticles,
+    drawLightningProjectile,
   };
 })();
