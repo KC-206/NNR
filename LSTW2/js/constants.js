@@ -25,12 +25,12 @@ const C = {
   PLAYER_COLLISION_R: 0.25,    // collision radius in map units
 
   // ── Weapons ────────────────────────────────────────────
-  COFFEE_DAMAGE: 12,
+  COFFEE_DAMAGE: 16,
   COFFEE_RANGE: 16,
   COFFEE_COOLDOWN: 180,        // ms between shots
   COFFEE_SPEED: 12,
 
-  BAGUETTE_DAMAGE: 55,
+  BAGUETTE_DAMAGE: 70,
   BAGUETTE_SPLASH_R: 1.8,      // map units
   BAGUETTE_START_AMMO: 3,
   BAGUETTE_SPEED: 6,
