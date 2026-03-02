@@ -190,20 +190,19 @@ const Maps = (() => {
       ],
       playerStart: { x: 1.5, y: 1.5, angle: 0 },
       enemies: [
-        { type: 'spitter', x: 5.5,  y: 3.5  },
-        { type: 'spitter', x: 10.5, y: 5.5  },
-        { type: 'spitter', x: 14.5, y: 8.5  },
+        { type: 'spitter', x: 11.5, y: 5.5  },
+        { type: 'spitter', x: 13.5, y: 8.5  },
         { type: 'roller',  x: 7.5,  y: 8.5  },
-        { type: 'roller',  x: 12.5, y: 12.5 },
+        { type: 'roller',  x: 11.5, y: 12.5 },
         { type: 'barrel',  x: 16.5, y: 6.5  },
-        { type: 'spitter', x: 3.5,  y: 14.5 },
+        { type: 'spitter', x: 4.5,  y: 14.5 },
         { type: 'roller',  x: 9.5,  y: 16.5 },
         { type: 'barrel',  x: 15.5, y: 15.5 },
         { type: 'spitter', x: 18.5, y: 10.5 },
       ],
       pickups: [
         { type: 'coffee',  x: 3.5,  y: 3.5  },
-        { type: 'baguette',x: 8.5,  y: 7.5  },
+        { type: 'baguette',x: 9.5,  y: 7.5  },
         { type: 'armor',   x: 11.5, y: 11.5 },
         { type: 'coffee',  x: 5.5,  y: 15.5 },
         { type: 'key',     x: 17.5, y: 17.5 },
@@ -250,16 +249,16 @@ const Maps = (() => {
         { type: 'barrel',  x: 7.5,  y: 12.5 },
         { type: 'spitter', x: 16.5, y: 10.5 },
         { type: 'spitter', x: 11.5, y: 14.5 },
-        { type: 'barrel',  x: 4.5,  y: 16.5 },
+        { type: 'barrel',  x: 5.5,  y: 16.5 },
         { type: 'roller',  x: 12.5, y: 17.5 },
         { type: 'spitter', x: 17.5, y: 15.5 },
-        { type: 'roller',  x: 8.5,  y: 9.5  },
+        { type: 'roller',  x: 7.5,  y: 9.5  },
         { type: 'barrel',  x: 16.5, y: 17.5 },
       ],
       pickups: [
-        { type: 'coffee',  x: 4.5,  y: 4.5  },
-        { type: 'baguette',x: 12.5, y: 7.5  },
-        { type: 'armor',   x: 7.5,  y: 14.5 },
+        { type: 'coffee',  x: 6.5,  y: 4.5  },
+        { type: 'baguette',x: 13.5, y: 7.5  },
+        { type: 'armor',   x: 8.5,  y: 14.5 },
         { type: 'coffee',  x: 15.5, y: 12.5 },
         { type: 'energy',  x: 10.5, y: 10.5 },
         { type: 'key',     x: 12.5, y: 18.5 },
@@ -300,10 +299,10 @@ const Maps = (() => {
       playerStart: { x: 1.5, y: 1.5, angle: 0 },
       enemies: [
         { type: 'spitter', x: 5.5,  y: 3.5  },
-        { type: 'barrel',  x: 10.5, y: 5.5  },
+        { type: 'barrel',  x: 11.5, y: 5.5  },
         { type: 'roller',  x: 3.5,  y: 9.5  },
         { type: 'spitter', x: 15.5, y: 7.5  },
-        { type: 'barrel',  x: 8.5,  y: 10.5 },
+        { type: 'barrel',  x: 9.5,  y: 10.5 },
         { type: 'roller',  x: 13.5, y: 11.5 },
         // Boss spawns in arena
         { type: 'pricilla', x: 10.5, y: 14.5 },
@@ -312,7 +311,7 @@ const Maps = (() => {
         { type: 'coffee',  x: 4.5,  y: 2.5  },
         { type: 'armor',   x: 9.5,  y: 4.5  },
         { type: 'baguette',x: 6.5,  y: 8.5  },
-        { type: 'coffee',  x: 14.5, y: 10.5 },
+        { type: 'coffee',  x: 15.5, y: 10.5 },
         { type: 'energy',  x: 11.5, y: 13.5 },
         { type: 'key',     x: 17.5, y: 17.5 },
         { type: 'energy',  x: 5.5,  y: 14.5 },
@@ -377,14 +376,47 @@ const Maps = (() => {
   let doorManager  = null;
   let textures     = {};
 
+   // Returns true if tile at (tileX, tileY) is walkable (floor or exit)
+  function isClear(map, tx, ty) {
+    if (ty < 0 || ty >= map.length || tx < 0 || tx >= map[0].length) return false;
+    const v = map[ty][tx];
+    return v === 0 || v === 9; // only floor and exit are safe
+  }
+
   function load(levelIndex) {
     currentLevel = levelIndex;
     const lv = levels[levelIndex];
     doorManager  = new DoorManager(lv.map);
     textures     = buildTextures(lv.paletteIndex);
     Audio2.playMusic(lv.musicTrack);
+
+    // ── Validate enemy positions ──────────────────────────
+    const badEnemies = [];
+    lv.enemies = lv.enemies.filter(e => {
+      const tx = Math.floor(e.x);
+      const ty = Math.floor(e.y);
+      if (isClear(lv.map, tx, ty)) return true;
+      badEnemies.push(`${e.type} @ (${e.x},${e.y}) → tile [${tx},${ty}] = ${lv.map[ty]?.[tx]}`);
+      return false;
+    });
+    if (badEnemies.length)
+      console.warn(`[Maps] Level ${levelIndex+1} — removed ${badEnemies.length} wall-spawned enemies:\n` + badEnemies.join('\n'));
+
+    // ── Validate pickup positions ─────────────────────────
+    const badPickups = [];
+    lv.pickups = lv.pickups.filter(p => {
+      const tx = Math.floor(p.x);
+      const ty = Math.floor(p.y);
+      if (isClear(lv.map, tx, ty)) return true;
+      badPickups.push(`${p.type} @ (${p.x},${p.y}) → tile [${tx},${ty}] = ${lv.map[ty]?.[tx]}`);
+      return false;
+    });
+    if (badPickups.length)
+      console.warn(`[Maps] Level ${levelIndex+1} — removed ${badPickups.length} wall-spawned pickups:\n` + badPickups.join('\n'));
+
     return lv;
   }
+
 
   function getLevel()    { return levels[currentLevel]; }
   function getMap()      { return levels[currentLevel].map; }
