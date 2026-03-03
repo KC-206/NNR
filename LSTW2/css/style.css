@@ -192,7 +192,7 @@ canvas {
   text-align: center;
   padding: 20px 28px;
   border: 2px solid #f0d080;
-  background: rgba(0, 0, 0, 0.5);  /* nearly solid black */
+  background: rgba(0, 0, 0, 0.9);  /* nearly solid black */
   max-width: 420px;
   margin-top: 82px;
   color: #fce9b0;

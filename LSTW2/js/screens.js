@@ -13,7 +13,7 @@ const Screens = (() => {
     const el = document.getElementById('screen-' + name);
     if (!el) return;
     el.classList.add('active');
-    const flexScreens = ['title','transition','gameover','win'];
+    const flexScreens = ['title', 'transition', 'gameover', 'win'];
     el.style.display = flexScreens.includes(name) ? 'flex' : 'block';
   }
 
@@ -21,46 +21,130 @@ const Screens = (() => {
   let introRunning = false;
   let introSkipped = false;
 
-  function initIntro() {
-    Audio2.resume();           // ← wake up audio context
-    Audio2.playMusic(4);
-    introSkipped = false;
-    show('intro');
 
-    if (!introRunning) {
-      introRunning = true;
-      _runIntroCanvas();
-    }
+function initIntro() {
+  introSkipped = false;
+  show('intro');
 
-    function skipHandler(e) {
-      if (introSkipped) return;
-      introSkipped  = true;
-      introRunning  = false;
+  // force intro text visible & active
+  const introText = document.getElementById('intro-text');
+  if (introText) {
+    introText.style.opacity = '1';
+    introText.style.visibility = 'visible';
+    introText.classList.add('active');  // if your CSS uses this to start the crawl
+  }
+
+  if (!introRunning) {
+    introRunning = true;
+    _runIntroCanvas();
+  }
+}
+ /* function initIntro() {
+  introSkipped = false;
+  show('intro');
+
+  // start animation immediately
+  if (!introRunning) {
+    introRunning = true;
+    _runIntroCanvas();
+  }
+
+  // start audio, but don’t block if it fails
+  try {
+    //Audio2.resume();
+    //Audio2.playMusic(4);
+  } catch (e) {
+    console.error('Intro audio error', e);
+  }
+
+  function skipHandler(e) {
+    if (introSkipped) return;
+    introSkipped = true;
+    introRunning = false;
+    document.removeEventListener('keydown', skipHandler);
+    document.removeEventListener('click', skipHandler);
+    showTitle();
+  }
+
+  setTimeout(() => {
+    document.addEventListener('keydown', skipHandler);
+    document.addEventListener('click',   skipHandler);
+  }, 600);
+
+  setTimeout(() => {
+    if (!introSkipped) {
+      introSkipped = true;
+      introRunning = false;
       document.removeEventListener('keydown', skipHandler);
       document.removeEventListener('click',   skipHandler);
       showTitle();
     }
+  }, 23000);
+} */
 
-    setTimeout(() => {
-      document.addEventListener('keydown', skipHandler);
-      document.addEventListener('click',   skipHandler);
-    }, 600);
 
-    setTimeout(() => {
-      if (!introSkipped) {
-        introSkipped = true;
-        introRunning = false;
-        document.removeEventListener('keydown', skipHandler);
-        document.removeEventListener('click',   skipHandler);
-        showTitle();
+
+function _runIntroCanvas() {
+  const canvas = document.getElementById('canvas-intro');
+  const ctx = canvas.getContext('2d');
+  let frame = 0;
+
+  function tick() {
+    if (!introRunning) return;
+
+    if (frame === 0) console.log('intro tick started');
+
+    const speed = 1.0;
+
+      const g = ctx.createLinearGradient(0, 0, 0, 600);
+      g.addColorStop(0.0, '#302440');
+      g.addColorStop(0.4, '#3b2c4c');
+      g.addColorStop(1.0, '#5b3f30');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 800, 600);
+
+      for (let i = 0; i < 80; i++) {
+        const x = (i * 137.5 + frame * speed) % 800;
+        const y = (i * 73.1) % 300;
+        const bright = 0.4 + Math.sin(i + frame * 0.04) * 0.2;
+        ctx.fillStyle = 'rgba(240,232,208,' + bright + ')';
+        ctx.fillRect(x | 0, y | 0, 1, 1);
       }
-    }, 23000);
+
+      ctx.fillStyle = '#3a2116';
+      ctx.beginPath(); ctx.moveTo(0, 600);
+      for (let x = 0; x <= 800; x += 20) {
+        const y = 430 + Math.sin(x * 0.015 + frame * 0.01) * 25
+          + Math.sin(x * 0.008 + frame * 0.007) * 18;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(800, 600); ctx.closePath(); ctx.fill();
+
+      ctx.fillStyle = '#2b170f';
+      [80, 200, 380, 560, 700].forEach(cx => {
+        const cy = 400 + Math.sin(cx * 0.05) * 15;
+        ctx.fillRect(cx - 5, cy - 60, 10, 60);
+        ctx.fillRect(cx - 20, cy - 40, 15, 8);
+        ctx.fillRect(cx + 5, cy - 30, 15, 8);
+        ctx.fillRect(cx - 5, cy - 80, 10, 25);
+      });
+
+      ctx.fillStyle = '#f4e8d0';
+      ctx.beginPath(); ctx.arc(680, 80, 35, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#3b2c4c';
+      ctx.beginPath(); ctx.arc(668, 75, 32, 0, Math.PI * 2); ctx.fill();
+
+    frame++;
+    requestAnimationFrame(tick);
   }
 
-  function _runIntroCanvas() {
+  requestAnimationFrame(tick);
+}
+
+ /*  function _runIntroCanvas() {
     const canvas = document.getElementById('canvas-intro');
-    const ctx    = canvas.getContext('2d');
-    let frame    = 0;
+    const ctx = canvas.getContext('2d');
+    let frame = 0;
 
     function tick() {
       if (!introRunning) return;
@@ -84,7 +168,7 @@ const Screens = (() => {
       ctx.beginPath(); ctx.moveTo(0, 600);
       for (let x = 0; x <= 800; x += 20) {
         const y = 430 + Math.sin(x * 0.015 + frame * 0.01) * 25
-                        + Math.sin(x * 0.008 + frame * 0.007) * 18;
+          + Math.sin(x * 0.008 + frame * 0.007) * 18;
         ctx.lineTo(x, y);
       }
       ctx.lineTo(800, 600); ctx.closePath(); ctx.fill();
@@ -92,10 +176,10 @@ const Screens = (() => {
       ctx.fillStyle = '#2b170f';
       [80, 200, 380, 560, 700].forEach(cx => {
         const cy = 400 + Math.sin(cx * 0.05) * 15;
-        ctx.fillRect(cx - 5,  cy - 60, 10, 60);
-        ctx.fillRect(cx - 20, cy - 40, 15,  8);
-        ctx.fillRect(cx + 5,  cy - 30, 15,  8);
-        ctx.fillRect(cx - 5,  cy - 80, 10, 25);
+        ctx.fillRect(cx - 5, cy - 60, 10, 60);
+        ctx.fillRect(cx - 20, cy - 40, 15, 8);
+        ctx.fillRect(cx + 5, cy - 30, 15, 8);
+        ctx.fillRect(cx - 5, cy - 80, 10, 25);
       });
 
       ctx.fillStyle = '#f4e8d0';
@@ -108,7 +192,7 @@ const Screens = (() => {
     }
 
     requestAnimationFrame(tick);
-  }
+  } */
 
   // ── 2. TITLE ──────────────────────────────────────────
   let titleCanvasRunning = false;
@@ -159,20 +243,20 @@ const Screens = (() => {
     let frame = 0;
     function tick() {
       ctx.fillStyle = '#050200';
-      ctx.fillRect(0,0,800,600);
+      ctx.fillRect(0, 0, 800, 600);
       for (let i = 0; i < 120; i++) {
-        const x = (i*137.5 + frame*0.1)%800;
-        const y = (i*73.1 + frame*0.05)%600;
-        const a = 0.2 + Math.sin(i+frame*0.02)*0.2;
-        ctx.fillStyle = 'rgba(240,200,100,'+a+')';
-        ctx.fillRect(x|0, y|0, 1, 1);
+        const x = (i * 137.5 + frame * 0.1) % 800;
+        const y = (i * 73.1 + frame * 0.05) % 600;
+        const a = 0.2 + Math.sin(i + frame * 0.02) * 0.2;
+        ctx.fillStyle = 'rgba(240,200,100,' + a + ')';
+        ctx.fillRect(x | 0, y | 0, 1, 1);
       }
       ctx.fillStyle = '#120900';
-      ctx.beginPath(); ctx.moveTo(0,600);
-      for (let x=0;x<=800;x+=30) {
-        ctx.lineTo(x, 500+Math.sin(x*0.01+frame*0.004)*30);
+      ctx.beginPath(); ctx.moveTo(0, 600);
+      for (let x = 0; x <= 800; x += 30) {
+        ctx.lineTo(x, 500 + Math.sin(x * 0.01 + frame * 0.004) * 30);
       }
-      ctx.lineTo(800,600); ctx.closePath(); ctx.fill();
+      ctx.lineTo(800, 600); ctx.closePath(); ctx.fill();
       frame++;
       requestAnimationFrame(tick);
     }
@@ -194,9 +278,9 @@ const Screens = (() => {
     if (levelIndex === 1 && bg2) bg2.style.display = 'block';
     if (levelIndex === 2 && bg3) bg3.style.display = 'block';
 
-    document.getElementById('transition-level-num').textContent  = 'LEVEL ' + (levelIndex + 1);
+    document.getElementById('transition-level-num').textContent = 'LEVEL ' + (levelIndex + 1);
     document.getElementById('transition-level-name').textContent = levelData.name;
-    document.getElementById('transition-blurb').textContent      = levelData.blurb;
+    document.getElementById('transition-blurb').textContent = levelData.blurb;
 
     show('transition');
 
@@ -235,30 +319,30 @@ const Screens = (() => {
 
     const idx = GameState.currentLevelIndex;
 
-    if (idx === 0 && g1)      g1.style.display = 'block';
+    if (idx === 0 && g1) g1.style.display = 'block';
     else if (idx === 1 && g2) g2.style.display = 'block';
-    else if (g3)              g3.style.display = 'block';
+    else if (g3) g3.style.display = 'block';
 
     document.getElementById('gameover-stats').textContent =
       'SCORE: ' + score + '  |  ENEMIES SLAIN: ' + kills;
 
     const canvas = document.getElementById('canvas-gameover');
-    const ctx    = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
 
     (function drawNoise() {
       if (!gameoverRunning) return;
       ctx.fillStyle = 'rgba(8,0,0,0.6)';
-      ctx.fillRect(0,0,800,600);
-      const img = ctx.createImageData(800,600);
+      ctx.fillRect(0, 0, 800, 600);
+      const img = ctx.createImageData(800, 600);
       const d = img.data;
-      for (let i=0;i<d.length;i+=4) {
-        const v = Math.random()<0.04 ? Math.random()*60 : 0;
-        d[i]=v*1.5; d[i+1]=v*0.3; d[i+2]=v*0.3; d[i+3]=80;
+      for (let i = 0; i < d.length; i += 4) {
+        const v = Math.random() < 0.04 ? Math.random() * 60 : 0;
+        d[i] = v * 1.5; d[i + 1] = v * 0.3; d[i + 2] = v * 0.3; d[i + 3] = 80;
       }
-      ctx.putImageData(img,0,0);
-      if (Math.random()<0.08) {
-        ctx.fillStyle='rgba(255,50,50,0.12)';
-        ctx.fillRect(0,Math.random()*600,800,2+Math.random()*5);
+      ctx.putImageData(img, 0, 0);
+      if (Math.random() < 0.08) {
+        ctx.fillStyle = 'rgba(255,50,50,0.12)';
+        ctx.fillRect(0, Math.random() * 600, 800, 2 + Math.random() * 5);
       }
       requestAnimationFrame(drawNoise);
     })();
@@ -282,24 +366,24 @@ const Screens = (() => {
     Audio2.playWinFanfare();
 
     const canvas = document.getElementById('canvas-confetti');
-    const ctx    = canvas.getContext('2d');
-    const colors = ['#f0d080','#ff8040','#40ff80','#4080ff','#ff40c0','#ffe040'];
-    const pieces = Array.from({length: C.CONFETTI_COUNT}, () => ({
-      x:Math.random()*800, y:Math.random()*-200,
-      vx:(Math.random()-0.5)*2, vy:1.5+Math.random()*2,
-      rot:Math.random()*Math.PI*2, rotV:(Math.random()-0.5)*0.2,
-      w:6+Math.random()*10, h:4+Math.random()*6,
-      color:colors[Math.floor(Math.random()*colors.length)],
+    const ctx = canvas.getContext('2d');
+    const colors = ['#f0d080', '#ff8040', '#40ff80', '#4080ff', '#ff40c0', '#ffe040'];
+    const pieces = Array.from({ length: C.CONFETTI_COUNT }, () => ({
+      x: Math.random() * 800, y: Math.random() * -200,
+      vx: (Math.random() - 0.5) * 2, vy: 1.5 + Math.random() * 2,
+      rot: Math.random() * Math.PI * 2, rotV: (Math.random() - 0.5) * 0.2,
+      w: 6 + Math.random() * 10, h: 4 + Math.random() * 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
     }));
 
     (function drawConfetti() {
       if (!winRunning) return;
-      ctx.clearRect(0,0,800,600);
+      ctx.clearRect(0, 0, 800, 600);
       for (const p of pieces) {
         p.x += p.vx; p.y += p.vy; p.rot += p.rotV;
-        if (p.y > 650) { p.y = -20; p.x = Math.random()*800; }
-        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
-        ctx.fillStyle = p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+        if (p.y > 650) { p.y = -20; p.x = Math.random() * 800; }
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.color; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
         ctx.restore();
       }
       requestAnimationFrame(drawConfetti);
@@ -316,7 +400,7 @@ const Screens = (() => {
   function showDamageFlash(color) {
     const el = document.getElementById('flash-overlay');
     el.style.background = color;
-    el.style.opacity    = '1';
+    el.style.opacity = '1';
     clearTimeout(flashTimer);
     flashTimer = setTimeout(() => { el.style.opacity = '0'; }, 80);
   }
@@ -324,8 +408,8 @@ const Screens = (() => {
   // ── Level dissolve (rows) before transition screen ───
   function dissolveToTransition(levelIndex, levelData, onContinue) {
     const gameCanvas = document.getElementById('canvas-game');
-    const hudCanvas  = document.getElementById('canvas-hud');
-    const overlay    = document.getElementById('canvas-transition-overlay');
+    const hudCanvas = document.getElementById('canvas-hud');
+    const overlay = document.getElementById('canvas-transition-overlay');
     if (!gameCanvas || !overlay) {
       showTransition(levelIndex, levelData, onContinue);
       return;
@@ -344,9 +428,9 @@ const Screens = (() => {
     overlay.style.display = 'block';
 
     const rowHeight = 6;
-    const numRows   = Math.ceil(H / rowHeight);
-    const duration  = 700;
-    const start     = performance.now();
+    const numRows = Math.ceil(H / rowHeight);
+    const duration = 700;
+    const start = performance.now();
 
     const filled = new Array(numRows).fill(false);
 
@@ -356,16 +440,16 @@ const Screens = (() => {
       octx.save();
       octx.globalCompositeOperation = 'source-over';
 
-      const half      = (numRows / 2) | 0;
+      const half = (numRows / 2) | 0;
       const phase1End = 0.6;
-      const progress  = Math.min(1, t / phase1End);
+      const progress = Math.min(1, t / phase1End);
       const maxOffset = half;
-      const offset    = Math.floor(progress * maxOffset);
+      const offset = Math.floor(progress * maxOffset);
 
       for (let i = 0; i < offset; i++) {
         const topIndex = i;
         if (topIndex >= 0 && topIndex < numRows && !filled[topIndex]) {
-          const y     = topIndex * rowHeight;
+          const y = topIndex * rowHeight;
           const alpha = 0.8 + 0.2 * (i / maxOffset);
           octx.fillStyle = 'rgba(0, 0, 0,' + alpha + ')';
           octx.fillRect(0, y, W, rowHeight);
@@ -374,7 +458,7 @@ const Screens = (() => {
 
         const bottomIndex = numRows - 1 - i;
         if (bottomIndex >= 0 && bottomIndex < numRows && !filled[bottomIndex]) {
-          const y     = bottomIndex * rowHeight;
+          const y = bottomIndex * rowHeight;
           const alpha = 0.8 + 0.2 * (i / maxOffset);
           octx.fillStyle = 'rgba(0, 0, 0,' + alpha + ')';
           octx.fillRect(0, y, W, rowHeight);
@@ -386,13 +470,13 @@ const Screens = (() => {
         const p2 = (t - phase1End) / (1 - phase1End);
         for (let r = 0; r < numRows; r++) {
           if (!filled[r]) {
-            const distTop    = r;
+            const distTop = r;
             const distBottom = numRows - 1 - r;
-            const distMin    = Math.min(distTop, distBottom);
-            const maxDist    = half;
+            const distMin = Math.min(distTop, distBottom);
+            const maxDist = half;
 
             if (distMin <= p2 * maxDist) {
-              const y     = r * rowHeight;
+              const y = r * rowHeight;
               const alpha = 0.7 + 0.3 * (1 - distMin / maxDist);
               octx.fillStyle = 'rgba(0, 0, 0,' + alpha + ')';
               octx.fillRect(0, y, W, rowHeight);
@@ -407,8 +491,8 @@ const Screens = (() => {
       if (t < 1) {
         requestAnimationFrame(step);
       } else {
-        overlay.style.opacity  = '0';
-        overlay.style.display  = 'none';
+        overlay.style.opacity = '0';
+        overlay.style.display = 'none';
         showTransition(levelIndex, levelData, onContinue);
       }
     }
@@ -428,59 +512,58 @@ const Screens = (() => {
 
     container.innerHTML = entries.map((e, i) => {
       const initials = (e.initials || '???').toUpperCase();
-      const score    = e.score || 0;
-      const rank     = String(i + 1).padStart(2, '0');
+      const score = e.score || 0;
+      const rank = String(i + 1).padStart(2, '0');
       return `<div>${rank}. ${initials} — ${score}</div>`;
     }).join('');
   }
 
-async function handleEndOfGameScore(finalScore) {
-  let scores = [];
-  try {
-    scores = await window.fetchTopScores();
-  } catch (err) {
-    console.error('Error loading scores', err);
-    scores = []; // fall back to empty list
-  }
+  async function handleEndOfGameScore(finalScore) {
+    let scores = [];
+    try {
+      scores = await window.fetchTopScores();
+    } catch (err) {
+      console.error('Error loading scores', err);
+      scores = [];
+    }
 
-  if (!Array.isArray(scores)) {
-    scores = [];
-  }
+    if (!Array.isArray(scores)) {
+      scores = [];
+    }
 
-  const qualifies = scores.length < 10 ||
-                    finalScore > (scores[scores.length - 1]?.score || 0);
+    const qualifies = scores.length < 10 ||
+      finalScore > (scores[scores.length - 1]?.score || 0);
 
-  if (!qualifies) return;
-        // Find the rank this score would have (1‑based)
-        let rank = scores.findIndex(s => (s.score || 0) < finalScore) + 1;
-        if (rank === 0) {
-          // Either list empty or all scores >= finalScore and list shorter than 10
-          rank = scores.length + 1;
-        }
+    if (!qualifies) return;
 
-        let initials = "";
-        while (!initials) {
-          const input = prompt(
-            `NEW HIGH SCORE! #${rank}. Enter 3 initials (A‑Z):`
-          ) || "";
-          const cleaned = input.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
-          if (cleaned.length === 3) {
-            initials = cleaned;
-          } else if (!input) {
-            break; // user cancelled
-          }
-        }
+    // Find the rank this score would have (1‑based)
+    let rank = scores.findIndex(s => (s.score || 0) < finalScore) + 1;
+    if (rank === 0) {
+      rank = scores.length + 1;
+    }
 
-        if (initials) {
-          await window.submitScore(initials, finalScore);
-        }
+    let initials = "";
+    while (!initials) {
+      const input = prompt(
+        `NEW HIGH SCORE! #${rank}. Enter 3 initials (A‑Z):`
+      ) || "";
+      const cleaned = input.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
+      if (cleaned.length === 3) {
+        initials = cleaned;
+      } else if (!input) {
+        break;
       }
+    }
 
-      const updated = await window.fetchTopScores();
-      renderHighscoreList(updated);
-      show('highscores');
-    } catch (e) {
-      console.error('Error saving score', e);
+    if (initials) {
+      try {
+        await window.submitScore(initials, finalScore);
+        const updated = await window.fetchTopScores();
+        renderHighscoreList(updated);
+        show('highscores');
+      } catch (e) {
+        console.error('Error saving score', e);
+      }
     }
   }
 

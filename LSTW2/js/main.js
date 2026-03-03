@@ -1,7 +1,7 @@
 // ============================================================
 //  Main — Game loop, state machine, init, level loading
 // ============================================================
-
+console.log('main.js loaded at', performance.now());
 const GameState = (() => {
 
   const state = {
@@ -141,8 +141,19 @@ const GameState = (() => {
 
 // ── Boot ────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  Renderer.init(document.getElementById('canvas-game'));
-  HUD.init(document.getElementById('canvas-hud'));
-  Player.initInput(document.getElementById('canvas-game'));
+  console.log('DOMContentLoaded at', performance.now());
+
   Screens.initIntro();
+
+  setTimeout(() => {
+    const gameCanvas = document.getElementById('canvas-game');
+    const hudCanvas  = document.getElementById('canvas-hud');
+
+    Renderer.init(gameCanvas);
+    HUD.init(hudCanvas);
+    Player.initInput(gameCanvas);
+  }, 0);
 });
+
+
+window.GameState = GameState;

@@ -375,7 +375,6 @@
 <!-- Firebase App + Firestore -->
 <script type="module" defer>
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
   import {
     getFirestore,
     collection,
@@ -396,12 +395,32 @@
     measurementId: "G-SYVRJG4L2L"
   };
 
-const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
 
-  window.fetchTopScores = async function () { /* unchanged */ };
-  window.submitScore = async function (initials, score) { /* unchanged */ };
+  window.fetchTopScores = async function () {
+    const scoresCol = collection(db, "scores");
+    const q = query(scoresCol, orderBy("score", "desc"), limit(10));
+    const snap = await getDocs(q);
+    const results = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      results.push({
+        initials: d.initials || "???",
+        score: d.score || 0
+      });
+    });
+    return results;
+  };
+
+  window.submitScore = async function (initials, score) {
+    const scoresCol = collection(db, "scores");
+    await addDoc(scoresCol, {
+      initials,
+      score,
+      createdAt: Date.now()
+    });
+  };
 </script>
 
 <script src="js/constants.js" defer></script>
@@ -416,4 +435,4 @@ const app = initializeApp(firebaseConfig);
 <script src="js/hud.js" defer></script>
 <script src="js/screens.js" defer></script>
 
-<script type="module" src="js/main.js"></script>
+<script src="js/main.js" defer></script>
