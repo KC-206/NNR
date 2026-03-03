@@ -2,7 +2,6 @@
 //  Pickups — All pickup types, bob animation, billboard render
 // ============================================================
 
-
 const ArmorSprite = new Image();
 ArmorSprite.src = 'armor.png';  
 
@@ -13,7 +12,10 @@ const CoffeeSprite = new Image();
 CoffeeSprite.src = 'coffee.png';  
 
 const KeySprite = new Image();
-KeySprite.src = 'key.png';  
+KeySprite.src = 'key.png';
+
+const GoldenGojiraSprite = new Image();
+GoldenGojiraSprite.src = 'goldengojira.png';
 
 
 const Pickups = (() => {
@@ -56,60 +58,44 @@ const Pickups = (() => {
         spriteCache[type] = CoffeeSprite;
         return CoffeeSprite;
       }
-      // Cup body
       ctx.fillStyle = '#f0e0c0';
       ctx.beginPath();
       ctx.moveTo(10, 12); ctx.lineTo(38, 12);
       ctx.lineTo(34, 42); ctx.lineTo(14, 42);
       ctx.closePath(); ctx.fill();
-      // Coffee liquid
       ctx.fillStyle = '#3a1a00';
       ctx.fillRect(12, 14, 24, 10);
-      // Crema
       ctx.fillStyle = '#c08040';
       ctx.beginPath(); ctx.ellipse(24, 14, 12, 4, 0, 0, Math.PI*2); ctx.fill();
-      // Handle
       ctx.strokeStyle = '#d0c0a0'; ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.arc(38, 27, 8, -Math.PI/2, Math.PI/2);
       ctx.stroke();
-      // Steam
       ctx.strokeStyle = 'rgba(200,200,200,0.7)'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(19,10); ctx.bezierCurveTo(15,4,23,1,19,-2); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(29,10); ctx.bezierCurveTo(25,4,33,1,29,-2); ctx.stroke();
     }
 
-   else if (type === 'armor') {
-      // Use file sprite instead of procedural
+    else if (type === 'armor') {
       if (ArmorSprite && ArmorSprite.complete && ArmorSprite.naturalWidth > 0) {
         spriteCache[type] = ArmorSprite;
         return ArmorSprite;
       }
-      // Fallback: keep your old procedural shield until the image loads
       ctx.fillStyle = '#8090b0';
       ctx.beginPath();
-      ctx.moveTo(24, 4);
-      ctx.lineTo(40, 12);
-      ctx.lineTo(40, 28);
-      ctx.lineTo(24, 44);
-      ctx.lineTo(8, 28);
-      ctx.lineTo(8, 12);
+      ctx.moveTo(24, 4); ctx.lineTo(40, 12); ctx.lineTo(40, 28);
+      ctx.lineTo(24, 44); ctx.lineTo(8, 28); ctx.lineTo(8, 12);
       ctx.closePath(); ctx.fill();
       ctx.fillStyle = '#a0b0d0';
       ctx.beginPath();
-      ctx.moveTo(24, 10);
-      ctx.lineTo(34, 16);
-      ctx.lineTo(34, 26);
-      ctx.lineTo(24, 36);
-      ctx.lineTo(14, 26);
-      ctx.lineTo(14, 16);
+      ctx.moveTo(24, 10); ctx.lineTo(34, 16); ctx.lineTo(34, 26);
+      ctx.lineTo(24, 36); ctx.lineTo(14, 26); ctx.lineTo(14, 16);
       ctx.closePath(); ctx.fill();
       ctx.fillStyle = '#c0d0f0';
       ctx.beginPath(); ctx.arc(24, 24, 5, 0, Math.PI*2); ctx.fill();
     }
 
     else if (type === 'baguette') {
-      // Use file sprite instead of procedural
       if (BaguetteSprite && BaguetteSprite.complete && BaguetteSprite.naturalWidth > 0) {
         spriteCache[type] = BaguetteSprite;
         return BaguetteSprite;
@@ -121,7 +107,6 @@ const Pickups = (() => {
       ctx.fillStyle = '#c08030';
       ctx.beginPath();
       ctx.ellipse(0, -2, 18, 5, 0, 0, Math.PI*2); ctx.fill();
-      // Score lines
       ctx.strokeStyle = '#a06020'; ctx.lineWidth = 1.5;
       [-8,-2,4,10].forEach(x => {
         ctx.beginPath();
@@ -146,7 +131,6 @@ const Pickups = (() => {
     }
 
     else if (type === 'energy') {
-      // Green energy canister
       ctx.fillStyle = '#20a040';
       ctx.fillRect(14, 8, 20, 32);
       ctx.fillStyle = '#10601a';
@@ -160,6 +144,21 @@ const Pickups = (() => {
       ctx.fillRect(20, 28, 8, 3);
     }
 
+    else if (type === 'goldengojira') {
+      if (GoldenGojiraSprite && GoldenGojiraSprite.complete && GoldenGojiraSprite.naturalWidth > 0) {
+        spriteCache[type] = GoldenGojiraSprite;
+        return GoldenGojiraSprite;
+      }
+      // Fallback: simple gold idol shape
+      ctx.fillStyle = '#ffd700';
+      ctx.fillRect(18, 8, 12, 32);
+      ctx.beginPath(); ctx.arc(24, 8, 8, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = '#ffaa00';
+      ctx.fillRect(14, 36, 20, 4);
+      ctx.fillStyle = '#fff8a0';
+      ctx.fillRect(20, 12, 4, 4);
+    }
+
     spriteCache[type] = c;
     return c;
   }
@@ -171,7 +170,6 @@ const Pickups = (() => {
       if (!pk.alive) continue;
       pk.bobPhase += dt * 2.5;
 
-      // Pickup radius check
       const d2 = Utils.dist2(ps.x, ps.y, pk.x, pk.y);
       if (d2 < 0.4 * 0.4) {
         collect(pk);
@@ -203,6 +201,15 @@ const Pickups = (() => {
       case 'energy':
         Player.addGojiraCharge(C.ENERGY_CANISTER_AMOUNT);
         Audio2.playPickup('energy');
+        break;
+      case 'goldengojira':
+        Player.state.score = (Player.state.score || 0) + C.GOLDEN_GOJIRA_POINTS;
+        Player.addGojiraCharge(C.ENERGY_CANISTER_AMOUNT);
+        Player.addArmor(C.ARMOR_SHARD_AMOUNT);
+        Player.heal(C.COFFEE_CUP_HEAL);
+        Audio2.playPickup('energy');
+        HUD.showPickupBanner('⭐ GOLDEN GOJIRA +' + C.GOLDEN_GOJIRA_POINTS + ' ⭐', '#ffd700');
+        HUD.showPlayerQuip("A golden Gojira! Oh father, I miss you!");
         break;
     }
   }

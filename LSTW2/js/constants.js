@@ -19,7 +19,7 @@ const C = {
   PLAYER_ROT_SPEED: 2.2,       // radians per second (keyboard)
   PLAYER_MOUSE_SENS: 0.0025,   // mouse sensitivity
   PLAYER_START_HP: 100,
-  PLAYER_START_ARMOR: 0,
+  PLAYER_START_ARMOR: 25,
   PLAYER_MAX_HP: 100,
   PLAYER_MAX_ARMOR: 100,
   PLAYER_COLLISION_R: 0.25,    // collision radius in map units
@@ -30,13 +30,13 @@ const C = {
   COFFEE_COOLDOWN: 180,        // ms between shots
   COFFEE_SPEED: 12,
 
-  BAGUETTE_DAMAGE: 70,
-  BAGUETTE_SPLASH_R: 1.8,      // map units
-  BAGUETTE_START_AMMO: 3,
+  BAGUETTE_DAMAGE: 95,
+  BAGUETTE_SPLASH_R: 3.0,      // map units
+  BAGUETTE_START_AMMO: 8,
   BAGUETTE_SPEED: 6,
   BAGUETTE_GRAVITY: 0.012,
 
-  GOJIRA_DAMAGE: 999,
+  GOJIRA_DAMAGE: 600,
   GOJIRA_SPLASH_R: 4.0,
   GOJIRA_CHARGE_RATE: 6.08,    // per second
   GOJIRA_KILL_BONUS: 15,       // charge added per kill
@@ -66,6 +66,7 @@ const C = {
   PRICILLA_PHASE3_HP: 120,
 
   // ── Pickups ────────────────────────────────────────────
+  GOLDEN_GOJIRA_POINTS: 1500,   // or whatever bonus feels right
   COFFEE_CUP_HEAL: 25,
   ARMOR_SHARD_AMOUNT: 20,
   ENERGY_CANISTER_AMOUNT: 30,
@@ -136,11 +137,12 @@ const C = {
   ],
   PLAYER_KILL_QUIPS: [
   "Extra foam, extra pain!",
-  "That's for the decaf!",
-  "Full strength only!",
+  "That's a latte damage.",
+  "Espresso yourself!",
+  "That's one venti problem solved",
   "Caffeinated justice!",
-  "No refills for you.",
-  "Should've ordered herbal tea.",
+  "You just got double-shotted.",
+  "Percolate THAT",
   "Grounds for termination.",
 ],
   PLAYER_HURT_QUIPS: [

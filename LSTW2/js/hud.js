@@ -40,7 +40,7 @@ const HUD = (() => {
   faceCanvas.width = 100; faceCanvas.height = 100;
   const faceCtx = faceCanvas.getContext('2d');
 
-   function drawFace(hp, gojiraCharge) {
+  function drawFace(hp, gojiraCharge) {
     const c = faceCtx;
     const w = 100, h = 100;
     const hpPct  = hp / C.PLAYER_MAX_HP;
@@ -55,189 +55,167 @@ const HUD = (() => {
     c.fillStyle = '#1a0800'; c.fillRect(0,0,w,h);
     c.strokeStyle = '#ff6600'; c.lineWidth = 2; c.strokeRect(0,0,w,h);
 
-if (inGojira) {
-  // ── GOJIRA PORTRAIT (friendlier pixel art) ──────────────
+    if (inGojira) {
+      // ── GOJIRA PORTRAIT (friendlier pixel art) ──────────────
 
-  // === DORSAL SPIKES ===
-  c.fillStyle = '#2a4a2e';
-  c.beginPath(); c.moveTo(50,6); c.lineTo(44,22); c.lineTo(56,22); c.closePath(); c.fill();
-  c.fillStyle = '#243e28';
-  [[37,10],[63,10]].forEach(([x,y]) => {
-    c.beginPath(); c.moveTo(x,y); c.lineTo(x-4,22); c.lineTo(x+4,22); c.closePath(); c.fill();
-  });
-  c.fillStyle = '#1e3422';
-  [[24,16],[76,16]].forEach(([x,y]) => {
-    c.beginPath(); c.moveTo(x,y); c.lineTo(x-3,24); c.lineTo(x+3,24); c.closePath(); c.fill();
-  });
+      // === DORSAL SPIKES ===
+      c.fillStyle = '#2a4a2e';
+      c.beginPath(); c.moveTo(50,6); c.lineTo(44,22); c.lineTo(56,22); c.closePath(); c.fill();
+      c.fillStyle = '#243e28';
+      [[37,10],[63,10]].forEach(([x,y]) => {
+        c.beginPath(); c.moveTo(x,y); c.lineTo(x-4,22); c.lineTo(x+4,22); c.closePath(); c.fill();
+      });
+      c.fillStyle = '#1e3422';
+      [[24,16],[76,16]].forEach(([x,y]) => {
+        c.beginPath(); c.moveTo(x,y); c.lineTo(x-3,24); c.lineTo(x+3,24); c.closePath(); c.fill();
+      });
 
+      // === HEAD BASE — rounder, softer ===
+      c.fillStyle = '#2e4e32';
+      c.beginPath();
+      c.roundRect(14, 22, 72, 64, 12);
+      c.fill();
 
-  // === HEAD BASE — rounder, softer ===
-  c.fillStyle = '#2e4e32';
-  // Main head as a rounder rect
-  c.beginPath();
-  c.roundRect(14, 22, 72, 64, 12);
-  c.fill();
+      // Subtle scale shading
+      c.fillStyle = '#263e2a';
+      c.beginPath(); c.roundRect(16, 24, 32, 28, 8); c.fill();
+      c.beginPath(); c.roundRect(52, 24, 32, 28, 8); c.fill();
+      c.fillStyle = '#324c36';
+      c.beginPath(); c.roundRect(34, 22, 32, 18, 6); c.fill();
 
-  // Subtle scale shading — two tone, not too harsh
-  c.fillStyle = '#263e2a';
-  c.beginPath(); c.roundRect(16, 24, 32, 28, 8); c.fill(); // left cheek
-  c.beginPath(); c.roundRect(52, 24, 32, 28, 8); c.fill(); // right cheek
-  c.fillStyle = '#324c36';
-  c.beginPath(); c.roundRect(34, 22, 32, 18, 6); c.fill(); // forehead highlight
- 
-// === PINK BOW 🎀 (drawn after head so it covers spikes) ===
-  const bowX = 50, bowY = 20;
+      // === PINK BOW 🎀 ===
+      const bowX = 50, bowY = 20;
 
-  // Bow left loop
-  c.fillStyle = '#ff6eb4';
-  c.beginPath();
-  c.moveTo(bowX, bowY + 2);
-  c.lineTo(bowX - 20, bowY - 10);
-  c.lineTo(bowX - 22, bowY + 6);
-  c.lineTo(bowX - 5, bowY + 8);
-  c.closePath();
-  c.fill();
+      c.fillStyle = '#ff6eb4';
+      c.beginPath();
+      c.moveTo(bowX, bowY + 2);
+      c.lineTo(bowX - 20, bowY - 10);
+      c.lineTo(bowX - 22, bowY + 6);
+      c.lineTo(bowX - 5, bowY + 8);
+      c.closePath(); c.fill();
 
-  // Bow right loop
-  c.beginPath();
-  c.moveTo(bowX, bowY + 2);
-  c.lineTo(bowX + 20, bowY - 10);
-  c.lineTo(bowX + 22, bowY + 6);
-  c.lineTo(bowX + 5, bowY + 8);
-  c.closePath();
-  c.fill();
+      c.beginPath();
+      c.moveTo(bowX, bowY + 2);
+      c.lineTo(bowX + 20, bowY - 10);
+      c.lineTo(bowX + 22, bowY + 6);
+      c.lineTo(bowX + 5, bowY + 8);
+      c.closePath(); c.fill();
 
-  // Bow shading (darker pink on loops)
-  c.fillStyle = '#c73d80';
-  c.beginPath();
-  c.moveTo(bowX - 3, bowY + 4);
-  c.lineTo(bowX - 20, bowY - 2);
-  c.lineTo(bowX - 20, bowY + 6);
-  c.lineTo(bowX - 5, bowY + 8);
-  c.closePath();
-  c.fill();
-  c.beginPath();
-  c.moveTo(bowX + 3, bowY + 4);
-  c.lineTo(bowX + 20, bowY - 2);
-  c.lineTo(bowX + 20, bowY + 6);
-  c.lineTo(bowX + 5, bowY + 8);
-  c.closePath();
-  c.fill();
+      c.fillStyle = '#c73d80';
+      c.beginPath();
+      c.moveTo(bowX - 3, bowY + 4);
+      c.lineTo(bowX - 20, bowY - 2);
+      c.lineTo(bowX - 20, bowY + 6);
+      c.lineTo(bowX - 5, bowY + 8);
+      c.closePath(); c.fill();
+      c.beginPath();
+      c.moveTo(bowX + 3, bowY + 4);
+      c.lineTo(bowX + 20, bowY - 2);
+      c.lineTo(bowX + 20, bowY + 6);
+      c.lineTo(bowX + 5, bowY + 8);
+      c.closePath(); c.fill();
 
-  // Bow highlights
-  c.fillStyle = '#ffaad4';
-  c.fillRect(bowX - 16, bowY - 4, 7, 5);
-  c.fillRect(bowX + 10, bowY - 4, 7, 5);
+      c.fillStyle = '#ffaad4';
+      c.fillRect(bowX - 16, bowY - 4, 7, 5);
+      c.fillRect(bowX + 10, bowY - 4, 7, 5);
 
-  // Center knot (covers spike base)
-  c.fillStyle = '#ff6eb4';
-  c.beginPath(); c.roundRect(bowX - 6, bowY - 4, 12, 12, 3); c.fill();
-  c.fillStyle = '#c73d80';
-  c.beginPath(); c.roundRect(bowX - 3, bowY - 1, 6, 6, 2); c.fill();
-  c.fillStyle = '#ffaad4';
-  c.fillRect(bowX - 2, bowY, 3, 3);
+      c.fillStyle = '#ff6eb4';
+      c.beginPath(); c.roundRect(bowX - 6, bowY - 4, 12, 12, 3); c.fill();
+      c.fillStyle = '#c73d80';
+      c.beginPath(); c.roundRect(bowX - 3, bowY - 1, 6, 6, 2); c.fill();
+      c.fillStyle = '#ffaad4';
+      c.fillRect(bowX - 2, bowY, 3, 3);
 
-  // === BROW RIDGES — softer, slight tilt not extreme ===
-  c.fillStyle = '#1a2e1c';
-  c.beginPath();
-  c.moveTo(18,38); c.lineTo(38,33); c.lineTo(38,38); c.lineTo(18,40);
-  c.closePath(); c.fill();
-  c.beginPath();
-  c.moveTo(82,38); c.lineTo(62,33); c.lineTo(62,38); c.lineTo(82,40);
-  c.closePath(); c.fill();
+      // === BROW RIDGES ===
+      c.fillStyle = '#1a2e1c';
+      c.beginPath();
+      c.moveTo(18,38); c.lineTo(38,33); c.lineTo(38,38); c.lineTo(18,40);
+      c.closePath(); c.fill();
+      c.beginPath();
+      c.moveTo(82,38); c.lineTo(62,33); c.lineTo(62,38); c.lineTo(82,40);
+      c.closePath(); c.fill();
 
-  // === EYE SOCKETS ===
-  c.fillStyle = '#0d150e';
-  c.beginPath(); c.roundRect(20, 36, 20, 14, 4); c.fill();
-  c.beginPath(); c.roundRect(60, 36, 20, 14, 4); c.fill();
+      // === EYE SOCKETS ===
+      c.fillStyle = '#0d150e';
+      c.beginPath(); c.roundRect(20, 36, 20, 14, 4); c.fill();
+      c.beginPath(); c.roundRect(60, 36, 20, 14, 4); c.fill();
 
-  // Eye glow — rich purple, more luminous
-  c.fillStyle = '#6a0d99';
-  c.beginPath(); c.roundRect(21, 37, 18, 12, 3); c.fill();
-  c.beginPath(); c.roundRect(61, 37, 18, 12, 3); c.fill();
+      c.fillStyle = '#6a0d99';
+      c.beginPath(); c.roundRect(21, 37, 18, 12, 3); c.fill();
+      c.beginPath(); c.roundRect(61, 37, 18, 12, 3); c.fill();
 
-  c.fillStyle = '#c060ee';
-  c.beginPath(); c.roundRect(22, 38, 14, 9, 3); c.fill();
-  c.beginPath(); c.roundRect(62, 38, 14, 9, 3); c.fill();
+      c.fillStyle = '#c060ee';
+      c.beginPath(); c.roundRect(22, 38, 14, 9, 3); c.fill();
+      c.beginPath(); c.roundRect(62, 38, 14, 9, 3); c.fill();
 
-  // Bright iris center
-  c.fillStyle = '#e8a0ff';
-  c.beginPath(); c.roundRect(25, 39, 8, 6, 2); c.fill();
-  c.beginPath(); c.roundRect(65, 39, 8, 6, 2); c.fill();
+      c.fillStyle = '#e8a0ff';
+      c.beginPath(); c.roundRect(25, 39, 8, 6, 2); c.fill();
+      c.beginPath(); c.roundRect(65, 39, 8, 6, 2); c.fill();
 
-  // Pupil — softer oval, not harsh slit
-  c.fillStyle = '#1a0028';
-  c.beginPath(); c.roundRect(28, 39, 3, 6, 1); c.fill();
-  c.beginPath(); c.roundRect(68, 39, 3, 6, 1); c.fill();
+      c.fillStyle = '#1a0028';
+      c.beginPath(); c.roundRect(28, 39, 3, 6, 1); c.fill();
+      c.beginPath(); c.roundRect(68, 39, 3, 6, 1); c.fill();
 
-  // Catchlight (makes eyes feel alive)
-  c.fillStyle = '#ffffff';
-  c.fillRect(26, 39, 2, 2);
-  c.fillRect(66, 39, 2, 2);
+      c.fillStyle = '#ffffff';
+      c.fillRect(26, 39, 2, 2);
+      c.fillRect(66, 39, 2, 2);
 
-  // === SNOUT — softer, rounder ===
-  c.fillStyle = '#2a4a2e';
-  c.beginPath(); c.roundRect(34, 50, 32, 18, 8); c.fill();
-  // Nostrils
-  c.fillStyle = '#0e1e10';
-  c.beginPath(); c.roundRect(38, 56, 7, 5, 2); c.fill();
-  c.beginPath(); c.roundRect(55, 56, 7, 5, 2); c.fill();
-  // Snout highlight
-  c.fillStyle = '#3a5e3e';
-  c.beginPath(); c.roundRect(40, 51, 20, 6, 3); c.fill();
+      // === SNOUT ===
+      c.fillStyle = '#2a4a2e';
+      c.beginPath(); c.roundRect(34, 50, 32, 18, 8); c.fill();
+      c.fillStyle = '#0e1e10';
+      c.beginPath(); c.roundRect(38, 56, 7, 5, 2); c.fill();
+      c.beginPath(); c.roundRect(55, 56, 7, 5, 2); c.fill();
+      c.fillStyle = '#3a5e3e';
+      c.beginPath(); c.roundRect(40, 51, 20, 6, 3); c.fill();
 
-  // === CHEEK HIGHLIGHTS ===
-  c.fillStyle = '#3a5e40';
-  c.beginPath(); c.roundRect(18, 48, 14, 10, 4); c.fill();
-  c.beginPath(); c.roundRect(68, 48, 14, 10, 4); c.fill();
+      // === CHEEK HIGHLIGHTS ===
+      c.fillStyle = '#3a5e40';
+      c.beginPath(); c.roundRect(18, 48, 14, 10, 4); c.fill();
+      c.beginPath(); c.roundRect(68, 48, 14, 10, 4); c.fill();
 
-  // === UPPER JAW — not too deep ===
-  c.fillStyle = '#263e2a';
-  c.fillRect(18, 68, 64, 8);
+      // === UPPER JAW ===
+      c.fillStyle = '#263e2a';
+      c.fillRect(18, 68, 64, 8);
 
-  // Upper teeth — fewer, more spaced, not wall-of-horror
-  c.fillStyle = '#ece8cc';
-  for (let i = 0; i < 7; i++) {
-    const tx = 22 + i * 9;
-    c.beginPath();
-    c.moveTo(tx, 69); c.lineTo(tx+6, 69); c.lineTo(tx+3, 75);
-    c.closePath(); c.fill();
-  }
+      c.fillStyle = '#ece8cc';
+      for (let i = 0; i < 7; i++) {
+        const tx = 22 + i * 9;
+        c.beginPath();
+        c.moveTo(tx, 69); c.lineTo(tx+6, 69); c.lineTo(tx+3, 75);
+        c.closePath(); c.fill();
+      }
 
-  // === ANIMATED JAW ===
-  const jawOpen = mouthTalking ? Math.floor(mouthOpenness * 10) : 1;
+      // === ANIMATED JAW ===
+      const jawOpen = mouthTalking ? Math.floor(mouthOpenness * 10) : 1;
 
-  // Inner mouth — dark but not pitch black
-  c.fillStyle = '#120a18';
-  c.fillRect(20, 75, 60, 6 + jawOpen);
+      c.fillStyle = '#120a18';
+      c.fillRect(20, 75, 60, 6 + jawOpen);
 
-  // Subtle inner glow (hint of atomic breath potential)
-  c.fillStyle = '#1e0a2a';
-  c.fillRect(28, 77, 44, 2 + Math.floor(jawOpen * 0.5));
+      c.fillStyle = '#1e0a2a';
+      c.fillRect(28, 77, 44, 2 + Math.floor(jawOpen * 0.5));
 
-  // Lower teeth — smaller, tidier
-  c.fillStyle = '#ece8cc';
-  const lowerY = 80 + jawOpen;
-  for (let i = 0; i < 6; i++) {
-    const tx = 24 + i * 9;
-    c.beginPath();
-    c.moveTo(tx, lowerY); c.lineTo(tx+6, lowerY); c.lineTo(tx+3, lowerY-5);
-    c.closePath(); c.fill();
-  }
+      c.fillStyle = '#ece8cc';
+      const lowerY = 80 + jawOpen;
+      for (let i = 0; i < 6; i++) {
+        const tx = 24 + i * 9;
+        c.beginPath();
+        c.moveTo(tx, lowerY); c.lineTo(tx+6, lowerY); c.lineTo(tx+3, lowerY-5);
+        c.closePath(); c.fill();
+      }
 
-  // === LOWER JAW / CHIN — rounded ===
-  c.fillStyle = '#2a4a2e';
-  c.beginPath(); c.roundRect(18, lowerY, 64, 10, [0,0,6,6]); c.fill();
+      // === LOWER JAW / CHIN ===
+      c.fillStyle = '#2a4a2e';
+      c.beginPath(); c.roundRect(18, lowerY, 64, 10, [0,0,6,6]); c.fill();
 
-  // === NECK ===
-  c.fillStyle = '#263e2a';
-  c.fillRect(30, lowerY + 8, 40, 12);
-  // Neck highlight
-  c.fillStyle = '#2e4a32';
-  c.fillRect(38, lowerY + 10, 24, 8);
+      // === NECK ===
+      c.fillStyle = '#263e2a';
+      c.fillRect(30, lowerY + 8, 40, 12);
+      c.fillStyle = '#2e4a32';
+      c.fillRect(38, lowerY + 10, 24, 8);
 
-  return;
-}
+      return;
+    }
 
     // ── ORIGINAL HUMAN PORTRAIT ─────────────────────────
     c.fillStyle = '#3d1f00';
@@ -416,22 +394,19 @@ if (inGojira) {
     ctx.fillText('WASD=Move  Space=Shoot  G=Baguette  E=Gojira  TAB=Map  M=Mute', 10, hudCanvas.height - 5);
 
     // ── Boss bar (appears just above the HUD) ──
-      const boss = enemies.find(e => e.type === 'pricilla' && !e.dead);
+    const boss = enemies.find(e => e.type === 'pricilla' && !e.dead);
     if (boss) {
       const bw   = 400, bh = 18;
       const bx   = Math.floor(C.SCREEN_W / 2) - bw / 2;
-      const by   = 32;                            // TOP of screen
+      const by   = 32;
       const bPct = boss.hp / boss.maxHp;
 
-      // dark backdrop
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
       ctx.fillRect(bx - 4, by - 22, bw + 8, bh + 30);
 
-      // bar background
       ctx.fillStyle = '#1a0008';
       ctx.fillRect(bx, by, bw, bh);
 
-      // bar fill
       const bGrd = ctx.createLinearGradient(bx, 0, bx + bw, 0);
       bGrd.addColorStop(0,   '#400020');
       bGrd.addColorStop(0.5, '#cc0060');
@@ -439,12 +414,10 @@ if (inGojira) {
       ctx.fillStyle = bGrd;
       ctx.fillRect(bx, by, bw * bPct, bh);
 
-      // outline
       ctx.strokeStyle = '#ff00aa';
       ctx.lineWidth   = 2;
       ctx.strokeRect(bx, by, bw, bh);
 
-      // phase pips
       [C.PRICILLA_PHASE2_HP / C.PRICILLA_HP, C.PRICILLA_PHASE3_HP / C.PRICILLA_HP].forEach(frac => {
         const pipX = bx + bw * frac;
         ctx.strokeStyle = '#fff';
@@ -455,7 +428,6 @@ if (inGojira) {
         ctx.stroke();
       });
 
-      // label ABOVE the bar
       ctx.fillStyle = '#ffd0e8';
       ctx.font      = 'bold 12px Courier New';
       ctx.textAlign = 'center';
@@ -465,7 +437,6 @@ if (inGojira) {
     }
 
     if (minimapVisible) drawMinimap(ctx, player, levelIndex);
-
   }
 
   // ── Bar helpers ───────────────────────────────────────
@@ -490,7 +461,7 @@ if (inGojira) {
     const cell = C.MINIMAP_CELL, size = C.MINIMAP_SIZE;
     const HY = hudCanvas.height - C.HUD_H;
     const ox = C.SCREEN_W - size - 10;
-    const oy = HY - size - 10;   // sits just above the HUD
+    const oy = HY - size - 10;
     const px = Math.floor(player.x), py = Math.floor(player.y);
     for (let dx=-4;dx<=4;dx++)
       for (let dy=-4;dy<=4;dy++)
@@ -525,54 +496,91 @@ if (inGojira) {
     ctx.fillText('[TAB] MAP', ox+2, oy+size-2);
   }
 
-// GOJIRA MODE
-function showGojiraModeActivated() {
-  const el = document.createElement('div');
-  el.textContent = '☢️ GOJIRA MODE ACTIVATED ☢️';
-  el.style.cssText = `
-    position:absolute;
-    top:40%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    font-family:'Courier New',monospace;
-    font-size:28px;
-    font-weight:bold;
-    color:#40ff80;
-    text-shadow:0 0 20px #00ff60,0 0 40px #00cc40;
-    letter-spacing:4px;
-    z-index:10;
-    pointer-events:none;
-    white-space:nowrap;
-    opacity:1;
-    transition:opacity 0.12s;
-  `;
-  const container = document.getElementById('damage-numbers');
-  if (!container) return;
-  container.appendChild(el);
+  // ── GOJIRA MODE banner ────────────────────────────────
+  function showGojiraModeActivated() {
+    Audio2.playGojiraRoar();
+    const el = document.createElement('div');
+    el.textContent = '☢️ GOJIRA MODE ACTIVATED ☢️';
+    el.style.cssText = `
+      position:absolute;
+      top:40%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      font-family:'Courier New',monospace;
+      font-size:28px;
+      font-weight:bold;
+      color:#40ff80;
+      text-shadow:0 0 20px #00ff60,0 0 40px #00cc40;
+      letter-spacing:4px;
+      z-index:10;
+      pointer-events:none;
+      white-space:nowrap;
+      opacity:1;
+      transition:opacity 0.12s;
+    `;
+    const container = document.getElementById('damage-numbers');
+    if (!container) return;
+    container.appendChild(el);
 
-  // Blink on/off for ~2 seconds
-  let visible = true;
-  let elapsed = 0;
-  const interval = 200; // ms
+    let visible = true;
+    let elapsed = 0;
+    const interval = 200;
+    const id = setInterval(() => {
+      elapsed += interval;
+      visible = !visible;
+      el.style.opacity = visible ? '1' : '0';
+      if (elapsed >= 2000) {
+        clearInterval(id);
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }
+    }, interval);
+  }
 
-  const id = setInterval(() => {
-    elapsed += interval;
-    visible = !visible;
-    el.style.opacity = visible ? '1' : '0';
-    if (elapsed >= 2000) {
-      clearInterval(id);
-      if (el.parentNode) el.parentNode.removeChild(el);
-    }
-  }, interval);
-}
-
-
+  // ── Pickup Banner ─────────────────────────────────────
+  function showPickupBanner(text, color) {
+    const el = document.createElement('div');
+    el.textContent = text;
+    el.style.cssText = `
+      position:absolute;
+      top:35%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      font-family:'Courier New',monospace;
+      font-size:22px;
+      font-weight:bold;
+      color:${color || '#ffffff'};
+      text-shadow:0 0 14px ${color || '#ffffff'},0 0 30px ${color || '#aaaaaa'};
+      letter-spacing:4px;
+      z-index:10;
+      pointer-events:none;
+      white-space:nowrap;
+      opacity:1;
+      transition:opacity 0.5s;
+    `;
+    const container = document.getElementById('damage-numbers');
+    if (!container) return;
+    container.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; }, 1800);
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 2400);
+  }
 
   // ── Quip System ───────────────────────────────────────
   let playerQuipTimer = 0, enemyQuipTimer = 0;
 
   function showPlayerQuip(text) {
     if (!text) return;
+
+    const inGojira =
+      typeof Player !== 'undefined' &&
+      Player.state &&
+      Player.state.gojiraMode;
+
+    if (inGojira) {
+      //Audio2.playGojiraRoar();   // roar instead of wah-wah
+      startTalking(8);           // jaw animation — tune to match your roar file length
+      return;                    // no text bubble
+    }
+
     const el = document.getElementById('quip-player');
     el.textContent = '💬 Laurie: ' + text;
     el.classList.add('visible');
@@ -611,6 +619,6 @@ function showGojiraModeActivated() {
   return {
     init, draw, toggleMinimap,
     showPlayerQuip, showEnemyQuip,
-    spawnDmgNum, resetMinimap, showGojiraModeActivated,
+    spawnDmgNum, resetMinimap, showGojiraModeActivated, showPickupBanner,
   };
 })();

@@ -96,7 +96,8 @@ const Player = (() => {
     const shotY = state.y + dirY * 0.35;
 
     Projectiles.spawnLightning(shotX, shotY, state.angle);
-    Audio2.playGojiraRoar();
+    Audio2.playLightning();
+    //Audio2.playGojiraRoar();
     state.bobPhase += 0.5;
     //HUD.showPlayerQuip(Utils.randomQuip(C.GOJIRA_MODE_QUIPS));
   }
@@ -150,7 +151,7 @@ const Player = (() => {
     if (state.gojiraMode) {
       state.gojiraCharge -= amount;
       addShakeTrauma(0.3);
-      Audio2.playGojiraRoar();
+      //Audio2.playGojiraRoar();
       if (state.gojiraCharge <= 0) {
         state.gojiraCharge = 0;
         _exitGojiraMode();

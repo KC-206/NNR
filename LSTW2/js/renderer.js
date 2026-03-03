@@ -8,7 +8,22 @@ const Renderer = (() => {
   let imageData, buf32;
   const zBuffer = new Float32Array(C.SCREEN_W);
 
-  function init(canvas) {
+const _doorImg = new Image();
+_doorImg.onload = () => {
+  const off    = document.createElement('canvas');
+  off.width    = C.TEXTURE_SIZE;
+  off.height   = C.TEXTURE_SIZE;
+  const offCtx = off.getContext('2d');
+  offCtx.drawImage(_doorImg, 0, 0, C.TEXTURE_SIZE, C.TEXTURE_SIZE);
+  const data = offCtx.getImageData(0, 0, C.TEXTURE_SIZE, C.TEXTURE_SIZE);
+  Maps.setDoorTexture(data);
+};
+_doorImg.onerror = () => {
+  console.error('door.png FAILED to load');
+};
+_doorImg.src = 'door.png';
+
+function init(canvas) {
     gameCanvas = canvas;
     ctx = canvas.getContext('2d');
     imageData = ctx.createImageData(C.SCREEN_W, C.SCREEN_H);
@@ -132,6 +147,7 @@ const Renderer = (() => {
       for (let y = wallTop; y < wallBot; y++) {
         const texColY = Math.floor(((y - wallTop) / (wallBot - wallTop)) * C.TEXTURE_SIZE);
         const ti      = (texColY * C.TEXTURE_SIZE + texColX) * 4;
+        if (tex.data[ti+3] < 128) continue;          // ← skip transparent pixels
         let r = tex.data[ti], g = tex.data[ti+1], b = tex.data[ti+2];
         let shade = Math.max(0, 1 - perpDist / C.MAX_DEPTH * 1.3) + torch;
         if (side === 1) shade *= 0.72;
@@ -209,10 +225,16 @@ const Renderer = (() => {
       else if (kind === 'pickup') {
         const img = Pickups.getSprite(ref.type);
         if (!img) continue;
-        const sw = Math.min(img.width  * scale * 0.5, 80);
-        const sh = Math.min(img.height * scale * 0.5, 80);
+
+        const baseScale   = 0.5;
+        const extraScale  = (ref.type === 'goldengojira') ? 1.6 : 1.0;
+        const pickupScale = baseScale * extraScale;
+
+        const sw = Math.min(img.width  * scale * pickupScale, 240);
+        const sh = Math.min(img.height * scale * pickupScale, 240);
         const dx = sx - sw / 2;
         const dy = midY - sh / 2;
+
         if (dx + sw < 0 || dx > C.SCREEN_W) continue;
         if (dist > zBuffer[zIdx] + 0.3) continue;
         ctx.globalAlpha = 0.7 + Math.sin(time * 3) * 0.3;
@@ -224,7 +246,7 @@ const Renderer = (() => {
   // ── FIX: tightened from +1.5 to +0.1 ──
   if (dist > zBuffer[zIdx] + 0.1) continue;
 
-  const r      = Utils.clamp(scale * 0.5, 4, 22);
+  const r      = 2*(Utils.clamp(scale * 0.8, 8, 34));
   // ── MORE CENTERED: was 0.80, nudged toward midY ──
   const bottom = C.SCREEN_H * 0.68;
   const t      = Utils.clamp(dist / 8, 0, 1);
@@ -233,7 +255,7 @@ const Renderer = (() => {
   if (ref.kind === 'coffee') {
     const now   = performance.now() / 1000;
     const pulse = Math.sin(now * 8 + ref.age * 12) * 0.15 + 0.85;
-    const gr    = r * 2.2 * pulse;
+    const gr    = r * 2.4 * pulse;
 
     // Outer warm glow
     const outerGrd = ctx.createRadialGradient(sx, cy, 0, sx, cy, gr * 2.5);

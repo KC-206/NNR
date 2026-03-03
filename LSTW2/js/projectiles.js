@@ -52,8 +52,8 @@ const Projectiles = (() => {
       damage: C.GOJIRA_LIGHTNING_DAMAGE,
       splash: C.GOJIRA_LIGHTNING_SPLASH,
       alive: true, owner: 'player', age: 0,
-      boltSeed: Math.random() * 1000,  // unique seed per bolt for jagged shape
-      boltFlicker: 0,                  // timer to re-randomize bolt shape
+      boltSeed: Math.random() * 1000,
+      boltFlicker: 0,
     });
   }
 
@@ -66,26 +66,38 @@ const Projectiles = (() => {
     });
   }
 
-  // ── Particles — disabled, kept for explosion fx only ──
+  // ── Particles (used for explosions & trails) ──────────
+  // ── Particles (used for explosions & trails) ──────────
   function spawnTrailParticle(x, y, kind) {
-    return; // trails disabled — caused phantom wall projections
+    return; // trails disabled — avoids wall artifacts
   }
 
   function spawnExplosion(x, y, radius, color) {
     Audio2.playExplosion();
-    Player.addShakeTrauma(0.6);
-    const count = Math.min(C.EXPLOSION_PARTICLES, MAX_PARTICLES - particles.length);
+
+    const trauma = Utils.clamp(radius / 3, 0.4, 1.0);
+    Player.addShakeTrauma(trauma);
+
+    const count = Math.min(
+      C.EXPLOSION_PARTICLES,
+      MAX_PARTICLES - particles.length
+    );
+
+    const [er, eg, eb] = color || [255, 140, 30];
+
     for (let i = 0; i < count; i++) {
       const ang = (i / count) * Math.PI * 2 + Math.random() * 0.3;
-      const spd = 0.05 + Math.random() * 0.1;
-      const [er, eg, eb] = color || [255, 140, 30];
+      const spd = 0.05 + Math.random() * 0.12 * (radius / 2);
       particles.push({
-        x: x + (Math.random()-0.5)*0.3,
-        y: y + (Math.random()-0.5)*0.3,
-        vx: Math.cos(ang)*spd, vy: Math.sin(ang)*spd,
-        life: 20+Math.random()*15, maxLife: 35,
-        r:er, g:eg, b:eb, size:0.07,
-        gravity: 0.002,
+        x: x + (Math.random() - 0.5) * (radius * 0.15),
+        y: y + (Math.random() - 0.5) * (radius * 0.15),
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        life: 18 + Math.random() * 16,
+        maxLife: 34,
+        r: er, g: eg, b: eb,
+        size: 0.09,
+        gravity: 0.003,
       });
     }
   }
@@ -97,29 +109,42 @@ const Projectiles = (() => {
       for (const e of enemies) {
         if (e.dead) continue;
         const d2    = Utils.dist2(p.x, p.y, e.x, e.y);
-        // lightning is direct hit only — no AOE splash
         const isAoe = p.kind === 'baguette' || p.kind === 'gojira';
         const hitR  = isAoe ? (p.splash * p.splash) : 0.36;
 
         if (d2 < hitR) {
           if (isAoe) {
+            const directRadius = p.splash * 0.45;
+            const minFrac      = 1 / 3;
+
             for (const t of enemies) {
-              if (!t.dead) {
-                const td = Utils.dist(p.x, p.y, t.x, t.y);
-                if (td < p.splash) {
-                  const dmg = Math.round(p.damage * (1 - td / p.splash));
-                  t.hit(dmg);
-                  HUD.spawnDmgNum(
-                    C.SCREEN_W/2 + (Math.random()*60-30),
-                    C.SCREEN_H/2 - 40,
-                    dmg, td < 0.5 ? 'crit' : 'dmg-num'
-                  );
-                }
+              if (t.dead) continue;
+
+              const td = Utils.dist(p.x, p.y, t.x, t.y);
+              if (td >= p.splash) continue;
+
+              let dmg;
+              if (td <= directRadius) {
+                dmg = p.damage;                // full damage
+              } else {
+                dmg = Math.round(p.damage * minFrac); // flat reduced
               }
+
+              t.hit(dmg);
+              HUD.spawnDmgNum(
+                C.SCREEN_W/2 + (Math.random()*60-30),
+                C.SCREEN_H/2 - 40,
+                dmg,
+                td <= directRadius ? 'crit' : 'dmg-num'
+              );
             }
-            spawnExplosion(p.x, p.y, p.splash,
-              p.kind === 'gojira' ? [0, 255, 100] : [255, 140, 30]
-            );
+
+            if (p.kind === 'gojira') {
+              spawnExplosion(p.x, p.y, p.splash * 1.7, [0, 255, 100]);
+            } else {
+              spawnExplosion(p.x, p.y, p.splash * 1.3, [255, 160, 70]);
+            }
+
           } else {
             // direct hit (coffee, lightning, enemyshot)
             e.hit(p.damage);
@@ -128,7 +153,29 @@ const Projectiles = (() => {
               C.SCREEN_H/2 - 30,
               p.damage, 'dmg-num'
             );
+
+            // small silent spark for coffee hits (no sound)
+            if (p.kind === 'coffee') {
+              const [er, eg, eb] = [255, 220, 140];
+              const count = Math.min(12, MAX_PARTICLES - particles.length);
+              for (let i = 0; i < count; i++) {
+                const ang = Math.random() * Math.PI * 2;
+                const spd = 0.03 + Math.random() * 0.04;
+                particles.push({
+                  x: p.x,
+                  y: p.y,
+                  vx: Math.cos(ang) * spd,
+                  vy: Math.sin(ang) * spd,
+                  life: 8 + Math.random() * 6,
+                  maxLife: 14,
+                  r: er, g: eg, b: eb,
+                  size: 0.05,
+                  gravity: 0,
+                });
+              }
+            }
           }
+
           p.alive = false;
           break;
         }
@@ -146,17 +193,15 @@ const Projectiles = (() => {
       }
     }
   }
-
   function checkWallHits() {
     const doors = Maps.getDoors();
     for (const p of list) {
       if (!p.alive) continue;
       if (doors.isWall(Math.floor(p.x), Math.floor(p.y))) {
-        // lightning vanishes silently — no explosion particles at wall
         if (p.kind === 'baguette') {
-          spawnExplosion(p.x, p.y, p.splash, [255, 140, 30]);
+          spawnExplosion(p.x, p.y, p.splash * 1.3, [255, 160, 70]);
         } else if (p.kind === 'gojira') {
-          spawnExplosion(p.x, p.y, p.splash, [0, 255, 100]);
+          spawnExplosion(p.x, p.y, p.splash * 1.7, [0, 255, 100]);
         }
         p.alive = false;
       }
@@ -169,7 +214,6 @@ const Projectiles = (() => {
       if (!p.alive) continue;
       p.age += dt;
 
-      // Lightning bolt shape flickers ~25fps
       if (p.kind === 'lightning') {
         p.boltFlicker += dt;
         if (p.boltFlicker > 0.04) {
@@ -181,22 +225,40 @@ const Projectiles = (() => {
       if (p.kind === 'baguette') {
         p.vz -= C.BAGUETTE_GRAVITY;
         p.z  += p.vz;
+
         if (p.z <= 0 && p.age > 0.2) {
-          spawnExplosion(p.x, p.y, p.splash);
+          const directRadius = p.splash * 0.45;
+          const minFrac      = 1 / 3;
+
+          spawnExplosion(p.x, p.y, p.splash * 1.3, [255, 160, 70]);
+
           for (const e of enemies) {
-            if (!e.dead) {
-              const td = Utils.dist(p.x, p.y, e.x, e.y);
-              if (td < p.splash) e.hit(Math.round(p.damage*(1-td/p.splash)));
+            if (e.dead) continue;
+            const td = Utils.dist(p.x, p.y, e.x, e.y);
+            if (td >= p.splash) continue;
+
+            let dmg;
+            if (td <= directRadius) {
+              dmg = p.damage;
+            } else {
+              dmg = Math.round(p.damage * minFrac);
             }
+            e.hit(dmg);
           }
+
           p.alive = false;
           continue;
         }
       }
 
       if (p.age > 3) { p.alive = false; continue; }
+
       p.x += p.vx * dt;
       p.y += p.vy * dt;
+
+      if (p.kind === 'coffee' && (p.age * 60 | 0) % 2 === 0) {
+        spawnTrailParticle(p.x, p.y, 'coffee');
+      }
     }
 
     checkWallHits();
@@ -215,15 +277,12 @@ const Projectiles = (() => {
   }
 
   // ── Draw helper (call from your renderer) ─────────────
-  // screenX/Y = the projected screen position of the projectile
   function drawLightningProjectile(ctx, screenX, screenY, proj) {
-    // Seeded jitter for the crackling ring — stable between flickers
     let seed = proj.boltSeed;
     const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
 
     const r = 14;
 
-    // Outer soft glow
     const outerGrd = ctx.createRadialGradient(screenX, screenY, 0, screenX, screenY, r * 3);
     outerGrd.addColorStop(0,   'rgba(220,100,255,0.6)');
     outerGrd.addColorStop(0.5, 'rgba(160,40,255,0.25)');
@@ -233,7 +292,6 @@ const Projectiles = (() => {
     ctx.arc(screenX, screenY, r * 3, 0, Math.PI * 2);
     ctx.fill();
 
-    // Crackling jagged ring — spikes radiating outward from center
     const SPIKES = 10;
     ctx.strokeStyle = 'rgba(240,180,255,0.85)';
     ctx.lineWidth = 1.5;
@@ -245,7 +303,6 @@ const Projectiles = (() => {
       const len       = r * (0.7 + rand() * 0.9);
       ctx.beginPath();
       ctx.moveTo(screenX, screenY);
-      // Mid-point kink for jaggedness
       const midLen = len * 0.5;
       const kink   = (rand() - 0.5) * r * 0.6;
       ctx.lineTo(
@@ -259,7 +316,6 @@ const Projectiles = (() => {
       ctx.stroke();
     }
 
-    // Bright hot core
     const coreGrd = ctx.createRadialGradient(screenX, screenY, 0, screenX, screenY, r * 0.8);
     coreGrd.addColorStop(0,   'rgba(255,255,255,1)');
     coreGrd.addColorStop(0.4, 'rgba(230,160,255,0.9)');

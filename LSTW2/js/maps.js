@@ -6,14 +6,19 @@
 
 const Maps = (() => {
 
-  // ── Texture Painter (canvas pixel art) ─────────────────
-  // Returns a 64×64 ImageData for each wall type, drawn procedurally
+  // ── Door PNG texture slot ─────────────────────────────
+  let _doorImageData = null;
 
+  function setDoorTexture(imgData) {
+    _doorImageData = imgData;
+    if (textures) textures[9] = imgData;
+  }
+
+  // ── Texture Painter (canvas pixel art) ─────────────────
   function buildTextures(paletteIndex) {
     const pal = C.PALETTE[paletteIndex];
     const textures = {};
 
-    // Helper: draw into an offscreen 64×64 canvas, return imageData
     function makeTexture(drawFn) {
       const oc = document.createElement('canvas');
       oc.width = oc.height = C.TEXTURE_SIZE;
@@ -26,7 +31,6 @@ const Maps = (() => {
     textures[1] = makeTexture((ctx, W, H) => {
       ctx.fillStyle = '#c8a060';
       ctx.fillRect(0, 0, W, H);
-      // Mortar lines
       ctx.fillStyle = '#7a5030';
       for (let y = 0; y < H; y += 12) {
         ctx.fillRect(0, y, W, 2);
@@ -39,7 +43,6 @@ const Maps = (() => {
           ctx.fillRect(x, y, 2, 12);
         }
       }
-      // Noise/variation
       ctx.fillStyle = 'rgba(0,0,0,0.08)';
       for (let i = 0; i < 80; i++) {
         const px = Math.random() * W | 0;
@@ -84,7 +87,6 @@ const Maps = (() => {
     textures[4] = makeTexture((ctx, W, H) => {
       ctx.fillStyle = '#2a0800';
       ctx.fillRect(0, 0, W, H);
-      // Glowing cracks
       ctx.strokeStyle = '#ff6020';
       ctx.lineWidth = 2;
       for (let i = 0; i < 6; i++) {
@@ -124,7 +126,7 @@ const Maps = (() => {
       }
     });
 
-    // Wall type 6: Metal door
+    // Wall type 6: Metal door (procedural fallback)
     textures[6] = makeTexture((ctx, W, H) => {
       ctx.fillStyle = '#606060';
       ctx.fillRect(0, 0, W, H);
@@ -133,7 +135,6 @@ const Maps = (() => {
       ctx.fillStyle = '#404040';
       ctx.fillRect(0, H/2-2, W, 4);
       ctx.fillRect(W/2-2, 0, 4, H);
-      // Rivet dots
       ctx.fillStyle = '#a0a0a0';
       [[8,8],[W-12,8],[8,H-12],[W-12,H-12]].forEach(([x,y]) => {
         ctx.beginPath();
@@ -141,6 +142,7 @@ const Maps = (() => {
         ctx.fill();
       });
     });
+
     // Exit panel (tile 9)
     textures[9] = makeTexture((ctx, W, H) => {
       ctx.fillStyle = '#050505';
@@ -151,6 +153,9 @@ const Maps = (() => {
       ctx.lineWidth = 3;
       ctx.strokeRect(W*0.2, H*0.2, W*0.6, H*0.6);
     });
+
+    // ── Override door texture with PNG if loaded ──
+    if (_doorImageData) textures[9] = _doorImageData;
 
     return textures;
   }
@@ -165,7 +170,6 @@ const Maps = (() => {
       blurb: 'A scorched desert wasteland, thick with mutant cacti. The air smells of burnt espresso.',
       paletteIndex: 0,
       musicTrack: 0,
-      // 20×20 grid. 0=floor, 1-5=walls, 6=door, 9=exit trigger
       map: [
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
         [1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -195,12 +199,13 @@ const Maps = (() => {
         { type: 'roller',  x: 7.5,  y: 8.5  },
         { type: 'roller',  x: 11.5, y: 12.5 },
         { type: 'barrel',  x: 16.5, y: 6.5  },
-        { type: 'spitter', x: 4.5,  y: 14.5 },
+        { type: 'spitter', x: 7.5,  y: 14.5 },
         { type: 'roller',  x: 9.5,  y: 16.5 },
         { type: 'barrel',  x: 15.5, y: 15.5 },
         { type: 'spitter', x: 18.5, y: 10.5 },
       ],
       pickups: [
+        { type: 'goldengojira', x: 16.5, y: 3.5 },
         { type: 'coffee',  x: 3.5,  y: 3.5  },
         { type: 'baguette',x: 9.5,  y: 7.5  },
         { type: 'armor',   x: 11.5, y: 11.5 },
@@ -208,7 +213,6 @@ const Maps = (() => {
         { type: 'key',     x: 17.5, y: 17.5 },
         { type: 'energy',  x: 13.5, y: 4.5  },
       ],
-      // Torch walls — these tiles get flicker lighting
       torchWalls: [[3,1],[6,5],[10,9],[15,13]],
     },
 
@@ -256,6 +260,7 @@ const Maps = (() => {
         { type: 'barrel',  x: 16.5, y: 17.5 },
       ],
       pickups: [
+        { type: 'goldengojira', x: 17.5, y: 3.5 },
         { type: 'coffee',  x: 6.5,  y: 4.5  },
         { type: 'baguette',x: 13.5, y: 7.5  },
         { type: 'armor',   x: 8.5,  y: 14.5 },
@@ -286,7 +291,6 @@ const Maps = (() => {
         [5,0,5,0,0,5,0,0,6,0,0,0,0,0,5,0,0,0,0,5],
         [5,0,5,5,0,5,0,0,5,0,5,5,0,0,5,0,5,5,0,5],
         [5,0,0,0,0,0,0,0,5,0,5,0,0,0,0,0,5,0,0,5],
-        // Boss arena — open area in center
         [5,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5],
         [5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
         [5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
@@ -298,16 +302,16 @@ const Maps = (() => {
       ],
       playerStart: { x: 1.5, y: 1.5, angle: 0 },
       enemies: [
-        { type: 'spitter', x: 5.5,  y: 3.5  },
-        { type: 'barrel',  x: 11.5, y: 5.5  },
-        { type: 'roller',  x: 3.5,  y: 9.5  },
-        { type: 'spitter', x: 15.5, y: 7.5  },
-        { type: 'barrel',  x: 9.5,  y: 10.5 },
-        { type: 'roller',  x: 13.5, y: 11.5 },
-        // Boss spawns in arena
+        { type: 'spitter',  x: 5.5,  y: 3.5  },
+        { type: 'barrel',   x: 11.5, y: 5.5  },
+        { type: 'roller',   x: 3.5,  y: 9.5  },
+        { type: 'spitter',  x: 15.5, y: 7.5  },
+        { type: 'barrel',   x: 9.5,  y: 10.5 },
+        { type: 'roller',   x: 13.5, y: 11.5 },
         { type: 'pricilla', x: 10.5, y: 14.5 },
       ],
       pickups: [
+        { type: 'goldengojira', x: 14.5, y: 3.5 },
         { type: 'coffee',  x: 4.5,  y: 2.5  },
         { type: 'armor',   x: 9.5,  y: 4.5  },
         { type: 'baguette',x: 6.5,  y: 8.5  },
@@ -326,7 +330,7 @@ const Maps = (() => {
   class DoorManager {
     constructor(mapGrid) {
       this.grid = mapGrid.map(row => [...row]);
-      this.doorStates = {}; // key="x,y", value: {open,timer,opening}
+      this.doorStates = {};
     }
 
     isDoor(x, y) { return this.grid[y] && this.grid[y][x] === 6; }
@@ -376,11 +380,10 @@ const Maps = (() => {
   let doorManager  = null;
   let textures     = {};
 
-   // Returns true if tile at (tileX, tileY) is walkable (floor or exit)
   function isClear(map, tx, ty) {
     if (ty < 0 || ty >= map.length || tx < 0 || tx >= map[0].length) return false;
     const v = map[ty][tx];
-    return v === 0 || v === 9; // only floor and exit are safe
+    return v === 0 || v === 9;
   }
 
   function load(levelIndex) {
@@ -388,9 +391,13 @@ const Maps = (() => {
     const lv = levels[levelIndex];
     doorManager  = new DoorManager(lv.map);
     textures     = buildTextures(lv.paletteIndex);
-    Audio2.playMusic(lv.musicTrack);
 
-    // ── Validate enemy positions ──────────────────────────
+    // ← ADD THIS — re-apply door PNG after buildTextures in case timing varies
+    if (_doorImageData) textures[9] = _doorImageData;
+
+   // Audio2.playMusic(lv.musicTrack);
+
+    // Validate enemy positions
     const badEnemies = [];
     lv.enemies = lv.enemies.filter(e => {
       const tx = Math.floor(e.x);
@@ -402,7 +409,7 @@ const Maps = (() => {
     if (badEnemies.length)
       console.warn(`[Maps] Level ${levelIndex+1} — removed ${badEnemies.length} wall-spawned enemies:\n` + badEnemies.join('\n'));
 
-    // ── Validate pickup positions ─────────────────────────
+    // Validate pickup positions
     const badPickups = [];
     lv.pickups = lv.pickups.filter(p => {
       const tx = Math.floor(p.x);
@@ -417,14 +424,13 @@ const Maps = (() => {
     return lv;
   }
 
-
-  function getLevel()    { return levels[currentLevel]; }
-  function getMap()      { return levels[currentLevel].map; }
-  function getDoors()    { return doorManager; }
-  function getTextures() { return textures; }
+  function getLevel()      { return levels[currentLevel]; }
+  function getMap()        { return levels[currentLevel].map; }
+  function getDoors()      { return doorManager; }
+  function getTextures()   { return textures; }
   function getLevelCount() { return levels.length; }
 
   return {
-    load, getLevel, getMap, getDoors, getTextures, getLevelCount,
+    load, getLevel, getMap, getDoors, getTextures, getLevelCount, setDoorTexture,
   };
 })();

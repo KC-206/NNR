@@ -26,7 +26,41 @@ const Audio2 = (() => {
     musicGain.connect(masterGain);
   }
 
-  function resume() {
+  function resume() {async function playMusic(trackIndex) {
+  console.log('▶ playMusic', trackIndex, new Error().stack.split('\n')[2]);
+  stopMusic();
+  if (!ctx) return;
+  const path = MUSIC_TRACKS[trackIndex] || MUSIC_TRACKS[0];
+  const thisLoad = Symbol();
+  playMusic._current = thisLoad;
+  try {
+    const resp = await fetch(path);
+    if (!resp.ok) return;
+    if (playMusic._current !== thisLoad) { console.log('⚠ aborted after fetch', trackIndex); return; }
+    const arrayBuf = await resp.arrayBuffer();
+    if (playMusic._current !== thisLoad) { console.log('⚠ aborted after arrayBuffer', trackIndex); return; }
+    const audioBuf = await ctx.decodeAudioData(arrayBuf);
+    if (playMusic._current !== thisLoad) { console.log('⚠ aborted after decode', trackIndex); return; }
+    if (musicSource) { try { musicSource.stop(0); musicSource.disconnect(); } catch(e){} }
+    musicSource = ctx.createBufferSource();
+    musicSource.buffer = audioBuf;
+    musicSource.loop = true;
+    musicSource.connect(musicGain);
+    musicSource.start(0);
+    console.log('✅ now playing track', trackIndex);
+  } catch(e) { console.error('playMusic error', e); }
+}
+
+function stopMusic() {
+  console.log('⏹ stopMusic', musicSource ? 'stopping source' : 'nothing to stop', new Error().stack.split('\n')[2]);
+  if (musicSource) {
+    try { musicSource.stop(0); } catch(e) {}
+    try { musicSource.disconnect(); } catch(e) {}
+    musicSource = null;
+  }
+  playMusic._current = null;
+}
+
     init();
     if (ctx && ctx.state === 'suspended') ctx.resume();
     _loadRoar(); // kick off roar loading
@@ -118,7 +152,7 @@ const Audio2 = (() => {
   async function _loadRoar() {
     if (_roarBuffer || !ctx) return;
     try {
-      const resp = await fetch('gojiraroar.mp3');  // adjust path if in /audio/
+      const resp = await fetch('gojiraroar2.mp3');  // adjust path if in /audio/
       if (!resp.ok) return;
       const arrayBuf = await resp.arrayBuffer();
       _roarBuffer = await ctx.decodeAudioData(arrayBuf);
@@ -145,6 +179,57 @@ const Audio2 = (() => {
       noise(0.5, 0.3, t);
     }
   }
+
+
+function playLightning() {
+  if (!ctx) return;
+  const t = ctx.currentTime;
+
+  // Randomize each strike
+  const pitch    = 0.6 + Math.random() * 0.8;   // freq variance
+  const duration = 0.1 + Math.random() * 0.12;  // length variance
+  const volume   = 0.9 + Math.random() * 0.4;   // volume variance
+
+  // Sharp electrical noise burst — shaped to decay fast
+  const bufSize = Math.floor(ctx.sampleRate * duration);
+  const buf  = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 1.5);
+  }
+  const src    = ctx.createBufferSource();
+  const crack  = ctx.createGain();
+  const hipass = ctx.createBiquadFilter();
+  const notch  = ctx.createBiquadFilter();
+
+  hipass.type = 'highpass';
+  hipass.frequency.value = 1800 + Math.random() * 800;  // varies the "crispness"
+
+  notch.type = 'notch';
+  notch.frequency.value = 3000;
+  notch.Q.value = 0.8;
+
+  src.buffer = buf;
+  crack.gain.setValueAtTime(volume, t);
+  crack.gain.exponentialRampToValueAtTime(0.001, t + duration);
+
+  src.connect(hipass); hipass.connect(notch); notch.connect(crack);
+  crack.connect(masterGain);
+  src.start(t);
+
+  // Electric zap tone — pitch varies per strike
+  osc('sawtooth', 80  * pitch, 0.08, 0.3,  t);
+  osc('square',   240 * pitch, 0.06, 0.15, t + 0.01);
+  osc('sawtooth', 600 * pitch, 0.04, 0.08, t + 0.02);
+
+  // Occasional secondary crackle (30% chance)
+  if (Math.random() < 0.3) {
+    const t2 = t + 0.06 + Math.random() * 0.05;
+    osc('square', 400 * pitch, 0.03, 0.06, t2);
+    noise(0.04, 0.15, t2);
+  }
+}
+
 
   function playGameOver() {
     if (!ctx) return;
@@ -236,41 +321,61 @@ const Audio2 = (() => {
 
   // ── Music ─────────────────────────────────────────────
   const MUSIC_TRACKS = [
-    'audio/level1.mp3',
-    'audio/level2.mp3',
-    'audio/level3.mp3',
-    'audio/boss.mp3',
+    'l1.mp3',
+    'level2.mp3',
+    'level3.mp3',
+    'boss.mp3',
+    'intro.mp3',
   ];
+function isMusicPlaying() {
+  return musicSource !== null;
+}
+async function playMusic(trackIndex) {
+  stopMusic();
+  if (!ctx) return;
+  const path = MUSIC_TRACKS[trackIndex] || MUSIC_TRACKS[0];
+  const thisLoad = Symbol();
+  playMusic._current = thisLoad;
 
-  async function playMusic(trackIndex) {
-    stopMusic();
-    if (!ctx) return;
-    const path = MUSIC_TRACKS[trackIndex] || MUSIC_TRACKS[0];
-    try {
-      const resp = await fetch(path);
-      if (!resp.ok) return;
-      const arrayBuf = await resp.arrayBuffer();
-      const audioBuf = await ctx.decodeAudioData(arrayBuf);
-      musicSource = ctx.createBufferSource();
-      musicSource.buffer = audioBuf;
-      musicSource.loop = true;
-      musicSource.connect(musicGain);
-      musicSource.start(0);
-    } catch(e) { /* no audio file — game still works */ }
-  }
+  try {
+    const resp = await fetch(path);
+    if (!resp.ok) return;
+    if (playMusic._current !== thisLoad) return;
 
-  function stopMusic() {
+    const arrayBuf = await resp.arrayBuffer();
+    if (playMusic._current !== thisLoad) return;
+
+    const audioBuf = await ctx.decodeAudioData(arrayBuf);
+    if (playMusic._current !== thisLoad) return;
+
     if (musicSource) {
-      try { musicSource.stop(); } catch(e) {}
-      musicSource = null;
+      try { musicSource.stop(); musicSource.disconnect(); } catch(e) {}
     }
+    musicSource = ctx.createBufferSource();
+    musicSource.buffer = audioBuf;
+    musicSource.loop = true;
+    musicSource.connect(musicGain);
+    musicSource.start(0);
+
+    console.log('NOW PLAYING TRACK', trackIndex);  // ← add this line
+  } catch(e) {}
+}
+
+function stopMusic() {
+  if (musicSource) {
+    try { musicSource.stop(0); } catch(e) {}
+    try { musicSource.disconnect(); } catch(e) {}
+    musicSource = null;
   }
+  playMusic._current = null;
+}
+
 
   return {
     init, resume, setMuted,
     playCoffeeShot, playEnemyHurt, playExplosion,
     playPlayerHurt, playGojira, playGojiraRoar, playGameOver, playWinFanfare,
     playQuipSound, playPickup, playDoorOpen,
-    playMusic, stopMusic,
+    playMusic, stopMusic, playLightning, isMusicPlaying,
   };
 })();
