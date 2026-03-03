@@ -434,14 +434,23 @@ const Screens = (() => {
     }).join('');
   }
 
-  async function handleEndOfGameScore(finalScore) {
-    try {
-      const scores = await window.fetchTopScores();
-      const qualifies =
-        scores.length < 10 ||
-        finalScore > (scores[scores.length - 1]?.score || 0);
+async function handleEndOfGameScore(finalScore) {
+  let scores = [];
+  try {
+    scores = await window.fetchTopScores();
+  } catch (err) {
+    console.error('Error loading scores', err);
+    scores = []; // fall back to empty list
+  }
 
-      if (qualifies) {
+  if (!Array.isArray(scores)) {
+    scores = [];
+  }
+
+  const qualifies = scores.length < 10 ||
+                    finalScore > (scores[scores.length - 1]?.score || 0);
+
+  if (!qualifies) return;
         // Find the rank this score would have (1‑based)
         let rank = scores.findIndex(s => (s.score || 0) < finalScore) + 1;
         if (rank === 0) {
