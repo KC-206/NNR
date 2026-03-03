@@ -21,25 +21,7 @@ const Screens = (() => {
   let introRunning = false;
   let introSkipped = false;
 
-
-function initIntro() {
-  introSkipped = false;
-  show('intro');
-
-  // force intro text visible & active
-  const introText = document.getElementById('intro-text');
-  if (introText) {
-    introText.style.opacity = '1';
-    introText.style.visibility = 'visible';
-    introText.classList.add('active');  // if your CSS uses this to start the crawl
-  }
-
-  if (!introRunning) {
-    introRunning = true;
-    _runIntroCanvas();
-  }
-}
- /* function initIntro() {
+ function initIntro() {
   introSkipped = false;
   show('intro');
 
@@ -80,7 +62,7 @@ function initIntro() {
       showTitle();
     }
   }, 23000);
-} */
+}
 
 
 

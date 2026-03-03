@@ -142,16 +142,13 @@ const GameState = (() => {
 // ── Boot ────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   console.log('DOMContentLoaded at', performance.now());
-
   Screens.initIntro();
+  console.log('initIntro returned at', performance.now());
 
   setTimeout(() => {
-    const gameCanvas = document.getElementById('canvas-game');
-    const hudCanvas  = document.getElementById('canvas-hud');
-
-    Renderer.init(gameCanvas);
-    HUD.init(hudCanvas);
-    Player.initInput(gameCanvas);
+    Renderer.init(document.getElementById('canvas-game'));
+    HUD.init(document.getElementById('canvas-hud'));
+    Player.initInput(document.getElementById('canvas-game'));
   }, 0);
 });
 
