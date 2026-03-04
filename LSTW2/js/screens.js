@@ -483,6 +483,7 @@ function _runIntroCanvas() {
   }
 
   // ── High-score helpers ────────────────────────────────
+   // ── High-score helpers ────────────────────────────────
   function renderHighscoreList(entries) {
     const container = document.getElementById('highscore-list');
     if (!container) return;
@@ -494,8 +495,8 @@ function _runIntroCanvas() {
 
     container.innerHTML = entries.map((e, i) => {
       const initials = (e.initials || '???').toUpperCase();
-      const score = e.score || 0;
-      const rank = String(i + 1).padStart(2, '0');
+      const score    = e.score || 0;
+      const rank     = String(i + 1).padStart(2, '0');
       return `<div>${rank}. ${initials} — ${score}</div>`;
     }).join('');
   }

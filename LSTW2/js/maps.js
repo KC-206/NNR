@@ -128,6 +128,23 @@ const Maps = (() => {
 
     // Wall type 6: Metal door (procedural fallback)
     textures[6] = makeTexture((ctx, W, H) => {
+      ctx.fillStyle = '#504030';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#382818';
+      for (let y = 0; y < H; y += 10) {
+        for (let x = 0; x < W; x += 10) {
+          if ((x + y) % 20 === 0) ctx.fillRect(x, y, 9, 9);
+        }
+      }
+      ctx.fillStyle = '#605040';
+      for (let i = 0; i < 40; i++) {
+        const px = Math.random() * W | 0;
+        const py = Math.random() * H | 0;
+        ctx.fillRect(px, py, 3, 1);
+      }
+    });
+
+/* makeTexture((ctx, W, H) => {
       ctx.fillStyle = '#606060';
       ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#808080';
@@ -141,7 +158,7 @@ const Maps = (() => {
         ctx.arc(x, y, 3, 0, Math.PI*2);
         ctx.fill();
       });
-    });
+    }); */
 
     // Exit panel (tile 9)
     textures[9] = makeTexture((ctx, W, H) => {
