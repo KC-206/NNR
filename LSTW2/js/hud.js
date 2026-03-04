@@ -582,7 +582,7 @@ const HUD = (() => {
     }
 
     const el = document.getElementById('quip-player');
-    el.textContent = '💬 Laurie: ' + text;
+    el.textContent = '💬 Gojira Girl: ' + text;
     el.classList.add('visible');
     Audio2.playQuipSound(true);
     startTalking(3);

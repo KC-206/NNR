@@ -30,7 +30,7 @@ const C = {
   COFFEE_COOLDOWN: 180,        // ms between shots
   COFFEE_SPEED: 12,
 
-  BAGUETTE_DAMAGE: 95,
+  BAGUETTE_DAMAGE: 125,
   BAGUETTE_SPLASH_R: 3.0,      // map units
   BAGUETTE_START_AMMO: 8,
   BAGUETTE_SPEED: 6,
