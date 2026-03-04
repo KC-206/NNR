@@ -33,8 +33,8 @@ const Screens = (() => {
 
   // start audio, but don’t block if it fails
   try {
-    //Audio2.resume();
-    //Audio2.playMusic(4);
+    Audio2.resume();
+    Audio2.playMusic(4);
   } catch (e) {
     console.error('Intro audio error', e);
   }
