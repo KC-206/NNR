@@ -1,0 +1,185 @@
+/* ════════════════════════════════════════════════════════
+   themes.css — 10 named theme definitions via [data-theme]
+   To add a new theme: copy any block, change the values,
+   then add an entry to the THEMES array in js/themes.js.
+   ════════════════════════════════════════════════════════ */
+
+/* ── 1. Forest — dark woodland greens ───────────────────── */
+:root[data-theme="forest"] {
+  --bg:          #07090a;
+  --surface:     #0e1214;
+  --surface2:    #151b1f;
+  --surface3:    #1c2529;
+  --border:      #232e33;
+  --text:        #cdc4ad;
+  --text-dim:    #8a8272;
+  --muted:       #4c5a60;
+  --accent:      #6e9e84;
+  --accent2:     #92c0a6;
+  --accent3:     #b8deca;
+  --gold:        #c49a3c;
+  --gold2:       #dab96a;
+  --red:         #a85f5f;
+}
+
+/* ── 2. Midnight — deep navy and indigo ─────────────────── */
+:root[data-theme="midnight"] {
+  --bg:          #07080f;
+  --surface:     #0c0f1c;
+  --surface2:    #121627;
+  --surface3:    #191e33;
+  --border:      #232847;
+  --text:        #c8cee8;
+  --text-dim:    #7a80a0;
+  --muted:       #404868;
+  --accent:      #7b8fd4;
+  --accent2:     #9aaee8;
+  --accent3:     #bfceff;
+  --gold:        #c4a43c;
+  --gold2:       #dac06a;
+  --red:         #a86070;
+}
+
+/* ── 3. Ember — warm amber and copper ───────────────────── */
+:root[data-theme="ember"] {
+  --bg:          #0c0804;
+  --surface:     #160f08;
+  --surface2:    #1e1509;
+  --surface3:    #281c0e;
+  --border:      #3a2810;
+  --text:        #e0ccb0;
+  --text-dim:    #9a7f5c;
+  --muted:       #5a4228;
+  --accent:      #c87941;
+  --accent2:     #e09060;
+  --accent3:     #f0b080;
+  --gold:        #c4b03c;
+  --gold2:       #d8c860;
+  --red:         #b05050;
+}
+
+/* ── 4. Dawn — soft cream and sage ─────────────────────── */
+:root[data-theme="dawn"] {
+  --bg:          #f2ede4;
+  --surface:     #ebe5d9;
+  --surface2:    #dfd8ca;
+  --surface3:    #d4ccbc;
+  --border:      #c4bba8;
+  --text:        #2c2820;
+  --text-dim:    #6a5e4a;
+  --muted:       #9e9080;
+  --accent:      #4a7c5f;
+  --accent2:     #3a6a4e;
+  --accent3:     #2a5a3e;
+  --gold:        #9e6e24;
+  --gold2:       #b8841c;
+  --red:         #8a3a3a;
+}
+
+/* ── 5. Crimson — deep blood red and charcoal ───────────── */
+:root[data-theme="crimson"] {
+  --bg:          #0a0606;
+  --surface:     #130a0a;
+  --surface2:    #1c0e0e;
+  --surface3:    #271414;
+  --border:      #3d1c1c;
+  --text:        #e8d0d0;
+  --text-dim:    #a07878;
+  --muted:       #5c3030;
+  --accent:      #c44040;
+  --accent2:     #e06060;
+  --accent3:     #f09090;
+  --gold:        #c4923c;
+  --gold2:       #daaa5a;
+  --red:         #e04040;
+}
+
+/* ── 6. Violet — deep purple and lavender ───────────────── */
+:root[data-theme="violet"] {
+  --bg:          #08060f;
+  --surface:     #100d1c;
+  --surface2:    #171328;
+  --surface3:    #1f1a34;
+  --border:      #2e2550;
+  --text:        #d4cce8;
+  --text-dim:    #8878aa;
+  --muted:       #4a3d6e;
+  --accent:      #9060c8;
+  --accent2:     #b080e8;
+  --accent3:     #cca8f8;
+  --gold:        #b89030;
+  --gold2:       #d0aa48;
+  --red:         #c05070;
+}
+
+/* ── 7. Arctic — ice blue and silver ────────────────────── */
+:root[data-theme="arctic"] {
+  --bg:          #f0f4f8;
+  --surface:     #e4eaf0;
+  --surface2:    #d8e0ea;
+  --surface3:    #ccd6e2;
+  --border:      #b8c8d8;
+  --text:        #1a2430;
+  --text-dim:    #4a6070;
+  --muted:       #88a0b0;
+  --accent:      #2a7aaa;
+  --accent2:     #1a6090;
+  --accent3:     #0a4870;
+  --gold:        #8a6e24;
+  --gold2:       #a08030;
+  --red:         #9a3838;
+}
+
+/* ── 8. Copper — rich metallic bronze ───────────────────── */
+:root[data-theme="copper"] {
+  --bg:          #090806;
+  --surface:     #130f0a;
+  --surface2:    #1e1610;
+  --surface3:    #2a1e16;
+  --border:      #3e2c1c;
+  --text:        #e8d8b8;
+  --text-dim:    #a08060;
+  --muted:       #5e4030;
+  --accent:      #b87840;
+  --accent2:     #d09058;
+  --accent3:     #e8b078;
+  --gold:        #c8a830;
+  --gold2:       #e0c048;
+  --red:         #b04040;
+}
+
+/* ── 9. Obsidian — near-black with cool grey ────────────── */
+:root[data-theme="obsidian"] {
+  --bg:          #050505;
+  --surface:     #0c0c0c;
+  --surface2:    #131313;
+  --surface3:    #1c1c1c;
+  --border:      #282828;
+  --text:        #d8d8d8;
+  --text-dim:    #787878;
+  --muted:       #404040;
+  --accent:      #a0a0a0;
+  --accent2:     #c0c0c0;
+  --accent3:     #e0e0e0;
+  --gold:        #b8982a;
+  --gold2:       #d0b040;
+  --red:         #a84848;
+}
+
+/* ── 10. Sage — muted olive and warm grey ───────────────── */
+:root[data-theme="sage"] {
+  --bg:          #f4f2ee;
+  --surface:     #edeae4;
+  --surface2:    #e4e0d8;
+  --surface3:    #dad5cb;
+  --border:      #c8c0b0;
+  --text:        #2a2820;
+  --text-dim:    #5e5a4e;
+  --muted:       #9a9484;
+  --accent:      #6e7e50;
+  --accent2:     #5a6a3e;
+  --accent3:     #48582e;
+  --gold:        #9a7a28;
+  --gold2:       #b09038;
+  --red:         #8a3e3e;
+}

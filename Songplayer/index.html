@@ -1,1 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="forest">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Huntress Harmonies</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
 
+  <!-- ══════════════ MAIN APP ══════════════ -->
+  <div id="app">
+
+    <!-- ── SIDEBAR ── -->
+    <aside id="sidebar">
+
+      <div class="sidebar-logo">
+        <h1 id="site-name"></h1>
+        <p class="tagline" id="site-tagline"></p>
+        <div class="theme-select-wrap">
+          <select id="theme-select" aria-label="Choose colour theme"></select>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-section-label">
+        Playlists
+        <button id="btn-new-playlist" title="New playlist">+</button>
+      </div>
+      <div id="playlist-nav"></div>
+
+      <div class="sidebar-search">
+        <div class="search-wrap">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="search-input" placeholder="Search songs, tags…">
+        </div>
+      </div>
+
+      <div class="tags-area" id="tags-area"></div>
+      <div id="sidebar-list"></div>
+
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main id="main">
+
+      <!-- Now Playing Hero -->
+      <section id="hero">
+        <img id="hero-art" src="" alt="Album Art">
+        <div id="hero-info">
+          <div class="hero-eye">Now Playing</div>
+          <div id="hero-title">Select a song</div>
+          <div id="hero-artist">—</div>
+          <div id="hero-tags"></div>
+        </div>
+        <div class="hero-actions" id="hero-actions">
+          <button class="hero-btn" id="btn-hero-notes">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14,2 14,8 20,8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            Lyrics / Notes
+          </button>
+          <button class="hero-btn" id="btn-hero-addpl">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+              <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            Add to Playlist
+          </button>
+          <button class="hero-btn dl-btn" id="btn-hero-dl">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7,10 12,15 17,10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download
+          </button>
+        </div>
+      </section>
+
+      <!-- Section header -->
+      <div class="section-bar">
+        <h2 id="section-title">All Songs</h2>
+        <div class="section-bar-right">
+          <span id="song-count"></span>
+          <select class="sort-select" id="sort-select">
+            <option value="default">Date Added</option>
+            <option value="title">A – Z</option>
+            <option value="plays">Most Played</option>
+            <option value="duration">Duration</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Song grid -->
+      <div id="song-grid"></div>
+      <div id="no-results">No songs match your search or filter.</div>
+
+    </main>
+  </div>
+
+  <!-- ══════════════ PLAYER BAR ══════════════ -->
+  <footer id="player">
+
+    <div id="vinyl-wrap">
+      <div id="vinyl-disc"></div>
+      <img id="vinyl-label" src="" alt="">
+    </div>
+    <img id="p-art" src="" alt="">
+
+    <div id="p-info">
+      <div id="p-title">—</div>
+      <div id="p-artist">Select a song to begin</div>
+    </div>
+
+    <div id="p-controls">
+      <div class="ctrl-row">
+        <button class="ctrl-btn" id="btn-shuffle" title="Shuffle (S)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/>
+            <polyline points="21,16 21,21 16,21"/><line x1="4" y1="4" x2="9" y2="9"/>
+          </svg>
+        </button>
+        <button class="ctrl-btn" id="btn-prev" title="Previous (←)">
+          <svg width="17" height="17" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>
+          </svg>
+        </button>
+        <button class="ctrl-btn pp" id="btn-playpause" title="Play/Pause (Space)">
+          <svg id="ico-play" width="17" height="17" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="ico-pause" width="17" height="17" fill="currentColor" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btn-next" title="Next (→)">
+          <svg width="17" height="17" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 18l8.5-6L6 6v12zm2.5-6 5.5 4V8l-5.5 4zM16 6h2v12h-2z"/>
+          </svg>
+        </button>
+        <button class="ctrl-btn" id="btn-repeat" title="Repeat (R)">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <polyline points="17,1 21,5 17,9"/>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+            <polyline points="7,23 3,19 7,15"/>
+            <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+          </svg>
+        </button>
+      </div>
+      <div class="prog-row">
+        <span class="t-lbl" id="t-cur">0:00</span>
+        <div id="progress">
+          <div id="prog-fill"></div>
+        </div>
+        <span class="t-lbl" id="t-tot">0:00</span>
+      </div>
+    </div>
+
+    <div id="p-right">
+      <button id="vol-btn" title="Mute (M)">
+        <svg id="ico-vol" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <polygon points="11,5 6,9 2,9 2,15 6,15 11,19 11,5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+        <svg id="ico-mute" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display:none">
+          <polygon points="11,5 6,9 2,9 2,15 6,15 11,19 11,5"/>
+          <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+      </button>
+      <input type="range" id="vol-slider" min="0" max="1" step="0.02" value="0.8">
+    </div>
+
+  </footer>
+
+  <!-- ══════════════ KEYBOARD HINTS BAR ══════════════ -->
+  <div id="kbd-bar">
+    <span class="kbd-hint"><kbd>Space</kbd> Play/Pause</span>
+    <span class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> Skip</span>
+    <span class="kbd-hint"><kbd>↑</kbd><kbd>↓</kbd> Volume</span>
+    <span class="kbd-hint"><kbd>S</kbd> Shuffle</span>
+    <span class="kbd-hint"><kbd>R</kbd> Repeat</span>
+    <span class="kbd-hint"><kbd>M</kbd> Mute</span>
+  </div>
+
+  <!-- ══════════════ MODALS ══════════════ -->
+
+  <!-- Lyrics / Notes -->
+  <div class="backdrop" id="lyrics-modal">
+    <div class="modal modal-wide">
+      <div class="modal-head">
+        <h3 id="lyrics-modal-title">Lyrics / Notes</h3>
+        <button class="modal-x" data-close="lyrics-modal">✕</button>
+      </div>
+      <div id="lyrics-body"></div>
+    </div>
+  </div>
+
+  <!-- Create Playlist -->
+  <div class="backdrop" id="create-pl-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>New Playlist</h3>
+        <button class="modal-x" data-close="create-pl-modal">✕</button>
+      </div>
+      <label for="pl-name-input">Playlist Name</label>
+      <input type="text" id="pl-name-input" placeholder="e.g. Trixie Songs, Night Drive…">
+      <div class="modal-btns">
+        <button class="m-btn" data-close="create-pl-modal">Cancel</button>
+        <button class="m-btn primary" id="btn-confirm-playlist">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add to Playlist -->
+  <div class="backdrop" id="addpl-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Add to Playlist</h3>
+        <button class="modal-x" data-close="addpl-modal">✕</button>
+      </div>
+      <div id="pl-options"></div>
+      <div class="modal-footer-action">
+        <button class="m-btn full" id="btn-new-pl-from-modal">+ New Playlist</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download -->
+  <div class="backdrop" id="dl-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Download Track</h3>
+        <button class="modal-x" data-close="dl-modal">✕</button>
+      </div>
+      <p class="modal-desc">Enter the download password to save this track.</p>
+      <label for="dl-pw">Password</label>
+      <input type="password" id="dl-pw" placeholder="Password…">
+      <div class="modal-err" id="dl-err">Incorrect password — please try again.</div>
+      <div class="modal-btns">
+        <button class="m-btn" data-close="dl-modal">Cancel</button>
+        <button class="m-btn primary" id="btn-confirm-dl">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7,10 12,15 17,10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast"></div>
+
+  <!-- ══════════════ SCRIPTS (load order matters) ══════════════ -->
+  <script src="js/config.js"></script>
+  <script src="js/songs.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/catalog.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/playlists.js"></script>
+  <script src="js/modals.js"></script>
+  <script src="js/keyboard.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
