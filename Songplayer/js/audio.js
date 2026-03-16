@@ -56,6 +56,8 @@ const AudioEngine = (() => {
       AppState.isPlaying = true;
     }
     PlayerUI.syncPlayPauseButton();
+    Catalog.renderGrid();
+    Catalog.renderSidebarList();
   }
 
   /** Skip to the next song in the queue */
