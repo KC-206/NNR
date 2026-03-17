@@ -133,7 +133,10 @@ const Catalog = (() => {
 
     grid.innerHTML = songs.map((s, i) => {
       const isCurrent = s.id === AppState.currentId;
-      const isPlaying = isCurrent && AppState.isPlaying;
+      const isPlaying  = isCurrent && AppState.isPlaying;
+      // Use cached fallback if this artwork URL previously 404'd
+      const _failedArt = window._failedArt || new Set();
+      const _art = (s.artwork && !_failedArt.has(s.artwork)) ? s.artwork : blankArt();
       const playIcon  = isPlaying
         ? `<svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
         : `<svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
@@ -147,8 +150,8 @@ const Catalog = (() => {
              style="animation-delay:${Math.min(i * 28, 300)}ms"
              ondblclick="AudioEngine.playSong('${s.id}')">
           <div class="card-art-wrap">
-            <img class="card-art" src="${s.artwork || blankArt()}" alt="${_esc(s.title)}" loading="lazy"
-                 onerror="this.src='${blankArt()}'">
+            <img class="card-art" src="${_art}" alt="${_esc(s.title)}" loading="lazy"
+                 onerror="(window._failedArt=window._failedArt||new Set()).add('${s.artwork||''}');this.onerror=null;this.src=blankArt()">
             <div class="card-overlay">
               <div class="card-play" onclick="event.stopPropagation(); ${cardClickFn}">
                 ${playIcon}
@@ -241,7 +244,10 @@ const Catalog = (() => {
   function renderSidebarList() {
     document.getElementById("sidebar-list").innerHTML = getFiltered().map(s => {
       const isCurrent = s.id === AppState.currentId;
-      const isPlaying = isCurrent && AppState.isPlaying;
+      const isPlaying  = isCurrent && AppState.isPlaying;
+      // Use cached fallback if this artwork URL previously 404'd
+      const _failedArt = window._failedArt || new Set();
+      const _art = (s.artwork && !_failedArt.has(s.artwork)) ? s.artwork : blankArt();
       const clickFn   = isCurrent ? "AudioEngine.togglePlay()" : `AudioEngine.playSong('${s.id}')`;
       return `
       <div class="track-row ${isCurrent ? "current" : ""} ${isPlaying ? "playing" : ""}" onclick="${clickFn}">

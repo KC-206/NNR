@@ -9,6 +9,15 @@
 
 const PlayerUI = (() => {
 
+  // ── Failed artwork cache ─────────────────────────────────
+  // Shared with catalog.js via window._failedArt
+  /** Resolve artwork — returns blankArt() if path is empty or previously failed */
+  function _resolveArt(artwork) {
+    const failed = window._failedArt || new Set();
+    if (!artwork || failed.has(artwork)) return blankArt();
+    return artwork;
+  }
+
   // ── Vinyl record ────────────────────────────────────────
 
   /** Start or stop the vinyl spinning based on AppState.isPlaying */
@@ -23,7 +32,11 @@ const PlayerUI = (() => {
     const label = document.getElementById("vinyl-label");
     if (label) {
       label.src = src;
-      label.onerror = () => { label.src = blankArt(); };
+      label.onerror = () => {
+        if (src && src !== blankArt()) { window._failedArt = window._failedArt || new Set(); window._failedArt.add(src); }
+        label.onerror = null;
+        label.src = blankArt();
+      };
     }
   }
 
@@ -39,7 +52,7 @@ const PlayerUI = (() => {
 
     if (!song) return;
 
-    const art = song.artwork || blankArt();
+    const art = _resolveArt(song.artwork);
 
     // ── Player bar ──────────────────────────────────────
     _setVinylArt(art);
@@ -49,7 +62,11 @@ const PlayerUI = (() => {
 
     // ── Hero section ────────────────────────────────────
     const heroArt = document.getElementById("hero-art");
-    heroArt.onerror = function() { this.onerror = null; this.src = blankArt(); };
+    heroArt.onerror = function() {
+      if (art && art !== blankArt()) { window._failedArt = window._failedArt || new Set(); window._failedArt.add(art); }
+      this.onerror = null;
+      this.src = blankArt();
+    };
     heroArt.src = art;
     document.getElementById("hero-title").textContent  = song.title;
     document.getElementById("hero-artist").textContent = `${song.artist} · ${song.album}`;
