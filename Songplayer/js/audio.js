@@ -17,6 +17,7 @@ const AudioEngine = (() => {
 
   /** Load and play a song by ID */
   function playSong(id) {
+    Visualizer.resume();
     const song = getSong(id);
     if (!song) return;
 
@@ -193,5 +194,6 @@ const AudioEngine = (() => {
     toggleMute,
     nudgeVolume,
     seekTo,
+    getAudioElement: () => audio,
   };
 })();

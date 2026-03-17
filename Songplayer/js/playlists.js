@@ -78,7 +78,12 @@ const Playlists = (() => {
     // Event delegation for playlist nav clicks
     container.querySelectorAll(".pl-nav-item").forEach(btn => {
       btn.addEventListener("click", () => {
-        Catalog.setView(btn.dataset.plId, btn);
+        if (AppState.view === btn.dataset.plId) {
+          // Already viewing this playlist — toggle back to All Songs
+          Catalog.setView("all", document.querySelector(".nav-item[data-view='all']"));
+        } else {
+          Catalog.setView(btn.dataset.plId, btn);
+        }
       });
     });
     container.querySelectorAll(".pl-del").forEach(btn => {

@@ -187,7 +187,12 @@
   width: 100%;
 }
 .pl-nav-item:hover { background: var(--surface2); color: var(--text); }
-.pl-nav-item.active { color: var(--accent2); }
+.pl-nav-item.active {
+  color: var(--accent2);
+  background: var(--surface3);
+  border-left: 2px solid var(--accent2);
+  padding-left: 10px;
+}
 .pl-nav-item .pl-name {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -812,3 +817,36 @@ kbd {
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+
+/* ── Visualizer canvas ───────────────────────────────────── */
+#viz-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* Push hero content above the canvas */
+#hero > *:not(#viz-canvas) { position: relative; z-index: 1; }
+
+/* Visualizer controls row */
+#viz-controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+#viz-style-wrap {
+  display: flex;
+  align-items: center;
+}
+
+/* Active state for viz toggle button */
+.hero-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0,0,0,0.15);
+}

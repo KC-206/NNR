@@ -72,12 +72,13 @@ const Catalog = (() => {
   /** Switch the active view and re-render */
   function setView(viewId, activeBtnEl) {
     AppState.view = viewId;
-    AppState.tag  = null; // clear tag filter on view change
+    AppState.tag  = null;
 
-    // Update nav active states
+    // Update main nav active states (all/recent/popular)
     document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".pl-nav-item").forEach(b => b.classList.remove("active"));
-    if (activeBtnEl) activeBtnEl.classList.add("active");
+    if (activeBtnEl && activeBtnEl.classList.contains("nav-item")) {
+      activeBtnEl.classList.add("active");
+    }
 
     // Update section title
     const labels = { all: "All Songs", recent: "Recently Played", popular: "Most Played" };
@@ -88,6 +89,8 @@ const Catalog = (() => {
     renderTags();
     renderGrid();
     renderSidebarList();
+    // Rebuild playlist nav — active class driven by AppState.view
+    if (typeof Playlists !== "undefined") Playlists.renderNav();
   }
 
   /** Toggle a tag filter chip */

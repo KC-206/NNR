@@ -74,6 +74,9 @@ const App = (() => {
 
     // 12. Init deep links (reads URL hash, handles shared song links)
     DeepLinks.init();
+
+    // 13. Init visualizer (off by default, restored from localStorage)
+    Visualizer.init(AudioEngine.getAudioElement());
   }
 
   /** Build the static nav items in the sidebar */
