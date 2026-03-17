@@ -86,7 +86,7 @@ const SONGS = [
 
   {
     id: "s006",
-    title: "Every Jess needs a Kristy (Remix)",
+    title: "Every Jess needs a Kristy",
     artist: "",
     album: "",
     duration: 253,
@@ -287,7 +287,7 @@ const SONGS = [
     album: "",
     duration: 229,
     src: "audio/The land of timbits.mp3",
-    artwork: "Land of Timbits.PNG",
+    artwork: "Land of Timbits.png",
     tags: ["laurie"],
     notes: "",
     dateAdded: "2026-03-17",
