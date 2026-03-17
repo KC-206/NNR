@@ -287,7 +287,7 @@ const SONGS = [
     album: "",
     duration: 229,
     src: "audio/The land of timbits.mp3",
-    artwork: "Land of Timbits.png",
+    artwork: "art/Land of Timbits.png",
     tags: ["laurie"],
     notes: "",
     dateAdded: "2026-03-17",

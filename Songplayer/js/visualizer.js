@@ -85,8 +85,9 @@ const Visualizer = (() => {
     const canvas = document.getElementById("viz-canvas");
     const hero   = document.getElementById("hero");
     if (!canvas || !hero) return;
-    canvas.width  = hero.offsetWidth;
-    canvas.height = hero.offsetHeight;
+    const rect    = hero.getBoundingClientRect();
+    canvas.width  = Math.round(rect.width);
+    canvas.height = Math.round(rect.height);
   }
 
   // ── Public controls ──────────────────────────────────────
@@ -178,6 +179,18 @@ const Visualizer = (() => {
   function _draw() {
     const canvas = document.getElementById("viz-canvas");
     if (!ctx || !canvas) return;
+
+    // Keep canvas in sync with hero dimensions on every frame
+    const hero = document.getElementById("hero");
+    if (hero) {
+      const rect = hero.getBoundingClientRect();
+      const w = Math.round(rect.width);
+      const h = Math.round(rect.height);
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width  = w;
+        canvas.height = h;
+      }
+    }
 
     const W = canvas.width;
     const H = canvas.height;
