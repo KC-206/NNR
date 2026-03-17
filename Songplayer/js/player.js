@@ -114,3 +114,4 @@ const PlayerUI = (() => {
 
   return { init, sync, syncPlayPauseButton, syncVolumeIcons, syncVinyl };
 })();
+

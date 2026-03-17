@@ -42,21 +42,6 @@ const SONGS = [
   dateAdded: "2024-01-05",
   downloadable: true,
   },
-    {
-    id: "s002",
-    title: "Dont Feed Trixie's Ego",
-    artist: "Huntress",
-    album: "",
-    duration: 312,
-    src: "audio/dont-feed-trixies-ego.mp3",
-    artwork: "art/trixie-cover.jpg",
-    tags: [],
-    notes: "",
-    dateAdded: "2026-03-16",
-    downloadable: true,
-  },
-  
-
   {
     id: "s003",
     title: "Woo hoo",
