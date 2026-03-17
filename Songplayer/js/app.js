@@ -59,7 +59,7 @@ const App = (() => {
     // 8. Bind keyboard shortcuts
     Keyboard.bindEvents();
 
-    // 9. Bind sidebar search and sort controls
+    // 10. Bind sidebar search and sort controls
     document.getElementById("search-input").addEventListener("input", e =>
       Catalog.setSearch(e.target.value)
     );
@@ -67,10 +67,13 @@ const App = (() => {
       Catalog.setSort(e.target.value)
     );
 
-    // 10. Bind new playlist button
+    // 11. Bind new playlist button
     document.getElementById("btn-new-playlist").addEventListener("click", () =>
       Modals.openCreatePlaylist()
     );
+
+    // 12. Init deep links (reads URL hash, handles shared song links)
+    DeepLinks.init();
   }
 
   /** Build the static nav items in the sidebar */

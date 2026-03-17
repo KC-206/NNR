@@ -38,7 +38,7 @@ const AudioEngine = (() => {
 
     rebuildQueue();
     PlayerUI.sync();
-    Catalog.renderGrid();
+    Catalog.syncGrid();
     Catalog.renderSidebarList();
   }
 
@@ -56,7 +56,7 @@ const AudioEngine = (() => {
       AppState.isPlaying = true;
     }
     PlayerUI.syncPlayPauseButton();
-    Catalog.renderGrid();
+    Catalog.syncGrid();
     Catalog.renderSidebarList();
   }
 

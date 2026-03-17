@@ -114,7 +114,8 @@ const Catalog = (() => {
 
   // ── Rendering ──────────────────────────────────────────
 
-  /** Render the main song card grid */
+  /** Full render of the song card grid — called when the song list itself changes
+   *  (filter, sort, view change). NOT called on play/pause — use syncGrid() for that. */
   function renderGrid() {
     const songs   = getFiltered();
     const counts  = Storage.getCounts();
@@ -139,6 +140,7 @@ const Catalog = (() => {
 
       return `
         <div class="song-card ${isCurrent ? "current" : ""} ${isPlaying ? "playing" : ""}"
+             data-song-id="${s.id}"
              style="animation-delay:${Math.min(i * 28, 300)}ms"
              ondblclick="AudioEngine.playSong('${s.id}')">
           <div class="card-art-wrap">
@@ -164,37 +166,72 @@ const Catalog = (() => {
               <button class="card-btn"
                       onclick="event.stopPropagation(); Modals.openLyrics('${s.id}')"
                       title="Lyrics / Notes">
-                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14,2 14,8 20,8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
                 </svg>
-                Notes
               </button>
               <button class="card-btn"
                       onclick="event.stopPropagation(); Modals.openAddToPlaylist('${s.id}')"
                       title="Add to playlist">
-                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <line x1="12" y1="5" x2="12" y2="19"/>
                   <line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
-                Playlist
+              </button>
+              <button class="card-btn share-btn"
+                      onclick="event.stopPropagation(); DeepLinks.copyLink('${s.id}', this)"
+                      title="Copy link to this song">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
               </button>
               ${s.downloadable ? `
               <button class="card-btn dl"
                       onclick="event.stopPropagation(); Modals.openDownload('${s.id}')"
                       title="Download">
-                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                   <polyline points="7,10 12,15 17,10"/>
                   <line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                DL
               </button>` : ""}
             </div>
           </div>
         </div>
       `;
     }).join("");
+  }
+
+  /** Lightweight sync — only updates classes and play icons on existing cards.
+   *  Called on play/pause/song change to avoid a full DOM rebuild (which causes the flash). */
+  function syncGrid() {
+    const grid = document.getElementById("song-grid");
+    if (!grid) return;
+
+    grid.querySelectorAll(".song-card[data-song-id]").forEach(card => {
+      const id        = card.dataset.songId;
+      const isCurrent = id === AppState.currentId;
+      const isPlaying = isCurrent && AppState.isPlaying;
+
+      card.classList.toggle("current", isCurrent);
+      card.classList.toggle("playing", isPlaying);
+
+      // Swap play/pause icon inside the overlay
+      const playEl  = card.querySelector(".card-play");
+      if (playEl) {
+        playEl.innerHTML = isPlaying
+          ? `<svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
+          : `<svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+
+        // Update the onclick to toggle vs play
+        const clickFn = isCurrent ? `AudioEngine.togglePlay()` : `AudioEngine.playSong('${id}')`;
+        playEl.setAttribute("onclick", `event.stopPropagation(); ${clickFn}`);
+      }
+    });
   }
 
   /** Render the compact sidebar track list */
@@ -246,6 +283,7 @@ const Catalog = (() => {
     setSearch,
     setSort,
     renderGrid,
+    syncGrid,
     renderSidebarList,
     renderTags,
   };

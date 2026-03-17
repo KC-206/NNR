@@ -50,6 +50,7 @@ function getSong(id) {
 }
 
 /** Helper — placeholder SVG art for songs without artwork */
+/** Helper — placeholder SVG art for songs without artwork */
 function blankArt() {
   return "art/record_artwork.png";
 }
