@@ -16,8 +16,9 @@ const Visualizer = (() => {
   let source     = null;   // MediaElementSourceNode
   let audioCtx   = null;   // AudioContext
   let rafId      = null;   // requestAnimationFrame id
-  let dataArray  = null;   // Uint8Array of frequency data
-  let particles  = [];     // for particles style
+  let dataArray        = null;   // Uint8Array of frequency data
+  let timeDomainArray  = null;   // Uint8Array of waveform data
+  let particles        = [];     // for particles style
 
   const STORAGE_KEY_ON    = "hh_viz_on";
   const STORAGE_KEY_STYLE = "hh_viz_style";
@@ -64,7 +65,8 @@ const Visualizer = (() => {
       analyser  = audioCtx.createAnalyser();
       analyser.fftSize = 256;
       analyser.smoothingTimeConstant = 0.8;
-      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      dataArray      = new Uint8Array(analyser.frequencyBinCount);
+      timeDomainArray = new Uint8Array(analyser.fftSize);
       source    = audioCtx.createMediaElementSource(audioElement);
       source.connect(analyser);
       analyser.connect(audioCtx.destination);
@@ -197,16 +199,23 @@ const Visualizer = (() => {
 
     ctx.clearRect(0, 0, W, H);
 
-    // If no analyser yet or audio not playing, draw a quiet idle state
+    // Frequency data for bars/orbs/particles
     let data = new Uint8Array(128).fill(8);
     if (analyser) {
       analyser.getByteFrequencyData(dataArray);
       data = dataArray;
     }
 
+    // Time-domain (waveform) data for wave style — spans full canvas width
+    let waveData = new Uint8Array(256).fill(128);
+    if (analyser && timeDomainArray) {
+      analyser.getByteTimeDomainData(timeDomainArray);
+      waveData = timeDomainArray;
+    }
+
     switch (style) {
       case "bars":      _drawBars(ctx, W, H, data);      break;
-      case "wave":      _drawWave(ctx, W, H, data);      break;
+      case "wave":      _drawWave(ctx, W, H, waveData);  break;
       case "orbs":      _drawOrbs(ctx, W, H, data);      break;
       case "particles": _drawParticles(ctx, W, H, data); break;
     }
