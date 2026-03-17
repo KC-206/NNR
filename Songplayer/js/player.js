@@ -48,7 +48,9 @@ const PlayerUI = (() => {
     document.getElementById("t-tot").textContent    = formatTime(song.duration);
 
     // ── Hero section ────────────────────────────────────
-    document.getElementById("hero-art").src            = art;
+    const heroArt = document.getElementById("hero-art");
+    heroArt.onerror = function() { this.onerror = null; this.src = blankArt(); };
+    heroArt.src = art;
     document.getElementById("hero-title").textContent  = song.title;
     document.getElementById("hero-artist").textContent = `${song.artist} · ${song.album}`;
 
@@ -114,4 +116,3 @@ const PlayerUI = (() => {
 
   return { init, sync, syncPlayPauseButton, syncVolumeIcons, syncVinyl };
 })();
-
