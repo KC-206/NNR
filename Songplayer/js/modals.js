@@ -138,16 +138,29 @@ const Modals = (() => {
     const song = getSong(AppState.dlTarget);
     if (!song) return;
 
-    // Trigger browser download
-    const a = document.createElement("a");
-    a.href     = song.src;
-    a.download = `${song.title}.mp3`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
     close("dl-modal");
-    Toast.show(`Downloading "${song.title}"`);
+    Toast.show(`Preparing download…`);
+
+    // Fetch as blob so it downloads correctly on both file:// and https://
+    fetch(song.src)
+      .then(r => {
+        if (!r.ok) throw new Error("File not found");
+        return r.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a   = document.createElement("a");
+        a.href     = url;
+        a.download = `${song.title}.mp3`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        Toast.show(`Downloading "${song.title}"`);
+      })
+      .catch(() => {
+        Toast.show("⚠ Could not fetch the file — check the src path in songs.js");
+      });
   }
 
   // ── Bind events (called once on init) ─────────────────
