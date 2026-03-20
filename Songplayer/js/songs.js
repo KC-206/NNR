@@ -517,4 +517,18 @@ const SONGS = [
     dateAdded: "2026-03-17",
     downloadable: true,
   },
+
+  {
+    id: "s037",
+    title: "Trixie has rabies",
+    artist: "",
+    album: "",
+    duration: 210,
+    src: "audio/Trixie has rabies.mp3",
+    artwork: "art/trixie-has-rabies.jpg",
+    tags: ["trixie"],
+    notes: "",
+    dateAdded: "2026-03-20",
+    downloadable: true,
+  },
 ];
