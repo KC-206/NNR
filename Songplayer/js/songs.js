@@ -531,4 +531,18 @@ const SONGS = [
     dateAdded: "2026-03-20",
     downloadable: true,
   },
+
+  {
+    id: "s038",
+    title: "It's Pie",
+    artist: "",
+    album: "",
+    duration: 270,
+    src: "audio/It's Pie.mp3",
+    artwork: "art/its_pie.png",
+    tags: [],
+    notes: "",
+    dateAdded: "2026-03-25",
+    downloadable: true,
+  },
 ];
