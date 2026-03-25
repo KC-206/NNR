@@ -28,6 +28,7 @@ const AudioEngine = (() => {
       // Autoplay may be blocked by browser before user interaction
     });
     AppState.isPlaying = true;
+    if (typeof Sparkles !== "undefined") Sparkles.start();
 
     // Update play counts and recently played in storage
     const counts = Storage.getCounts();
@@ -41,6 +42,7 @@ const AudioEngine = (() => {
     PlayerUI.sync();
     Catalog.syncGrid();
     Catalog.renderSidebarList();
+    DeepLinks.updateHash(id);
   }
 
   /** Toggle play/pause for the currently loaded song */
@@ -52,9 +54,11 @@ const AudioEngine = (() => {
     if (AppState.isPlaying) {
       audio.pause();
       AppState.isPlaying = false;
+    if (typeof Sparkles !== "undefined") Sparkles.stop();
     } else {
       audio.play().catch(() => {});
       AppState.isPlaying = true;
+    if (typeof Sparkles !== "undefined") Sparkles.start();
     }
     PlayerUI.syncPlayPauseButton();
     Catalog.syncGrid();
@@ -176,6 +180,7 @@ const AudioEngine = (() => {
       nextSong();
     } else {
       AppState.isPlaying = false;
+    if (typeof Sparkles !== "undefined") Sparkles.stop();
       PlayerUI.syncPlayPauseButton();
     }
   });

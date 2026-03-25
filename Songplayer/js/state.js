@@ -51,5 +51,5 @@ function getSong(id) {
 
 /** Helper — placeholder SVG art for songs without artwork */
 function blankArt() {
-  return "art/record_artwork.png";
+  return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect fill='%231c2529' width='400' height='400'/%3E%3Ccircle cx='200' cy='200' r='55' fill='none' stroke='%23232e33' stroke-width='2'/%3E%3Ccircle cx='200' cy='200' r='12' fill='%23232e33'/%3E%3C/svg%3E";
 }

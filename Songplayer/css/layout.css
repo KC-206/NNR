@@ -70,14 +70,40 @@
 /* ── Hero section ───────────────────────────────────────── */
 #hero {
   display: flex;
-  gap: 24px;
-  align-items: flex-end;
-  padding: 28px 30px 22px;
+  gap: 28px;
+  align-items: center;
+  padding: 32px 30px 28px;
   background: linear-gradient(160deg, var(--surface2) 0%, transparent 100%);
   border-bottom: 1px solid var(--border);
-  min-height: 170px;
+  min-height: 190px;
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
   transition: background 0.3s, border-color 0.3s;
+}
+
+/* Hero info fills center, title is large */
+#hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+#hero-info .hero-eye {
+  margin-bottom: 8px;
+}
+
+#hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 6px;
+  transition: color 0.3s;
 }
 
 /* ── Song grid ──────────────────────────────────────────── */

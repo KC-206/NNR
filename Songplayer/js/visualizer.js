@@ -361,3 +361,137 @@ const Visualizer = (() => {
 
   return { init, toggle, setStyle, resume };
 })();
+
+// ════════════════════════════════════════════════════════
+//  SPARKLE SYSTEM — slow drifting sparkles around the title
+// ════════════════════════════════════════════════════════
+const Sparkles = (() => {
+  let sCtx      = null;
+  let sparks    = [];
+  let sRafId    = null;
+  let sEnabled  = false;
+
+  const MAX_SPARKS = 35;
+
+  function init() {
+    const canvas = document.getElementById("sparkle-canvas");
+    if (!canvas) return;
+    sCtx = canvas.getContext("2d");
+    _resize();
+    window.addEventListener("resize", _resize);
+  }
+
+  function _resize() {
+    const canvas = document.getElementById("sparkle-canvas");
+    const hero   = document.getElementById("hero");
+    if (!canvas || !hero) return;
+    const rect    = hero.getBoundingClientRect();
+    canvas.width  = Math.round(rect.width);
+    canvas.height = Math.round(rect.height);
+  }
+
+  function start() {
+    if (sRafId) return;
+    sEnabled = true;
+    _loop();
+  }
+
+  function stop() {
+    sEnabled = false;
+    if (sRafId) { cancelAnimationFrame(sRafId); sRafId = null; }
+    if (sCtx) {
+      const canvas = document.getElementById("sparkle-canvas");
+      if (canvas) sCtx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    sparks = [];
+  }
+
+  function _loop() {
+    if (!sEnabled) return;
+    sRafId = requestAnimationFrame(_loop);
+    _draw();
+  }
+
+  function _draw() {
+    const canvas = document.getElementById("sparkle-canvas");
+    if (!sCtx || !canvas) return;
+
+    // Keep canvas sized to hero
+    const hero = document.getElementById("hero");
+    if (hero) {
+      const r = hero.getBoundingClientRect();
+      const w = Math.round(r.width), h = Math.round(r.height);
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    }
+
+    const W = canvas.width, H = canvas.height;
+    sCtx.clearRect(0, 0, W, H);
+
+    // Spawn new sparks gradually
+    if (sparks.length < MAX_SPARKS && Math.random() < 0.25) {
+      sparks.push(_newSpark(W, H));
+    }
+
+    // Get accent color
+    const raw = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+    let r = 110, g = 158, b = 132;
+    if (raw.startsWith("#")) {
+      r = parseInt(raw.slice(1,3), 16);
+      g = parseInt(raw.slice(3,5), 16);
+      b = parseInt(raw.slice(5,7), 16);
+    }
+
+    // Update and draw sparks
+    sparks = sparks.filter(s => s.life > 0);
+    sparks.forEach(s => {
+      s.x    += s.vx;
+      s.y    += s.vy;
+      s.vy   -= 0.012; // slow rise
+      s.rot  += s.rotV;
+      s.life -= s.decay;
+
+      const alpha = Math.min(s.life, 1) * s.maxAlpha;
+      sCtx.save();
+      sCtx.translate(s.x, s.y);
+      sCtx.rotate(s.rot);
+      sCtx.globalAlpha = alpha;
+
+      // Draw a 4-pointed star sparkle
+      const sz = s.size;
+      sCtx.fillStyle = `rgb(${r},${g},${b})`;
+      sCtx.beginPath();
+      for (let i = 0; i < 4; i++) {
+        const angle = (i / 4) * Math.PI * 2;
+        const ox = Math.cos(angle) * sz;
+        const oy = Math.sin(angle) * sz;
+        const ix = Math.cos(angle + Math.PI / 4) * sz * 0.3;
+        const iy = Math.sin(angle + Math.PI / 4) * sz * 0.3;
+        i === 0 ? sCtx.moveTo(ox, oy) : sCtx.lineTo(ox, oy);
+        sCtx.lineTo(ix, iy);
+      }
+      sCtx.closePath();
+      sCtx.fill();
+
+      sCtx.restore();
+    });
+  }
+
+  function _newSpark(W, H) {
+    // Sparks originate in the center/right area where the title sits
+    const x = W * 0.3 + Math.random() * W * 0.65;
+    const y = H * 0.1 + Math.random() * H * 0.8;
+    return {
+      x, y,
+      vx:      (Math.random() - 0.5) * 0.6,
+      vy:      -(0.1 + Math.random() * 0.4),
+      rot:     Math.random() * Math.PI * 2,
+      rotV:    (Math.random() - 0.5) * 0.04,
+      size:    1.5 + Math.random() * 3.5,
+      life:    1,
+      decay:   0.004 + Math.random() * 0.006,
+      maxAlpha: 0.15 + Math.random() * 0.25,
+    };
+  }
+
+  return { init, start, stop };
+})();

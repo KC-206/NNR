@@ -77,6 +77,9 @@ const App = (() => {
 
     // 13. Init visualizer (off by default, restored from localStorage)
     Visualizer.init(AudioEngine.getAudioElement());
+
+    // 14. Init sparkle system
+    Sparkles.init();
   }
 
   /** Build the static nav items in the sidebar */

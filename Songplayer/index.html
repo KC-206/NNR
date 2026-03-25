@@ -59,17 +59,23 @@
       <!-- Now Playing Hero -->
       <section id="hero">
         <!-- Visualizer canvas — sits behind hero content -->
-      <canvas id="viz-canvas"></canvas>
+        <canvas id="viz-canvas"></canvas>
+        <!-- Sparkle canvas — sits above content, pointer-events:none -->
+        <canvas id="sparkle-canvas"></canvas>
 
-      <img id="hero-art" src="" alt="Album Art" onerror="this.onerror=null;this.src=blankArt()">
+        <!-- Left: artwork -->
+        <img id="hero-art" src="" alt="Album Art" onerror="this.onerror=null;this.src=blankArt()">
+
+        <!-- Center: song info -->
         <div id="hero-info">
           <div class="hero-eye">Now Playing</div>
           <div id="hero-title">Select a song</div>
           <div id="hero-artist">—</div>
           <div id="hero-tags"></div>
         </div>
+
+        <!-- Right: action buttons -->
         <div class="hero-actions" id="hero-actions">
-          <!-- Visualizer controls -->
           <div id="viz-controls">
             <button class="hero-btn" id="viz-toggle" title="Turn on visualizer">
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
