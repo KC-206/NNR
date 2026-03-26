@@ -176,7 +176,7 @@ const SONGS = [
     album: "",
     duration: 210,
     src: "audio/Jenny.mp3",
-    artwork: "",
+    artwork: "art/jenny.png",
     tags: [],
     notes: "",
     dateAdded: "2026-03-17",
