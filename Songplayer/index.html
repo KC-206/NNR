@@ -291,6 +291,16 @@
   </div>
 
   <!-- Toast notification -->
+  <!-- ══════════════ LIGHTBOX ══════════════ -->
+  <div id="lightbox" onclick="Lightbox.close()">
+    <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
+    <div id="lightbox-caption">
+      <span id="lightbox-title"></span>
+      <span id="lightbox-album"></span>
+    </div>
+    <button id="lightbox-close" onclick="Lightbox.close()">✕</button>
+  </div>
+
   <div id="toast"></div>
 
   <!-- ══════════════ SCRIPTS (load order matters) ══════════════ -->
@@ -306,6 +316,7 @@
   <script src="js/keyboard.js"></script>
   <script src="js/deeplinks.js"></script>
   <script src="js/visualizer.js"></script>
+  <script src="js/lightbox.js"></script>
   <script src="js/app.js"></script>
 
 </body>

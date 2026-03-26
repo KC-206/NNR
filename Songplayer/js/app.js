@@ -80,6 +80,9 @@ const App = (() => {
 
     // 14. Init sparkle system
     Sparkles.init();
+
+    // 15. Init lightbox
+    Lightbox.init();
   }
 
   /** Build the static nav items in the sidebar */

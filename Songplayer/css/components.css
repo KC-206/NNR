@@ -849,3 +849,84 @@ kbd {
   color: var(--accent);
   background: rgba(0,0,0,0.15);
 }
+
+/* ── Lightbox ────────────────────────────────────────────── */
+#lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(12px);
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+  cursor: zoom-out;
+}
+#lightbox.open {
+  opacity: 1;
+  pointer-events: all;
+}
+#lightbox-img {
+  max-width: min(80vw, 80vh);
+  max-height: min(80vw, 80vh);
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 32px 100px rgba(0,0,0,0.8);
+  transform: scale(0.92);
+  transition: transform 0.25s ease;
+  cursor: default;
+}
+#lightbox.open #lightbox-img {
+  transform: scale(1);
+}
+#lightbox-caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+#lightbox-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #e8e0d4;
+  letter-spacing: -0.2px;
+}
+#lightbox-album {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+#lightbox-close {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+#lightbox-close:hover {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+}
+
+/* Clickable artwork cursor */
+.card-art { cursor: zoom-in; }
+#hero-art  { cursor: zoom-in; }

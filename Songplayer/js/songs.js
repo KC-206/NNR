@@ -190,7 +190,7 @@ const SONGS = [
     album: "",
     duration: 174,
     src: "audio/Kaleidomancer.mp3",
-    artwork: "",
+    artwork: "art/kaleidomancer.png",
     tags: ["holly","alice"],
     notes: "",
     dateAdded: "2026-03-17",
