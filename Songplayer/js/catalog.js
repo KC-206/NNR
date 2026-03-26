@@ -157,6 +157,12 @@ const Catalog = (() => {
                 ${playIcon}
               </div>
             </div>
+            <button class="card-zoom" onclick="event.stopPropagation(); Lightbox.open('${_art}','${_esc(s.title)}','${_esc(s.album)}')" title="View artwork">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="7"/>
+                <line x1="16.5" y1="16.5" x2="22" y2="22"/>
+              </svg>
+            </button>
           </div>
           <div class="card-body">
             <div class="card-title">${_esc(s.title)}</div>
