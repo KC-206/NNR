@@ -93,21 +93,35 @@ const DeepLinks = (() => {
     const song = findBySlug(hash);
     if (!song) return;
     setTimeout(() => {
-      // Load the song regardless — this sets the artwork, title etc.
-      AudioEngine.playSong(song.id);
+      // Load the song but don't attempt autoplay — just set it up ready to go.
+      // We call the internal load without play so the audio element isn't left
+      // in a broken state by a blocked autoplay attempt.
+      _loadSongWithoutPlay(song);
       _scrollToCard(song.id);
-
-      // Check if the audio actually started — browsers may block autoplay
-      // before a user gesture. If blocked, show a prompt instead of silence.
-      setTimeout(() => {
-        const audio = AudioEngine.getAudioElement();
-        if (audio.paused) {
-          _showAutoplayPrompt(song);
-        } else {
-          Toast.show(`Playing "${song.title}" from shared link`);
-        }
-      }, 400);
+      _showAutoplayPrompt(song);
     }, 300);
+  }
+
+  function _loadSongWithoutPlay(song) {
+    // Update AppState and UI exactly like playSong() does, minus the audio.play() call
+    AppState.currentId = song.id;
+    const audio = AudioEngine.getAudioElement();
+    audio.src = song.src;
+    audio.load(); // reset the element cleanly
+    AppState.isPlaying = false;
+
+    // Update play counts and recently played
+    const counts = Storage.getCounts();
+    counts[song.id] = (counts[song.id] || 0) + 1;
+    Storage.saveCounts(counts);
+    const recent = Storage.getRecent();
+    Storage.saveRecent([song.id, ...recent.filter(x => x !== song.id)].slice(0, Config.recentMax));
+
+    AudioEngine.rebuildQueue();
+    PlayerUI.sync();
+    Catalog.syncGrid();
+    Catalog.renderSidebarList();
+    DeepLinks.updateHash(song.id);
   }
 
   function _showAutoplayPrompt(song) {
@@ -131,16 +145,20 @@ const DeepLinks = (() => {
       </div>
     `;
 
-    // Play directly on click — the click itself is the user gesture browsers require
+    // Play directly on the user's click gesture
     prompt.querySelector("#autoplay-btn").addEventListener("click", () => {
-      AudioEngine.getAudioElement().play().then(() => {
+      prompt.remove();
+      const audio = AudioEngine.getAudioElement();
+      audio.play().then(() => {
         AppState.isPlaying = true;
         PlayerUI.syncPlayPauseButton();
         Catalog.syncGrid();
         Catalog.renderSidebarList();
         if (typeof Sparkles !== "undefined") Sparkles.start();
-      }).catch(() => {});
-      prompt.remove();
+        Toast.show(`Playing "${song.title}"`);
+      }).catch(() => {
+        Toast.show("Tap play to start");
+      });
     });
     // Dismiss
     prompt.querySelector("#autoplay-dismiss").addEventListener("click", () => prompt.remove());
