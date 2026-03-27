@@ -532,4 +532,18 @@ const SONGS = [
     dateAdded: "2026-03-25",
     downloadable: true,
   },
+
+  {
+    id: "s039",
+    title: "Amanda Beth's Sunshine Shoppe",
+    artist: "",
+    album: "",
+    duration: 171,
+    src: "audio/Amanda Beth's Sunshine Shoppe.mp3",
+    artwork: "art/20240704amanda-beths-sunshine-shoppe.png",
+    tags: [],
+    notes: "",
+    dateAdded: "2026-03-27",
+    downloadable: true,
+  },
 ];
