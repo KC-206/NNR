@@ -546,4 +546,17 @@ const SONGS = [
     dateAdded: "2026-03-27",
     downloadable: true,
   },
+  {
+    id: "s040",
+    title: "She twerked at my girl, now I gotta ruin her",
+    artist: "",
+    album: "",
+    duration: 204,
+    src: "audio/She Twerked at My Girl, Now I gotta Ruin Her.mp3",
+    artwork: "art/twerked.png",
+    tags: ["jessica","kristy"],
+    notes: "",
+    dateAdded: "2026-03-27",
+    downloadable: true,
+  },
 ];
