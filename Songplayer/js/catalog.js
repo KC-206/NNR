@@ -64,7 +64,7 @@ const Catalog = (() => {
     if (AppState.sort === "title")    return [...list].sort((a, b) => a.title.localeCompare(b.title));
     if (AppState.sort === "plays")    return [...list].sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0));
     if (AppState.sort === "duration") return [...list].sort((a, b) => a.duration - b.duration);
-    return list; // "default" = date added order (SONGS array order)
+    return [...list].reverse(); // "default" = newest first (last in songs.js = top of list)
   }
 
   // ── View / Filter controls ─────────────────────────────

@@ -93,10 +93,62 @@ const DeepLinks = (() => {
     const song = findBySlug(hash);
     if (!song) return;
     setTimeout(() => {
+      // Load the song regardless — this sets the artwork, title etc.
       AudioEngine.playSong(song.id);
       _scrollToCard(song.id);
-      Toast.show(`Playing "${song.title}" from shared link`);
+
+      // Check if the audio actually started — browsers may block autoplay
+      // before a user gesture. If blocked, show a prompt instead of silence.
+      setTimeout(() => {
+        const audio = AudioEngine.getAudioElement();
+        if (audio.paused) {
+          _showAutoplayPrompt(song);
+        } else {
+          Toast.show(`Playing "${song.title}" from shared link`);
+        }
+      }, 400);
     }, 300);
+  }
+
+  function _showAutoplayPrompt(song) {
+    // Remove any existing prompt
+    const existing = document.getElementById("autoplay-prompt");
+    if (existing) existing.remove();
+
+    const prompt = document.createElement("div");
+    prompt.id = "autoplay-prompt";
+    prompt.innerHTML = `
+      <div id="autoplay-prompt-inner">
+        <img id="autoplay-art" src="${song.artwork || blankArt()}" alt="">
+        <div id="autoplay-text">
+          <div id="autoplay-title">${song.title}</div>
+          <div id="autoplay-sub">Shared with you · tap to play</div>
+        </div>
+        <button id="autoplay-btn">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button id="autoplay-dismiss">✕</button>
+      </div>
+    `;
+
+    // Play directly on click — the click itself is the user gesture browsers require
+    prompt.querySelector("#autoplay-btn").addEventListener("click", () => {
+      AudioEngine.getAudioElement().play().then(() => {
+        AppState.isPlaying = true;
+        PlayerUI.syncPlayPauseButton();
+        Catalog.syncGrid();
+        Catalog.renderSidebarList();
+        if (typeof Sparkles !== "undefined") Sparkles.start();
+      }).catch(() => {});
+      prompt.remove();
+    });
+    // Dismiss
+    prompt.querySelector("#autoplay-dismiss").addEventListener("click", () => prompt.remove());
+
+    document.body.appendChild(prompt);
+
+    // Auto-dismiss after 12 seconds
+    setTimeout(() => { if (prompt.parentNode) prompt.remove(); }, 12000);
   }
 
   function _scrollToCard(songId) {

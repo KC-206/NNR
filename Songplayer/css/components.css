@@ -960,3 +960,72 @@ kbd {
   border-color: var(--accent);
   background: rgba(0,0,0,0.75);
 }
+
+/* ── Autoplay prompt (shown when browser blocks deep link autoplay) ── */
+#autoplay-prompt {
+  position: fixed;
+  bottom: calc(var(--player-h) + var(--kbd-bar-h) + 16px);
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  z-index: 2000;
+  animation: fadeUp 0.3s ease forwards;
+}
+#autoplay-prompt-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  white-space: nowrap;
+}
+#autoplay-art {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+#autoplay-text { flex: 1; min-width: 0; }
+#autoplay-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+#autoplay-sub {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  letter-spacing: 0.04em;
+}
+#autoplay-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  color: var(--bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+#autoplay-btn:hover { background: var(--accent2); }
+#autoplay-dismiss {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+#autoplay-dismiss:hover { color: var(--text); }
