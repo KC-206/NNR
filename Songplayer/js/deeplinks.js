@@ -3,9 +3,10 @@
  *
  * URLs like: https://your-site.github.io/NNR/Songplayer/#its-pie
  *
- * On page load:  if a hash is present, find and auto-play that song.
+ * On page load:  finds the song, loads it visually (artwork, title, queue)
+ *                but does NOT attempt autoplay — user clicks play to start.
  * copyLink(id):  copies a slug-based URL to clipboard.
- * updateHash():  updates the URL bar when a song plays (called by AudioEngine).
+ * updateHash():  updates the URL bar when a song plays.
  */
 
 const DeepLinks = (() => {
@@ -14,18 +15,16 @@ const DeepLinks = (() => {
   function slugify(title) {
     return title
       .toLowerCase()
-      .replace(/[''`]/g, "")        // strip apostrophes
-      .replace(/[^a-z0-9]+/g, "-")  // non-alphanumeric → hyphen
-      .replace(/^-+|-+$/g, "");     // trim leading/trailing hyphens
+      .replace(/[''`]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   }
 
   /** Find a song by slug — tries title match first, falls back to ID */
   function findBySlug(slug) {
     if (!slug) return null;
-    // Direct ID match (backwards compatibility with old #s003 style links)
     const byId = SONGS.find(s => s.id === slug);
     if (byId) return byId;
-    // Slug match against title
     return SONGS.find(s => slugify(s.title) === slug) || null;
   }
 
@@ -63,11 +62,9 @@ const DeepLinks = (() => {
       _showFeedback(btnEl);
       Toast.show(`Link copied — "${song ? song.title : songId}"`);
     });
-
     history.replaceState(null, "", `#${slugify(song ? song.title : songId)}`);
   }
 
-  /** Brief "✓ Copied" feedback on the button */
   function _showFeedback(btnEl) {
     if (!btnEl) return;
     const orig = btnEl.innerHTML;
@@ -75,13 +72,13 @@ const DeepLinks = (() => {
     btnEl.style.color       = "var(--accent2)";
     btnEl.style.borderColor = "var(--accent2)";
     setTimeout(() => {
-      btnEl.innerHTML       = orig;
-      btnEl.style.color     = "";
+      btnEl.innerHTML         = orig;
+      btnEl.style.color       = "";
       btnEl.style.borderColor = "";
     }, 2000);
   }
 
-  /** On page load — check for a hash and play that song */
+  /** On page load — check for a hash and prepare that song */
   function init() {
     _handleHash();
     window.addEventListener("hashchange", _handleHash);
@@ -92,89 +89,37 @@ const DeepLinks = (() => {
     if (!hash) return;
     const song = findBySlug(hash);
     if (!song) return;
+
     setTimeout(() => {
-      // Load the song but don't attempt autoplay — just set it up ready to go.
-      // We call the internal load without play so the audio element isn't left
-      // in a broken state by a blocked autoplay attempt.
-      _loadSongWithoutPlay(song);
+      // Set up the song visually — artwork, title, queue, hero — but
+      // do NOT touch audio.play() at all. The audio element stays clean
+      // so the user's first click on the play button works perfectly.
+      _prepareWithoutPlay(song);
       _scrollToCard(song.id);
-      _showAutoplayPrompt(song);
+
+      // Show a gentle non-blocking hint in the player bar area
+      Toast.show(`"${song.title}" ready — press play to listen`, 5000);
     }, 300);
   }
 
-  function _loadSongWithoutPlay(song) {
-    // Update AppState and UI exactly like playSong() does, minus audio.play()
+  function _prepareWithoutPlay(song) {
     AppState.currentId = song.id;
     AppState.isPlaying = false;
 
-    // Set src but do NOT call audio.load() or audio.play() —
-    // audio.load() can put the element into a state where play() still fails.
-    // Instead we leave the element untouched and only set src right before
-    // the user's gesture fires (in the prompt button click).
-    window._pendingDeepLinkSrc = song.src;
+    // Set the audio src so it's preloaded and ready, but don't call play()
+    const audio = AudioEngine.getAudioElement();
+    audio.src     = song.src;
+    audio.preload = "auto";
 
-    // Update play counts and recently played
-    const counts = Storage.getCounts();
-    counts[song.id] = (counts[song.id] || 0) + 1;
-    Storage.saveCounts(counts);
+    // Update recently played
     const recent = Storage.getRecent();
     Storage.saveRecent([song.id, ...recent.filter(x => x !== song.id)].slice(0, Config.recentMax));
 
     AudioEngine.rebuildQueue();
-    PlayerUI.sync();
-    Catalog.syncGrid();
+    PlayerUI.sync();           // updates hero art, title, artist
+    Catalog.syncGrid();        // highlights the card
     Catalog.renderSidebarList();
-    DeepLinks.updateHash(song.id);
-  }
-
-  function _showAutoplayPrompt(song) {
-    // Remove any existing prompt
-    const existing = document.getElementById("autoplay-prompt");
-    if (existing) existing.remove();
-
-    const prompt = document.createElement("div");
-    prompt.id = "autoplay-prompt";
-    prompt.innerHTML = `
-      <div id="autoplay-prompt-inner">
-        <img id="autoplay-art" src="${song.artwork || blankArt()}" alt="">
-        <div id="autoplay-text">
-          <div id="autoplay-title">${song.title}</div>
-          <div id="autoplay-sub">Shared with you · tap to play</div>
-        </div>
-        <button id="autoplay-btn">
-          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        </button>
-        <button id="autoplay-dismiss">✕</button>
-      </div>
-    `;
-
-    // Play directly on the user's click gesture
-    prompt.querySelector("#autoplay-btn").addEventListener("click", () => {
-      prompt.remove();
-      const audio = AudioEngine.getAudioElement();
-      // Set src right here, immediately before play() — same gesture tick
-      if (window._pendingDeepLinkSrc) {
-        audio.src = window._pendingDeepLinkSrc;
-        window._pendingDeepLinkSrc = null;
-      }
-      audio.play().then(() => {
-        AppState.isPlaying = true;
-        PlayerUI.syncPlayPauseButton();
-        Catalog.syncGrid();
-        Catalog.renderSidebarList();
-        if (typeof Sparkles !== "undefined") Sparkles.start();
-        Toast.show(`Playing "${song.title}"`);
-      }).catch(() => {
-        Toast.show("Tap play to start");
-      });
-    });
-    // Dismiss
-    prompt.querySelector("#autoplay-dismiss").addEventListener("click", () => prompt.remove());
-
-    document.body.appendChild(prompt);
-
-    // Auto-dismiss after 12 seconds
-    setTimeout(() => { if (prompt.parentNode) prompt.remove(); }, 12000);
+    updateHash(song.id);
   }
 
   function _scrollToCard(songId) {
