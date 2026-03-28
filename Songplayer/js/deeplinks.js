@@ -103,12 +103,15 @@ const DeepLinks = (() => {
   }
 
   function _loadSongWithoutPlay(song) {
-    // Update AppState and UI exactly like playSong() does, minus the audio.play() call
+    // Update AppState and UI exactly like playSong() does, minus audio.play()
     AppState.currentId = song.id;
-    const audio = AudioEngine.getAudioElement();
-    audio.src = song.src;
-    audio.load(); // reset the element cleanly
     AppState.isPlaying = false;
+
+    // Set src but do NOT call audio.load() or audio.play() —
+    // audio.load() can put the element into a state where play() still fails.
+    // Instead we leave the element untouched and only set src right before
+    // the user's gesture fires (in the prompt button click).
+    window._pendingDeepLinkSrc = song.src;
 
     // Update play counts and recently played
     const counts = Storage.getCounts();
@@ -149,6 +152,11 @@ const DeepLinks = (() => {
     prompt.querySelector("#autoplay-btn").addEventListener("click", () => {
       prompt.remove();
       const audio = AudioEngine.getAudioElement();
+      // Set src right here, immediately before play() — same gesture tick
+      if (window._pendingDeepLinkSrc) {
+        audio.src = window._pendingDeepLinkSrc;
+        window._pendingDeepLinkSrc = null;
+      }
       audio.play().then(() => {
         AppState.isPlaying = true;
         PlayerUI.syncPlayPauseButton();
