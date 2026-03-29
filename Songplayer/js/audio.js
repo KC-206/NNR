@@ -18,6 +18,8 @@ const AudioEngine = (() => {
   /** Load and play a song by ID */
   function playSong(id) {
     Visualizer.resume();
+    // Dismiss shared song prompt if visible
+    if (window._sharedPromptDismiss) { window._sharedPromptDismiss(); window._sharedPromptDismiss = null; }
     const song = getSong(id);
     if (!song) return;
 

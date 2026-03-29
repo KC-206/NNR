@@ -961,3 +961,104 @@ kbd {
   background: rgba(0,0,0,0.75);
 }
 
+
+/* ── Shared song prompt ──────────────────────────────────── */
+#shared-prompt {
+  position: fixed;
+  bottom: calc(var(--player-h) + var(--kbd-bar-h) + 20px);
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: 0 16px 56px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+  max-width: 480px;
+  width: calc(100vw - 48px);
+  pointer-events: none;
+}
+#shared-prompt.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: all;
+}
+#shared-prompt.hiding {
+  opacity: 0;
+  transform: translateX(-50%) translateY(12px);
+}
+#shared-prompt-art-wrap {
+  flex-shrink: 0;
+}
+#shared-prompt-art {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--surface3);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#shared-prompt-info {
+  flex: 1;
+  min-width: 0;
+}
+#shared-prompt-eye {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+#shared-prompt-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.15;
+}
+#shared-prompt-artist {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+#shared-prompt-play {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: var(--accent);
+  border: none;
+  color: var(--bg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+#shared-prompt-play:hover { background: var(--accent2); transform: scale(1.04); }
+#shared-prompt-play:active { transform: scale(0.97); }
+#shared-prompt-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 15px;
+  padding: 2px 4px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  align-self: flex-start;
+}
+#shared-prompt-close:hover { color: var(--text); }
+
+/* Rainbow canvas around play button */
+#rainbow-canvas { position: fixed; pointer-events: none; z-index: 200; }
