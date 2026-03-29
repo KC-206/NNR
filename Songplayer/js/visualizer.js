@@ -40,11 +40,10 @@ const Visualizer = (() => {
       setStyle(e.target.value);
     });
 
-    // Connect audio when user first interacts (browser autoplay policy)
+    // Only connect audio AFTER a confirmed user gesture — never on page load.
+    // This prevents the AudioContext from silently taking ownership of the
+    // audio element in a suspended state, which causes playback silence.
     document.addEventListener("click", () => _connectAudio(audioElement), { once: true });
-
-    // Also try connecting immediately if context is already allowed
-    _connectAudio(audioElement);
 
     if (enabled) _startLoop();
   }
@@ -354,8 +353,11 @@ const Visualizer = (() => {
 
   // ── Resume audio context on play (browser policy) ────────
   function resume() {
-    if (audioCtx && audioCtx.state === "suspended") {
-      audioCtx.resume();
+    // Resume suspended AudioContext if one exists.
+    // Called by AudioEngine whenever play is triggered.
+    if (audioCtx) {
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      if (audioCtx.state === "interrupted") audioCtx.resume(); // iOS
     }
   }
 

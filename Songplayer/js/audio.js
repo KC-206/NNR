@@ -54,11 +54,12 @@ const AudioEngine = (() => {
     if (AppState.isPlaying) {
       audio.pause();
       AppState.isPlaying = false;
-    if (typeof Sparkles !== "undefined") Sparkles.stop();
+      if (typeof Sparkles !== "undefined") Sparkles.stop();
     } else {
+      Visualizer.resume(); // ensure AudioContext isn't suspended before play
       audio.play().catch(() => {});
       AppState.isPlaying = true;
-    if (typeof Sparkles !== "undefined") Sparkles.start();
+      if (typeof Sparkles !== "undefined") Sparkles.start();
     }
     PlayerUI.syncPlayPauseButton();
     Catalog.syncGrid();
