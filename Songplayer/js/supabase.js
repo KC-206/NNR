@@ -15,8 +15,9 @@ const SupabaseDB = (() => {
   // ──────────────────────────────────────────────────────────
 
   // ── State ─────────────────────────────────────────────────
-  let myLoves    = new Set();  // song IDs loved by this browser fingerprint
-  let loveCounts = {};         // { songId: totalLoveCount }
+  let myLoves     = new Set();  // song IDs loved by this browser fingerprint
+  let loveCounts  = {};         // { songId: totalLoveCount }
+  let globalPlays = {};         // { songId: globalPlayCount }
   let fingerprint = null;
   let initialized  = false;
 
@@ -53,9 +54,15 @@ const SupabaseDB = (() => {
       body:    options.body    || undefined,
     });
 
-    if (res.status === 204) return null;
+    if (res.status === 204 || res.status === 201) {
+      const text = await res.text();
+      if (!text || text === "" || text === "null") return null;
+      try { return JSON.parse(text); } catch { return null; }
+    }
     if (!res.ok) throw new Error("Supabase " + res.status + ": " + await res.text());
-    return res.json();
+    const text = await res.text();
+    if (!text || text === "") return null;
+    try { return JSON.parse(text); } catch { return null; }
   }
 
   async function _rpc(fn, params = {}) {
@@ -81,7 +88,7 @@ const SupabaseDB = (() => {
 
     try {
       _fingerprint();
-      await Promise.all([_loadLoveCounts(), _loadMyLoves()]);
+      await Promise.all([_loadLoveCounts(), _loadMyLoves(), _loadPlayCounts()]);
       initialized = true;
       console.info("SupabaseDB: ready —", Object.keys(loveCounts).length, "songs with loves");
       // Re-render cards now we have love state
@@ -92,10 +99,14 @@ const SupabaseDB = (() => {
   }
 
   async function _loadLoveCounts() {
-    // Get all love rows — count per song_id in JS (simpler than GROUP BY)
     const rows = await _api("song_loves?select=song_id");
     loveCounts = {};
-    rows.forEach(r => { loveCounts[r.song_id] = (loveCounts[r.song_id] || 0) + 1; });
+    if (rows) rows.forEach(r => { loveCounts[r.song_id] = (loveCounts[r.song_id] || 0) + 1; });
+  }
+
+  async function _loadPlayCounts() {
+    const rows = await _api("song_plays?select=song_id,play_count");
+    if (rows) rows.forEach(r => { globalPlays[r.song_id] = r.play_count || 0; });
   }
 
   async function _loadMyLoves() {
@@ -140,15 +151,17 @@ const SupabaseDB = (() => {
           "&fingerprint=eq." + _fingerprint(),
           { method: "DELETE" }
         );
-        Toast.show("Removed from loves");
+        Toast.show("Removed like");
       } else {
         await _api("song_loves", {
           method: "POST",
-          prefer: "resolution=ignore-duplicates",
+          prefer: "return=minimal,resolution=ignore-duplicates",
           body:   JSON.stringify({ song_id: songId, fingerprint: _fingerprint() }),
         });
-        Toast.show("♥ Loved!");
+        Toast.show("♥ Liked!");
       }
+      // Confirmed — re-render to show accurate state
+      if (typeof Catalog !== "undefined") Catalog.syncGrid();
     } catch(e) {
       // Revert on failure
       if (wasLoved) { myLoves.add(songId); loveCounts[songId]++; }
@@ -160,9 +173,10 @@ const SupabaseDB = (() => {
   }
 
   // ── Getters ───────────────────────────────────────────────
-  function isLoved(songId)     { return myLoves.has(songId); }
-  function getLoveCount(songId){ return loveCounts[songId] || 0; }
-  function isReady()            { return initialized; }
+  function isLoved(songId)         { return myLoves.has(songId); }
+  function getLoveCount(songId)    { return loveCounts[songId] || 0; }
+  function getGlobalPlayCount(songId) { return globalPlays[songId] || 0; }
+  function isReady()               { return initialized; }
 
-  return { init, trackPlay, toggleLove, isLoved, getLoveCount, isReady };
+  return { init, trackPlay, toggleLove, isLoved, getLoveCount, getGlobalPlayCount, isReady };
 })();
