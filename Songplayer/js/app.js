@@ -83,6 +83,9 @@ const App = (() => {
 
     // 15. Init lightbox
     Lightbox.init();
+
+    // 16. Init Supabase (loves + global play tracking) — async, non-blocking
+    SupabaseDB.init();
   }
 
   /** Build the static nav items in the sidebar */

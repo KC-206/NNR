@@ -53,3 +53,4 @@ function getSong(id) {
 function blankArt() {
   return "art/record_artwork.png";
 }
+

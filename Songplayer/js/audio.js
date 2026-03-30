@@ -37,6 +37,9 @@ const AudioEngine = (() => {
     counts[id] = (counts[id] || 0) + 1;
     Storage.saveCounts(counts);
 
+    // Track global play in Supabase (non-blocking)
+    if (typeof SupabaseDB !== "undefined") SupabaseDB.trackPlay(id);
+
     const recent = Storage.getRecent();
     Storage.saveRecent([id, ...recent.filter(x => x !== id)].slice(0, Config.recentMax));
 

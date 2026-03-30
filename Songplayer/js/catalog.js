@@ -135,8 +135,10 @@ const Catalog = (() => {
       const isCurrent = s.id === AppState.currentId;
       const isPlaying  = isCurrent && AppState.isPlaying;
       // Use cached fallback if this artwork URL previously 404'd
-      const _failedArt = window._failedArt || new Set();
-      const _art = (s.artwork && !_failedArt.has(s.artwork)) ? s.artwork : blankArt();
+      const _failedArt  = window._failedArt || new Set();
+      const _art        = (s.artwork && !_failedArt.has(s.artwork)) ? s.artwork : blankArt();
+      const _isLoved    = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.isLoved(s.id) : false;
+      const _loveCount  = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.getLoveCount(s.id) : 0;
       const playIcon  = isPlaying
         ? `<svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
         : `<svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
@@ -211,6 +213,13 @@ const Catalog = (() => {
                   <line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
               </button>` : ""}
+              <button class="card-btn love-btn ${_isLoved ? "loved" : ""}"
+                      onclick="event.stopPropagation(); SupabaseDB.toggleLove('${s.id}')"
+                      title="${_isLoved ? "Unlove this song" : "Love this song"}">
+                <svg width="11" height="11" fill="${_isLoved ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>${_loveCount > 0 ? `<span class="love-count">${_loveCount}</span>` : ""}
+              </button>
             </div>
           </div>
         </div>
@@ -252,8 +261,10 @@ const Catalog = (() => {
       const isCurrent = s.id === AppState.currentId;
       const isPlaying  = isCurrent && AppState.isPlaying;
       // Use cached fallback if this artwork URL previously 404'd
-      const _failedArt = window._failedArt || new Set();
-      const _art = (s.artwork && !_failedArt.has(s.artwork)) ? s.artwork : blankArt();
+      const _failedArt  = window._failedArt || new Set();
+      const _art        = (s.artwork && !_failedArt.has(s.artwork)) ? s.artwork : blankArt();
+      const _isLoved    = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.isLoved(s.id) : false;
+      const _loveCount  = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.getLoveCount(s.id) : 0;
       const clickFn   = isCurrent ? "AudioEngine.togglePlay()" : `AudioEngine.playSong('${s.id}')`;
       return `
       <div class="track-row ${isCurrent ? "current" : ""} ${isPlaying ? "playing" : ""}" onclick="${clickFn}">

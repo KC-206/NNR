@@ -1062,3 +1062,28 @@ kbd {
 
 /* Rainbow canvas around play button */
 #rainbow-canvas { position: fixed; pointer-events: none; z-index: 200; }
+
+/* ── Love / heart button ─────────────────────────────────── */
+.card-btn.love-btn {
+  color: var(--muted);
+  border-color: var(--border);
+  gap: 3px;
+  min-width: 0;
+}
+.card-btn.love-btn:hover {
+  border-color: #e05a7a;
+  color: #e05a7a;
+}
+.card-btn.love-btn.loved {
+  color: #e05a7a;
+  border-color: rgba(224,90,122,0.4);
+  background: rgba(224,90,122,0.06);
+}
+.card-btn.love-btn.loved:hover {
+  border-color: #e05a7a;
+  background: rgba(224,90,122,0.12);
+}
+.love-count {
+  font-size: 9px;
+  line-height: 1;
+}

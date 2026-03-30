@@ -194,21 +194,18 @@ const SharedPrompt = (() => {
 
   function _ensureCanvas() {
     if (canvas) return;
-    const btn = document.getElementById("btn-playpause");
+    const btn = document.getElementById("shared-prompt-play");
     if (!btn) return;
     canvas = document.createElement("canvas");
     canvas.id = "rainbow-canvas";
-    canvas.style.cssText = `
-      position:fixed; pointer-events:none; z-index:200;
-      border-radius:50%;
-    `;
+    canvas.style.cssText = "position:fixed; pointer-events:none; z-index:1600;";
     document.body.appendChild(canvas);
     _sizeCanvas();
     window.addEventListener("resize", _sizeCanvas);
   }
 
   function _sizeCanvas() {
-    const btn = document.getElementById("btn-playpause");
+    const btn = document.getElementById("shared-prompt-play");
     if (!btn || !canvas) return;
     const r   = btn.getBoundingClientRect();
     const pad = 28;
