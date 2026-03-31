@@ -95,7 +95,7 @@ const SupabaseDB = (() => {
       await Promise.all([_loadLikeCounts(), _loadMyLikes(), _loadGlobalPlays()]);
       initialized = true;
       console.info("SupabaseDB: ready");
-      // Re-render cards now we have like + play state
+      // Full render once on init so global play counts and like state show
       if (typeof Catalog !== "undefined") { Catalog.renderGrid(); Catalog.syncLoveButtons(); }
     } catch(e) {
       console.warn("SupabaseDB: init failed —", e.message);
@@ -127,7 +127,7 @@ const SupabaseDB = (() => {
       await _rpc("increment_play_count", { p_song_id: songId });
       // Update local cache so count shows immediately without reload
       globalPlays[songId] = (globalPlays[songId] || 0) + 1;
-      if (typeof Catalog !== "undefined") { Catalog.renderGrid(); Catalog.syncLoveButtons(); }
+      // Don't re-render grid on every play — too disruptive
     } catch(e) {
       console.warn("SupabaseDB: trackPlay failed —", e.message);
     }
@@ -152,7 +152,7 @@ const SupabaseDB = (() => {
     }
 
     // Full re-render so heart icon and count update immediately
-    if (typeof Catalog !== "undefined") { Catalog.renderGrid(); Catalog.syncLoveButtons(); }
+    if (typeof Catalog !== "undefined") Catalog.syncLoveButtons();
 
     try {
       if (wasLiked) {
@@ -171,12 +171,12 @@ const SupabaseDB = (() => {
         Toast.show("♥ Liked!");
       }
       // Re-render again after confirmed server response
-      if (typeof Catalog !== "undefined") { Catalog.renderGrid(); Catalog.syncLoveButtons(); }
+      if (typeof Catalog !== "undefined") Catalog.syncLoveButtons();
     } catch(e) {
       // Revert optimistic update on failure
       if (wasLiked) { myLikes.add(songId); likeCounts[songId] = (likeCounts[songId] || 0) + 1; }
       else          { myLikes.delete(songId); likeCounts[songId] = Math.max(0, (likeCounts[songId] || 1) - 1); }
-      if (typeof Catalog !== "undefined") { Catalog.renderGrid(); Catalog.syncLoveButtons(); }
+      if (typeof Catalog !== "undefined") Catalog.syncLoveButtons();
       console.warn("SupabaseDB: toggleLike failed —", e.message);
       Toast.show("Could not save — try again");
     }
