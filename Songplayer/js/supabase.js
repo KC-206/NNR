@@ -1,5 +1,5 @@
 /**
- * supabase.js — Global play tracking and loved songs via Supabase
+ * supabase.js — Global play tracking and liked songs via Supabase
  *
  * ════════════════════════════════════════════════════════
  *  SETUP — fill in your Supabase project details below
@@ -15,14 +15,13 @@ const SupabaseDB = (() => {
   // ──────────────────────────────────────────────────────────
 
   // ── State ─────────────────────────────────────────────────
-  let myLoves     = new Set();  // song IDs loved by this browser fingerprint
-  let loveCounts  = {};         // { songId: totalLoveCount }
-  let globalPlays = {};         // { songId: globalPlayCount }
-  let fingerprint = null;
+  let myLikes      = new Set();  // song IDs liked by this browser fingerprint
+  let likeCounts   = {};         // { songId: totalLikeCount }
+  let globalPlays  = {};         // { songId: globalPlayCount }
+  let fingerprint  = null;
   let initialized  = false;
 
-  // ── Browser fingerprint — prevents one person spamming loves ──
-  // Not cryptographically secure but a good enough friction barrier
+  // ── Browser fingerprint ────────────────────────────────────
   function _fingerprint() {
     if (fingerprint) return fingerprint;
     const raw = [
@@ -45,24 +44,25 @@ const SupabaseDB = (() => {
       "apikey":        SUPABASE_ANON_KEY,
       "Authorization": "Bearer " + SUPABASE_ANON_KEY,
       "Content-Type":  "application/json",
+      // Always request minimal return — avoids empty-body JSON parse errors
+      "Prefer":        options.prefer || "return=minimal",
     };
-    if (options.prefer) headers["Prefer"] = options.prefer;
 
     const res = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
-      method:  options.method  || "GET",
+      method:  options.method || "GET",
       headers,
-      body:    options.body    || undefined,
+      body:    options.body   || undefined,
     });
 
-    if (res.status === 204 || res.status === 201) {
-      const text = await res.text();
-      if (!text || text === "" || text === "null") return null;
-      try { return JSON.parse(text); } catch { return null; }
+    // 204 No Content and 200/201 with empty body are all success
+    if (res.status === 204 || res.status === 201) return null;
+    if (!res.ok) {
+      const text = await res.text().catch(() => res.status);
+      throw new Error("Supabase " + res.status + ": " + text);
     }
-    if (!res.ok) throw new Error("Supabase " + res.status + ": " + await res.text());
+    // GET requests return JSON; write requests with return=minimal return empty
     const text = await res.text();
-    if (!text || text === "") return null;
-    try { return JSON.parse(text); } catch { return null; }
+    return text ? JSON.parse(text) : null;
   }
 
   async function _rpc(fn, params = {}) {
@@ -75,8 +75,12 @@ const SupabaseDB = (() => {
       },
       body: JSON.stringify(params),
     });
-    if (!res.ok) throw new Error("RPC " + fn + " failed: " + await res.text());
-    return res.json().catch(() => null);
+    if (!res.ok) {
+      const text = await res.text().catch(() => res.status);
+      throw new Error("RPC " + fn + " failed: " + text);
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
   }
 
   // ── Init ──────────────────────────────────────────────────
@@ -88,31 +92,32 @@ const SupabaseDB = (() => {
 
     try {
       _fingerprint();
-      await Promise.all([_loadLoveCounts(), _loadMyLoves(), _loadPlayCounts()]);
+      await Promise.all([_loadLikeCounts(), _loadMyLikes(), _loadGlobalPlays()]);
       initialized = true;
-      console.info("SupabaseDB: ready —", Object.keys(loveCounts).length, "songs with loves");
-      // Re-render cards now we have love state
-      if (typeof Catalog !== "undefined") Catalog.renderGrid();
+      console.info("SupabaseDB: ready");
+      // Re-render cards now we have like + play state
+      if (typeof Catalog !== "undefined") { Catalog.renderGrid(); Catalog.syncLoveButtons(); }
     } catch(e) {
       console.warn("SupabaseDB: init failed —", e.message);
     }
   }
 
-  async function _loadLoveCounts() {
+  async function _loadLikeCounts() {
     const rows = await _api("song_loves?select=song_id");
-    loveCounts = {};
-    if (rows) rows.forEach(r => { loveCounts[r.song_id] = (loveCounts[r.song_id] || 0) + 1; });
+    likeCounts = {};
+    if (rows) rows.forEach(r => { likeCounts[r.song_id] = (likeCounts[r.song_id] || 0) + 1; });
   }
 
-  async function _loadPlayCounts() {
-    const rows = await _api("song_plays?select=song_id,play_count");
-    if (rows) rows.forEach(r => { globalPlays[r.song_id] = r.play_count || 0; });
-  }
-
-  async function _loadMyLoves() {
+  async function _loadMyLikes() {
     const fp   = _fingerprint();
     const rows = await _api("song_loves?fingerprint=eq." + fp + "&select=song_id");
-    myLoves    = new Set(rows.map(r => r.song_id));
+    myLikes    = new Set(rows ? rows.map(r => r.song_id) : []);
+  }
+
+  async function _loadGlobalPlays() {
+    const rows = await _api("song_plays?select=song_id,play_count");
+    globalPlays = {};
+    if (rows) rows.forEach(r => { globalPlays[r.song_id] = r.play_count; });
   }
 
   // ── Track a play (global — all visitors) ──────────────────
@@ -120,63 +125,68 @@ const SupabaseDB = (() => {
     if (!initialized) return;
     try {
       await _rpc("increment_play_count", { p_song_id: songId });
+      // Update local cache so count shows immediately without reload
+      globalPlays[songId] = (globalPlays[songId] || 0) + 1;
+      if (typeof Catalog !== "undefined") { Catalog.renderGrid(); Catalog.syncLoveButtons(); }
     } catch(e) {
       console.warn("SupabaseDB: trackPlay failed —", e.message);
     }
   }
 
-  // ── Toggle love on a song ─────────────────────────────────
-  async function toggleLove(songId) {
+  // ── Toggle like on a song ─────────────────────────────────
+  async function toggleLike(songId) {
     if (!initialized) {
-      Toast.show("Connect Supabase to save loves");
+      Toast.show("Connect Supabase to save likes");
       return;
     }
 
-    const wasLoved = myLoves.has(songId);
+    const wasLiked = myLikes.has(songId);
 
-    // Optimistic update — update UI immediately
-    if (wasLoved) {
-      myLoves.delete(songId);
-      loveCounts[songId] = Math.max(0, (loveCounts[songId] || 1) - 1);
+    // Optimistic update — update local state immediately
+    if (wasLiked) {
+      myLikes.delete(songId);
+      likeCounts[songId] = Math.max(0, (likeCounts[songId] || 1) - 1);
     } else {
-      myLoves.add(songId);
-      loveCounts[songId] = (loveCounts[songId] || 0) + 1;
+      myLikes.add(songId);
+      likeCounts[songId] = (likeCounts[songId] || 0) + 1;
     }
-    if (typeof Catalog !== "undefined") Catalog.syncGrid();
+
+    // Full re-render so heart icon and count update immediately
+    if (typeof Catalog !== "undefined") { Catalog.renderGrid(); Catalog.syncLoveButtons(); }
 
     try {
-      if (wasLoved) {
+      if (wasLiked) {
         await _api(
           "song_loves?song_id=eq." + encodeURIComponent(songId) +
           "&fingerprint=eq." + _fingerprint(),
           { method: "DELETE" }
         );
-        Toast.show("Removed like");
+        Toast.show("Removed from likes");
       } else {
         await _api("song_loves", {
           method: "POST",
-          prefer: "return=minimal,resolution=ignore-duplicates",
+          prefer: "resolution=ignore-duplicates,return=minimal",
           body:   JSON.stringify({ song_id: songId, fingerprint: _fingerprint() }),
         });
         Toast.show("♥ Liked!");
       }
-      // Confirmed — re-render to show accurate state
-      if (typeof Catalog !== "undefined") Catalog.syncGrid();
+      // Re-render again after confirmed server response
+      if (typeof Catalog !== "undefined") { Catalog.renderGrid(); Catalog.syncLoveButtons(); }
     } catch(e) {
-      // Revert on failure
-      if (wasLoved) { myLoves.add(songId); loveCounts[songId]++; }
-      else          { myLoves.delete(songId); loveCounts[songId] = Math.max(0, loveCounts[songId] - 1); }
-      if (typeof Catalog !== "undefined") Catalog.syncGrid();
-      console.warn("SupabaseDB: toggleLove failed —", e.message);
-      Toast.show("Could not save love — try again");
+      // Revert optimistic update on failure
+      if (wasLiked) { myLikes.add(songId); likeCounts[songId] = (likeCounts[songId] || 0) + 1; }
+      else          { myLikes.delete(songId); likeCounts[songId] = Math.max(0, (likeCounts[songId] || 1) - 1); }
+      if (typeof Catalog !== "undefined") { Catalog.renderGrid(); Catalog.syncLoveButtons(); }
+      console.warn("SupabaseDB: toggleLike failed —", e.message);
+      Toast.show("Could not save — try again");
     }
   }
 
   // ── Getters ───────────────────────────────────────────────
-  function isLoved(songId)         { return myLoves.has(songId); }
-  function getLoveCount(songId)    { return loveCounts[songId] || 0; }
-  function getGlobalPlayCount(songId) { return globalPlays[songId] || 0; }
-  function isReady()               { return initialized; }
+  function isLiked(songId)          { return myLikes.has(songId); }
+  function getLikeCount(songId)     { return likeCounts[songId]  || 0; }
+  function getGlobalPlays(songId)   { return globalPlays[songId] || 0; }
+  function isReady()                { return initialized; }
 
-  return { init, trackPlay, toggleLove, isLoved, getLoveCount, getGlobalPlayCount, isReady };
+  return { init, trackPlay, toggleLike, isLiked, getLikeCount, getGlobalPlays, isReady };
 })();

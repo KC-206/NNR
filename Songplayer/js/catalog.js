@@ -137,9 +137,8 @@ const Catalog = (() => {
       // Use cached fallback if this artwork URL previously 404'd
       const _failedArt  = window._failedArt || new Set();
       const _art        = (s.artwork && !_failedArt.has(s.artwork)) ? s.artwork : blankArt();
-      const _isLoved       = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.isLoved(s.id) : false;
-      const _loveCount     = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.getLoveCount(s.id) : 0;
-      const _globalPlays   = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.getGlobalPlayCount(s.id) : null;
+      const _isLoved    = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.isLoved(s.id) : false;
+      const _loveCount  = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.getLoveCount(s.id) : 0;
       const playIcon  = isPlaying
         ? `<svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
         : `<svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
@@ -170,7 +169,7 @@ const Catalog = (() => {
           <div class="card-body">
             <div class="card-title">${_esc(s.title)}</div>
             <div class="card-meta">
-              ${_esc(s.album)} · ${formatTime(s.duration)}${_globalPlays !== null && _globalPlays > 0 ? ` · ▶ ${_globalPlays}` : counts[s.id] ? ` · ▶ ${counts[s.id]}` : ""}
+              ${_esc(s.album)} · ${formatTime(s.duration)}${counts[s.id] ? ` · ▶ ${counts[s.id]}` : ""}
             </div>
             <div class="card-tags">
               ${s.tags.map(t =>
@@ -216,7 +215,7 @@ const Catalog = (() => {
               </button>` : ""}
               <button class="card-btn love-btn ${_isLoved ? "loved" : ""}"
                       onclick="event.stopPropagation(); SupabaseDB.toggleLove('${s.id}')"
-                      title="${_isLoved ? "Unlike this song" : "Like this song"}">
+                      title="${_isLoved ? "Unlove this song" : "Love this song"}">
                 <svg width="11" height="11" fill="${_isLoved ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>${_loveCount > 0 ? `<span class="love-count">${_loveCount}</span>` : ""}
@@ -256,6 +255,43 @@ const Catalog = (() => {
     });
   }
 
+  /** Update only love button state on existing cards — no DOM rebuild needed. */
+  function syncLoveButtons() {
+    const grid = document.getElementById("song-grid");
+    if (!grid || typeof SupabaseDB === "undefined" || !SupabaseDB.isReady()) return;
+
+    grid.querySelectorAll(".song-card[data-song-id]").forEach(card => {
+      const id       = card.dataset.songId;
+      const btn      = card.querySelector(".love-btn");
+      if (!btn) return;
+
+      const isLoved  = SupabaseDB.isLoved(id);
+      const count    = SupabaseDB.getLoveCount(id);
+
+      btn.classList.toggle("loved", isLoved);
+      btn.title = isLoved ? "Unlike this song" : "Like this song";
+
+      // Update heart icon fill
+      const svg = btn.querySelector("svg");
+      if (svg) svg.setAttribute("fill", isLoved ? "currentColor" : "none");
+
+      // Update count badge
+      const existing = btn.querySelector(".love-count");
+      if (count > 0) {
+        if (existing) {
+          existing.textContent = count;
+        } else {
+          const span = document.createElement("span");
+          span.className = "love-count";
+          span.textContent = count;
+          btn.appendChild(span);
+        }
+      } else if (existing) {
+        existing.remove();
+      }
+    });
+  }
+
   /** Render the compact sidebar track list */
   function renderSidebarList() {
     document.getElementById("sidebar-list").innerHTML = getFiltered().map(s => {
@@ -264,9 +300,8 @@ const Catalog = (() => {
       // Use cached fallback if this artwork URL previously 404'd
       const _failedArt  = window._failedArt || new Set();
       const _art        = (s.artwork && !_failedArt.has(s.artwork)) ? s.artwork : blankArt();
-      const _isLoved       = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.isLoved(s.id) : false;
-      const _loveCount     = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.getLoveCount(s.id) : 0;
-      const _globalPlays   = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.getGlobalPlayCount(s.id) : null;
+      const _isLoved    = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.isLoved(s.id) : false;
+      const _loveCount  = (typeof SupabaseDB !== "undefined" && SupabaseDB.isReady()) ? SupabaseDB.getLoveCount(s.id) : 0;
       const clickFn   = isCurrent ? "AudioEngine.togglePlay()" : `AudioEngine.playSong('${s.id}')`;
       return `
       <div class="track-row ${isCurrent ? "current" : ""} ${isPlaying ? "playing" : ""}" onclick="${clickFn}">
@@ -312,6 +347,7 @@ const Catalog = (() => {
     setSort,
     renderGrid,
     syncGrid,
+    syncLoveButtons,
     renderSidebarList,
     renderTags,
   };

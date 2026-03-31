@@ -194,8 +194,8 @@ const SharedPrompt = (() => {
 
   function _ensureCanvas() {
     if (canvas) return;
-    const btn = document.getElementById("shared-prompt-play");
-    if (!btn) return;
+    const box = document.getElementById("shared-prompt");
+    if (!box) return;
     canvas = document.createElement("canvas");
     canvas.id = "rainbow-canvas";
     canvas.style.cssText = "position:fixed; pointer-events:none; z-index:1600;";
@@ -205,17 +205,16 @@ const SharedPrompt = (() => {
   }
 
   function _sizeCanvas() {
-    const btn = document.getElementById("shared-prompt-play");
-    if (!btn || !canvas) return;
-    const r   = btn.getBoundingClientRect();
-    const pad = 28;
-    const sz  = Math.max(r.width, r.height) + pad * 2;
-    canvas.width  = sz;
-    canvas.height = sz;
-    canvas.style.width  = sz + "px";
-    canvas.style.height = sz + "px";
-    canvas.style.left   = (r.left + r.width  / 2 - sz / 2) + "px";
-    canvas.style.top    = (r.top  + r.height / 2 - sz / 2) + "px";
+    const box = document.getElementById("shared-prompt");
+    if (!box || !canvas) return;
+    const r   = box.getBoundingClientRect();
+    const pad = 14;
+    canvas.width  = Math.round(r.width  + pad * 2);
+    canvas.height = Math.round(r.height + pad * 2);
+    canvas.style.width  = canvas.width  + "px";
+    canvas.style.height = canvas.height + "px";
+    canvas.style.left   = (r.left - pad) + "px";
+    canvas.style.top    = (r.top  - pad) + "px";
     ctx = canvas.getContext("2d");
   }
 
@@ -227,38 +226,78 @@ const SharedPrompt = (() => {
 
   function _draw() {
     if (!ctx || !canvas) return;
-    // Reposition in case player bar moved
     _sizeCanvas();
     const W = canvas.width, H = canvas.height;
-    const cx = W / 2, cy = H / 2;
-    const radius = cx - 8;
-
     ctx.clearRect(0, 0, W, H);
-    time += 0.025;
+    time += 0.022;
 
-    const PARTICLE_COUNT = 48;
+    // Distribute particles along the perimeter of the rounded rect
+    const pad = 14, r = 14; // padding and corner radius
+    const bx = pad, by = pad, bw = W - pad * 2, bh = H - pad * 2;
+    // Perimeter: 4 sides + 4 corners
+    const straightPerim = (bw - r * 2) * 2 + (bh - r * 2) * 2;
+    const cornerPerim   = 2 * Math.PI * r;
+    const totalPerim    = straightPerim + cornerPerim;
+
+    const PARTICLE_COUNT = 80;
     for (let i = 0; i < PARTICLE_COUNT; i++) {
-      const baseAngle  = (i / PARTICLE_COUNT) * Math.PI * 2;
-      const wobble     = Math.sin(time * 2.5 + i * 0.4) * 0.18;
-      const angle      = baseAngle + time + wobble;
-      const radiusVar  = radius + Math.sin(time * 3 + i * 0.7) * 6;
-      const x          = cx + Math.cos(angle) * radiusVar;
-      const y          = cy + Math.sin(angle) * radiusVar;
-      const size       = 2.5 + Math.sin(time * 4 + i) * 1.2;
-      const hue        = ((i / PARTICLE_COUNT) * 360 + time * 80) % 360;
-      const alpha      = 0.6 + Math.sin(time * 3 + i * 0.5) * 0.3;
+      // Evenly space + travel around perimeter over time
+      const t     = ((i / PARTICLE_COUNT) + (time * 0.18)) % 1;
+      const dist  = t * totalPerim;
+      let px, py, wobble = Math.sin(time * 3 + i * 0.7) * 4;
+
+      // Map dist to a point on the rounded rect perimeter
+      const sides = [
+        bw - r * 2,  // top
+        bh - r * 2,  // right
+        bw - r * 2,  // bottom
+        bh - r * 2,  // left
+      ];
+      const cornerArcLen = (Math.PI / 2) * r;
+      const segments = [
+        sides[0], cornerArcLen,
+        sides[1], cornerArcLen,
+        sides[2], cornerArcLen,
+        sides[3], cornerArcLen,
+      ];
+
+      let rem = dist, seg = 0;
+      for (let s = 0; s < segments.length; s++) {
+        if (rem <= segments[s]) { seg = s; break; }
+        rem -= segments[s];
+      }
+
+      const norm = rem / segments[seg];
+      if (seg === 0) { px = bx + r + norm * sides[0]; py = by; }                              // top
+      else if (seg === 1) { const a = -Math.PI/2 + norm*Math.PI/2; px = bx+bw-r + Math.cos(a)*r; py = by+r + Math.sin(a)*r; } // TR corner
+      else if (seg === 2) { px = bx+bw - r - norm*sides[1]; py = by+bh; }                    // bottom (reverse)
+      else if (seg === 3) { const a = Math.PI/2 + norm*Math.PI/2; px = bx+bw-r + Math.cos(a)*r; py = by+bh-r + Math.sin(a)*r; } // BR corner
+      else if (seg === 4) { px = bx+bw - r - norm*sides[2]; py = by+bh; }                    // bottom left
+      else if (seg === 5) { const a = Math.PI + norm*Math.PI/2; px = bx+r + Math.cos(a)*r; py = by+bh-r + Math.sin(a)*r; } // BL corner
+      else if (seg === 6) { px = bx + r + norm*sides[3]; py = by; }                          // left side
+      else                { const a = -Math.PI + norm*Math.PI/2; px = bx+r + Math.cos(a)*r; py = by+r + Math.sin(a)*r; } // TL corner
+
+      // Apply wobble outward from center
+      const cx2 = W/2, cy2 = H/2;
+      const dx = px - cx2, dy = py - cy2;
+      const len = Math.sqrt(dx*dx + dy*dy) || 1;
+      px += (dx/len) * wobble;
+      py += (dy/len) * wobble;
+
+      const size  = 2.2 + Math.sin(time * 4 + i) * 1.1;
+      const hue   = ((i / PARTICLE_COUNT) * 360 + time * 90) % 360;
+      const alpha = 0.65 + Math.sin(time * 3 + i * 0.5) * 0.28;
 
       ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.arc(px, py, size, 0, Math.PI * 2);
       ctx.fillStyle = `hsla(${hue}, 100%, 65%, ${alpha})`;
       ctx.fill();
 
-      // Trailing sparkle
-      const tx = cx + Math.cos(angle - 0.15) * (radiusVar - 4);
-      const ty = cy + Math.sin(angle - 0.15) * (radiusVar - 4);
+      // Trailing sparkle slightly behind
+      const tDist  = ((i / PARTICLE_COUNT) + ((time - 0.006) * 0.18)) % 1;
       ctx.beginPath();
-      ctx.arc(tx, ty, size * 0.5, 0, Math.PI * 2);
-      ctx.fillStyle = `hsla(${(hue + 30) % 360}, 100%, 80%, ${alpha * 0.4})`;
+      ctx.arc(px - (dx/len)*3, py - (dy/len)*3, size * 0.45, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${(hue+40)%360}, 100%, 80%, ${alpha * 0.4})`;
       ctx.fill();
     }
   }
