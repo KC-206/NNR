@@ -559,4 +559,17 @@ const SONGS = [
     dateAdded: "2026-03-27",
     downloadable: true,
   },
+  {
+    id: "s041",
+    title: "The Sweet Life",
+    artist: "",
+    album: "",
+    duration: 204,
+    src: "audio/Sweet Life.mp3",
+    artwork: "art/sweet_life.png",
+    tags: [],
+    notes: "",
+    dateAdded: "2026-04-1",
+    downloadable: true,
+  },
 ];
