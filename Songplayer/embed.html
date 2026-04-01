@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Huntress Harmonies — Player</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════
+       EMBED THEME — edit these to match your site
+    ══════════════════════════════════════════════ */
+    :root {
+      --bg:      #0e1214;
+      --surface: #151b1f;
+      --border:  #232e33;
+      --text:    #cdc4ad;
+      --dim:     #7a7568;
+      --muted:   #4c5a60;
+      --accent:  #6e9e84;
+      --accent2: #92c0a6;
+      --gold2:   #dab96a;
+      --radius:  0px; /* set to e.g. 10px if your chatroom has rounded embeds */
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      border-radius: var(--radius);
+      user-select: none;
+    }
+
+    button { cursor: pointer; border: none; background: none; color: inherit; font: inherit; }
+
+    /* ── Main bar ── */
+    #embed-player {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding: 0 14px;
+      gap: 12px;
+      border-top: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+    }
+
+    /* ── Branding ── */
+    #brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gold2);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ── Vinyl ── */
+    #vinyl-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      position: relative;
+      animation: spin 3s linear infinite;
+      animation-play-state: paused;
+    }
+    #vinyl-wrap.spinning { animation-play-state: running; }
+
+    #vinyl-disc {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 38% 32%, rgba(255,255,255,0.07) 0%, transparent 55%),
+        repeating-radial-gradient(
+          circle at center,
+          #2a2a2a 0px,  #1a1a1a 2px,
+          #242424 4px,  #181818 6px,
+          #222 8px,     #161616 10px,
+          #202020 12px, #141414 14px,
+          #1e1e1e 16px, #121212 18px,
+          #1c1c1c 20px, #0f0f0f 22px
+        );
+      box-shadow: 0 0 0 1.5px rgba(255,255,255,0.07), 0 2px 10px rgba(0,0,0,0.8);
+    }
+
+    #vinyl-label {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+      background: var(--surface);
+      z-index: 2;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+    }
+
+    #vinyl-disc::after {
+      content: '';
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #080808;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+    }
+
+    /* ── Song info ── */
+    #song-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+    }
+    #song-title {
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+      transition: color 0.2s;
+    }
+    #song-title.playing { color: var(--accent2); }
+    #song-artist {
+      font-size: 10px;
+      color: var(--dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Progress bar */
+    #prog-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 3px;
+    }
+    #progress {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+      cursor: pointer;
+      position: relative;
+    }
+    #progress::after {
+      content: '';
+      position: absolute;
+      top: -6px; left: 0; right: 0; bottom: -6px;
+    }
+    #prog-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 1px;
+      width: 0%;
+      pointer-events: none;
+      transition: width 0.1s linear;
+    }
+    #progress:hover #prog-fill { background: var(--accent2); }
+    .t-lbl {
+      font-size: 9px;
+      color: var(--muted);
+      flex-shrink: 0;
+      width: 28px;
+    }
+    .t-lbl:last-child { text-align: right; }
+
+    /* ── Controls ── */
+    #controls {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .ctrl {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      color: var(--dim);
+      transition: color 0.15s;
+    }
+    .ctrl:hover { color: var(--text); }
+    .ctrl.pp {
+      width: 34px;
+      height: 34px;
+      background: var(--text);
+      color: var(--bg);
+      margin: 0 2px;
+      border-radius: 50%;
+      transition: background 0.15s;
+    }
+    .ctrl.pp:hover { background: var(--accent2); }
+
+    /* ── Volume ── */
+    #vol-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+      width: 90px;
+    }
+    #vol-btn { color: var(--dim); transition: color 0.15s; flex-shrink: 0; }
+    #vol-btn:hover { color: var(--text); }
+    #vol-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+      outline: none;
+      cursor: pointer;
+    }
+    #vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--text);
+      cursor: pointer;
+    }
+    #vol-slider:hover::-webkit-slider-thumb { background: var(--accent2); }
+
+    /* ── Divider ── */
+    .sep {
+      width: 1px;
+      height: 28px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    /* ── Idle state ── */
+    #idle-msg {
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── Keyframes ── */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="embed-player">
+
+  <div id="brand">Huntress Harmonies</div>
+
+  <div class="sep"></div>
+
+  <!-- Vinyl record -->
+  <div id="vinyl-wrap">
+    <div id="vinyl-disc"></div>
+    <img id="vinyl-label" src="" alt="">
+  </div>
+
+  <!-- Song info + progress -->
+  <div id="song-info">
+    <div id="song-title">—</div>
+    <div id="song-artist" id="idle-msg">Press play to listen</div>
+    <div id="prog-wrap">
+      <span class="t-lbl" id="t-cur">0:00</span>
+      <div id="progress"><div id="prog-fill"></div></div>
+      <span class="t-lbl" id="t-tot">0:00</span>
+    </div>
+  </div>
+
+  <!-- Playback controls -->
+  <div id="controls">
+    <button class="ctrl" id="btn-prev" title="Previous">
+      <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>
+      </svg>
+    </button>
+    <button class="ctrl pp" id="btn-pp" title="Play / Pause">
+      <svg id="ico-play" width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="ico-pause" width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+    <button class="ctrl" id="btn-next" title="Next">
+      <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M6 18l8.5-6L6 6v12zm2.5-6 5.5 4V8l-5.5 4zM16 6h2v12h-2z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- Volume -->
+  <div id="vol-wrap">
+    <button id="vol-btn" title="Mute">
+      <svg id="ico-vol" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <polygon points="11,5 6,9 2,9 2,15 6,15 11,19 11,5"/>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+      </svg>
+      <svg id="ico-mute" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none">
+        <polygon points="11,5 6,9 2,9 2,15 6,15 11,19 11,5"/>
+        <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+      </svg>
+    </button>
+    <input type="range" id="vol-slider" min="0" max="1" step="0.02" value="0.8">
+  </div>
+
+</div>
+
+<!-- Load your songs catalog -->
+<script src="js/config.js"></script>
+<script src="js/songs.js"></script>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  EMBED PLAYLIST CONFIG
+//  Set the song IDs you want to play in this embed.
+//  Use the song IDs from your songs.js file.
+//  Leave empty [] to play all songs in order.
+// ══════════════════════════════════════════════════════
+const EMBED_PLAYLIST_IDS = [
+  // Add your St Patrick's Day song IDs here, e.g:
+  // "s003",
+  // "s006",
+  // "s007",
+];
+
+// ══════════════════════════════════════════════════════
+//  PLAYER ENGINE
+// ══════════════════════════════════════════════════════
+
+const audio    = new Audio();
+audio.preload  = "metadata";
+
+// Build playlist from IDs, falling back to all songs
+const playlist = EMBED_PLAYLIST_IDS.length
+  ? EMBED_PLAYLIST_IDS.map(id => SONGS.find(s => s.id === id)).filter(Boolean)
+  : [...SONGS];
+
+let idx       = 0;
+let isPlaying = false;
+let muted     = false;
+let volume    = 0.8;
+
+const fmt = s => {
+  s = Math.floor(s || 0);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+};
+
+const blank = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%231c2529' width='100' height='100'/%3E%3Ccircle cx='50' cy='50' r='18' fill='none' stroke='%23232e33' stroke-width='2'/%3E%3C/svg%3E";
+
+function loadSong(i, autoplay) {
+  if (!playlist.length) return;
+  idx = ((i % playlist.length) + playlist.length) % playlist.length;
+  const song = playlist[idx];
+  audio.src  = song.src;
+  audio.volume = muted ? 0 : volume;
+
+  document.getElementById("song-title").textContent  = song.title;
+  document.getElementById("song-artist").textContent = song.artist;
+  document.getElementById("vinyl-label").src         = song.artwork || blank;
+  document.getElementById("t-tot").textContent       = fmt(song.duration);
+  document.getElementById("prog-fill").style.width   = "0%";
+  document.getElementById("t-cur").textContent       = "0:00";
+
+  if (autoplay) {
+    audio.play().catch(() => {});
+    setPlaying(true);
+  } else {
+    setPlaying(false);
+  }
+}
+
+function setPlaying(val) {
+  isPlaying = val;
+  document.getElementById("ico-play").style.display  = isPlaying ? "none" : "";
+  document.getElementById("ico-pause").style.display = isPlaying ? "" : "none";
+  document.getElementById("vinyl-wrap").classList.toggle("spinning", isPlaying);
+  document.getElementById("song-title").classList.toggle("playing", isPlaying);
+}
+
+function togglePlay() {
+  if (!playlist.length) return;
+  if (isPlaying) {
+    audio.pause();
+    setPlaying(false);
+  } else {
+    audio.play().catch(() => {});
+    setPlaying(true);
+  }
+}
+
+// ── Audio events ──────────────────────────────────────
+audio.addEventListener("timeupdate", () => {
+  if (!audio.duration) return;
+  document.getElementById("prog-fill").style.width =
+    (audio.currentTime / audio.duration * 100) + "%";
+  document.getElementById("t-cur").textContent = fmt(audio.currentTime);
+});
+
+audio.addEventListener("loadedmetadata", () => {
+  document.getElementById("t-tot").textContent = fmt(audio.duration);
+});
+
+audio.addEventListener("ended", () => {
+  // Advance to next song automatically
+  loadSong(idx + 1, true);
+});
+
+// ── Progress seek ─────────────────────────────────────
+document.getElementById("progress").addEventListener("click", e => {
+  if (!audio.duration) return;
+  const r = document.getElementById("progress").getBoundingClientRect();
+  audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+});
+
+// ── Controls ──────────────────────────────────────────
+document.getElementById("btn-pp").addEventListener("click",   togglePlay);
+document.getElementById("btn-prev").addEventListener("click", () => loadSong(idx - 1, isPlaying));
+document.getElementById("btn-next").addEventListener("click", () => loadSong(idx + 1, isPlaying));
+
+// ── Volume ────────────────────────────────────────────
+document.getElementById("vol-slider").addEventListener("input", e => {
+  volume = parseFloat(e.target.value);
+  audio.volume = volume;
+  if (volume > 0) { muted = false; syncVolIcons(); }
+});
+
+document.getElementById("vol-btn").addEventListener("click", () => {
+  muted = !muted;
+  audio.volume = muted ? 0 : volume;
+  syncVolIcons();
+});
+
+function syncVolIcons() {
+  document.getElementById("ico-vol").style.display  = muted ? "none" : "";
+  document.getElementById("ico-mute").style.display = muted ? "" : "none";
+}
+
+// ── Init: load first song, don't autoplay ─────────────
+if (playlist.length) {
+  loadSong(0, false);
+} else {
+  document.getElementById("song-title").textContent  = "No songs found";
+  document.getElementById("song-artist").textContent = "Check EMBED_PLAYLIST_IDS in embed.html";
+}
+</script>
+</body>
+</html>

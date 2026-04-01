@@ -1089,3 +1089,6 @@ kbd {
   font-size: 9px;
   line-height: 1;
 }
+
+/* ── Embed button ─────────────────────────────────────────── */
+.card-btn.embed-btn:hover { border-color: var(--gold); color: var(--gold); }

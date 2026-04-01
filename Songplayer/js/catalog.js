@@ -204,6 +204,14 @@ const Catalog = (() => {
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                 </svg>
               </button>
+              <button class="card-btn embed-btn"
+                      onclick="event.stopPropagation(); DeepLinks.copyEmbed('${s.id}', this)"
+                      title="Copy embed code for chatroom">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="16,18 22,12 16,6"/>
+                  <polyline points="8,6 2,12 8,18"/>
+                </svg>
+              </button>
               ${s.downloadable ? `
               <button class="card-btn dl"
                       onclick="event.stopPropagation(); Modals.openDownload('${s.id}')"

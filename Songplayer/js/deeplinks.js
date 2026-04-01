@@ -43,6 +43,31 @@ const DeepLinks = (() => {
     history.replaceState(null, "", `#${slugify(song.title)}`);
   }
 
+  /** Copy iframe embed code for chatroom posting */
+  function copyEmbed(songId, btnEl) {
+    const song = getSong(songId);
+    if (!song) return;
+    const base  = location.href.replace(/\/[^/]*$/, "/"); // folder base
+    const slug  = slugify(song.title);
+    const src   = base + "song-card.html?song=" + slug;
+    const code  = `<iframe src="${src}" width="400" height="100" frameborder="0" scrolling="no" style="border-radius:10px;overflow:hidden;"></iframe>`;
+
+    navigator.clipboard.writeText(code).then(() => {
+      _showFeedback(btnEl);
+      Toast.show(`Embed code copied — paste it in the chatroom`);
+    }).catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = code;
+      ta.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      _showFeedback(btnEl);
+      Toast.show(`Embed code copied — paste it in the chatroom`);
+    });
+  }
+
   /** Copy the deep link for a song to clipboard */
   function copyLink(songId, btnEl) {
     const url  = getUrl(songId);
@@ -167,7 +192,7 @@ const DeepLinks = (() => {
     if (card) setTimeout(() => card.scrollIntoView({ behavior: "smooth", block: "center" }), 600);
   }
 
-  return { init, copyLink, getUrl, updateHash, slugify };
+  return { init, copyLink, copyEmbed, getUrl, updateHash, slugify };
 })();
 
 // ════════════════════════════════════════════════════════
