@@ -50,7 +50,7 @@ const DeepLinks = (() => {
     const base  = location.href.replace(/\/[^/]*$/, "/"); // folder base
     const slug  = slugify(song.title);
     const src   = base + "song-card.html?song=" + slug;
-    const code  = `<iframe src="${src}" width="400" height="100" frameborder="0" scrolling="no" style="border-radius:10px;overflow:hidden;"></iframe>`;
+    const code  = `<iframe src="${src}" width="440" height="120" frameborder="0" scrolling="no" style="border-radius:10px;overflow:hidden;"></iframe>`;
 
     navigator.clipboard.writeText(code).then(() => {
       _showFeedback(btnEl);
