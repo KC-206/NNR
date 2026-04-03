@@ -1,0 +1,1063 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Lair Scroll</title>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* --- Base Background and Text --- */
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  body {
+    background-image: url("https://i.postimg.cc/VsTs8F3S/insideBGR.jpg");
+    background-color: black;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    background-size: cover;
+    background-attachment: fixed;
+    font-family: "Trebuchet MS", Tahoma, sans-serif;
+    font-size: large;
+    font-weight: bold;
+    color: #FFD700;
+    margin: 0;
+    padding: 0;
+    text-shadow: 0 0 3px rgba(255,215,0,0.25),
+                 -1px -1px 0 #000,
+                  1px  1px 0 #000;
+    animation: glowpulse 6s ease-in-out infinite alternate;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  @keyframes glowpulse {
+    0%, 100% { text-shadow: 0 0 3px rgba(255,215,0,0.25); }
+    50% { text-shadow: 0 0 6px rgba(255,215,0,0.5); }
+  }
+
+  /* ══════════════════════════════════════════════
+     MUSIC PLAYER
+  ══════════════════════════════════════════════ */
+  #hh-player {
+    display: flex;
+    align-items: center;
+    height: 52px;
+    padding: 0 12px;
+    gap: 10px;
+    background: rgba(0,0,0,0.55);
+    border-top: 1px solid rgba(255,215,0,0.15);
+    border-bottom: 1px solid rgba(0,0,0,0.4);
+    flex-shrink: 0;
+    text-shadow: none;
+    animation: none;
+    max-width: 620px;
+    width: 100%;
+    margin: 0 auto;
+    border-radius: 0 0 8px 8px;
+    border-left: 1px solid rgba(255,215,0,0.1);
+    border-right: 1px solid rgba(255,215,0,0.1);
+  }
+
+  /* Brand */
+  #hh-brand {
+    font-family: "UnifrakturCook", serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #c49a3c;
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-shadow: 0 0 6px rgba(255,215,0,0.3);
+    letter-spacing: 0.02em;
+  }
+
+  .hh-sep {
+    width: 1px;
+    height: 24px;
+    background: rgba(255,215,0,0.15);
+    flex-shrink: 0;
+  }
+
+  /* Vinyl */
+  #hh-vinyl {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+    animation: hh-spin 3s linear infinite;
+    animation-play-state: paused;
+  }
+  #hh-vinyl.spinning { animation-play-state: running; }
+  #hh-vinyl-disc {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 38% 32%, rgba(255,255,255,0.06) 0%, transparent 55%),
+      repeating-radial-gradient(
+        circle at center,
+        #2a2a2a 0px, #1a1a1a 2px,
+        #242424 4px, #181818 6px,
+        #202020 8px, #141414 10px,
+        #1c1c1c 12px, #0f0f0f 14px
+      );
+    box-shadow: 0 0 0 1px rgba(255,215,0,0.12), 0 2px 8px rgba(0,0,0,0.9);
+  }
+  #hh-vinyl-label {
+    position: absolute;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    background: #1c1c1c;
+    z-index: 2;
+    box-shadow: 0 0 0 1px rgba(255,215,0,0.1);
+  }
+  #hh-vinyl-disc::after {
+    content: '';
+    position: absolute;
+    width: 4px; height: 4px;
+    background: #060606;
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+  }
+  @keyframes hh-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* Song info */
+  #hh-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    justify-content: center;
+  }
+  #hh-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #cdc4ad;
+    text-shadow: none;
+    animation: none;
+    transition: color 0.2s;
+  }
+  #hh-title.playing { color: #92c0a6; }
+  #hh-artist {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    color: #5a6860;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: none;
+    animation: none;
+  }
+
+  /* Progress */
+  #hh-prog-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+  }
+  #hh-progress {
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 1px;
+    cursor: pointer;
+    position: relative;
+  }
+  #hh-progress::after {
+    content: '';
+    position: absolute;
+    top: -6px; left: 0; right: 0; bottom: -6px;
+  }
+  #hh-prog-fill {
+    height: 100%;
+    background: #6e9e84;
+    border-radius: 1px;
+    width: 0%;
+    pointer-events: none;
+    transition: width 0.1s linear;
+  }
+  #hh-progress:hover #hh-prog-fill { background: #92c0a6; }
+  .hh-tlbl {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    color: #4c5a60;
+    flex-shrink: 0;
+    width: 26px;
+    text-shadow: none;
+    animation: none;
+  }
+  .hh-tlbl:last-child { text-align: right; }
+
+  /* Controls */
+  #hh-controls {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    flex-shrink: 0;
+  }
+  .hh-ctrl {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: none;
+    background: none;
+    color: #5a6860;
+    cursor: pointer;
+    transition: color 0.15s;
+    text-shadow: none;
+    animation: none;
+  }
+  .hh-ctrl:hover { color: #cdc4ad; }
+  .hh-ctrl.pp {
+    width: 30px;
+    height: 30px;
+    background: rgba(205,196,173,0.9);
+    color: #07090a;
+    margin: 0 2px;
+    transition: background 0.15s;
+  }
+  .hh-ctrl.pp:hover { background: #92c0a6; }
+
+  /* Volume */
+  #hh-vol {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    width: 70px;
+    overflow: hidden;
+  }
+  #hh-vol-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #5a6860;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+    text-shadow: none;
+    padding: 0;
+  }
+  #hh-vol-btn:hover { color: #cdc4ad; }
+  #hh-vol-slider {
+    flex: 1;
+    min-width: 0;
+    -webkit-appearance: none;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 1px;
+    outline: none;
+    cursor: pointer;
+  }
+  #hh-vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #cdc4ad;
+    cursor: pointer;
+  }
+  #hh-vol-slider:hover::-webkit-slider-thumb { background: #92c0a6; }
+
+  /* Loading state */
+  #hh-loading {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: #4c5a60;
+    text-shadow: none;
+    animation: none;
+  }
+
+  /* --- Marquee viewport with edge fades --- */
+  .lair-marquee {
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    margin: 4px 8px 5px;
+    padding: 6px 0;
+    background: rgba(0,0,0,0.38);
+    border-radius: 8px;
+    box-shadow: inset 0 2px 3px rgba(255,255,255,0.1), 0 0 6px rgba(0,0,0,0.5);
+    line-height: 1.1;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+    flex-shrink: 0;
+  }
+
+  .lair-marquee__viewport { position: relative; display: block; width: 100%; height: 100%; }
+
+  .lair-marquee__track {
+    display: inline-block;
+    white-space: nowrap;
+    will-change: transform;
+    font-family: "Trebuchet MS", Tahoma, sans-serif;
+    color: #FFD700;
+    font-size: 1em;
+    text-shadow: 0 0 3px rgba(255,215,0,0.25), 0 0 6px rgba(255,215,0,0.45);
+  }
+
+  .lair-marquee__segment { display: inline-block; vertical-align: middle; margin-right: 0.5rem; }
+
+  .sep {
+    display:inline-block;
+    width:7px; height:7px;
+    background: linear-gradient(145deg,#ffffff 0%,#f8f8f8 40%,#ffd700 100%);
+    transform: rotate(45deg);
+    margin: 0 12px;
+    vertical-align: middle;
+    box-shadow:0 0 6px rgba(255,255,255,0.5);
+    border:1px solid rgba(255,255,255,0.4);
+  }
+
+  .lair-marquee__segment.quote {
+    font-family: "UnifrakturCook", "Century Gothic", Century, serif;
+    font-size:1.2em;
+    color: #FFEFD5;
+    font-style: normal;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 4px rgba(255,215,0,0.3), 0 0 8px rgba(255,215,0,0.2);
+  }
+
+  .lair-marquee__track a {
+    font-family: "UnifrakturCook", "Century Gothic", Century, serif;
+    font-size:1.2em;
+    color: #FFDD77;
+    text-decoration: none;
+    transition: color 0.25s ease;
+  }
+  .lair-marquee__track a:hover {
+    color: #FFF8DC;
+    text-shadow: 0 0 6px rgba(255,215,0,0.45);
+  }
+
+  .no-js .lair-marquee__track { animation: marqueeMove 60s linear infinite; }
+  @keyframes marqueeMove {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+
+  @media (max-width: 800px) {
+    body { font-size: medium; }
+    .sep { margin: 0 8px; width: 6px; height: 6px; }
+    #hh-brand { display: none; }
+    #hh-vol   { display: none; }
+  }
+
+  /* ── Extra buttons (list + minimize) ── */
+  #hh-extra {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  #hh-list-btn, #hh-min-btn {
+    width: 22px; height: 22px;
+    border: none; background: none;
+    cursor: pointer;
+    color: #4c5a60;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+    padding: 0;
+  }
+  #hh-list-btn:hover, #hh-min-btn:hover { color: #cdc4ad; background: rgba(255,255,255,0.06); }
+  #hh-list-btn.active { color: #6e9e84; }
+
+  /* ── Minimized state ── */
+  #hh-player.minimized {
+    height: 28px;
+    padding: 0 10px;
+    gap: 8px;
+  }
+  #hh-player.minimized #hh-vinyl,
+  #hh-player.minimized #hh-info,
+  #hh-player.minimized #hh-controls,
+  #hh-player.minimized #hh-vol,
+  #hh-player.minimized .hh-sep { display: none; }
+  #hh-player.minimized #hh-extra { flex-direction: row; gap: 2px; }
+  #hh-player.minimized #hh-min-ico { transform: rotate(180deg); }
+
+  /* Mini title shown when minimized */
+  #hh-mini-title {
+    display: none;
+    flex: 1; min-width: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #7a7568;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: none;
+    animation: none;
+  }
+  #hh-player.minimized #hh-mini-title { display: block; }
+
+  /* Mini play button shown when minimized */
+  #hh-mini-pp {
+    display: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(205,196,173,0.85);
+    color: #07090a;
+    border: none; cursor: pointer;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  #hh-player.minimized #hh-mini-pp { display: flex; }
+  #hh-mini-pp:hover { background: #92c0a6; }
+
+  /* Mini progress line at top edge when minimized */
+  #hh-mini-prog {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: transparent;
+    display: none;
+  }
+  #hh-player.minimized #hh-mini-prog { display: block; }
+  #hh-mini-prog-fill {
+    height: 100%;
+    background: #6e9e84;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+  #hh-player { position: relative; transition: height 0.2s ease; }
+
+  /* ── Song list panel ── */
+  #hh-song-panel {
+    background: rgba(10,12,14,0.97);
+    border: 1px solid rgba(255,215,0,0.12);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.28s ease;
+    flex-shrink: 0;
+  }
+  #hh-song-panel.open { max-height: 260px; }
+
+  #hh-song-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,215,0,0.08);
+    flex-shrink: 0;
+  }
+  #hh-song-panel-title {
+    font-family: 'UnifrakturCook', serif;
+    font-size: 12px;
+    color: #c49a3c;
+    flex-shrink: 0;
+    text-shadow: none;
+    animation: none;
+  }
+  #hh-song-search {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #cdc4ad;
+    outline: none;
+    min-width: 0;
+    transition: border-color 0.2s;
+    text-shadow: none;
+    animation: none;
+  }
+  #hh-song-search::placeholder { color: #4c5a60; }
+  #hh-song-search:focus { border-color: rgba(110,158,132,0.5); }
+  #hh-song-close {
+    background: none; border: none;
+    color: #4c5a60; cursor: pointer;
+    font-size: 13px; flex-shrink: 0;
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    transition: color 0.15s;
+    text-shadow: none; animation: none;
+  }
+  #hh-song-close:hover { color: #cdc4ad; }
+
+  #hh-song-list {
+    overflow-y: auto;
+    max-height: 210px;
+  }
+  #hh-song-list::-webkit-scrollbar { width: 3px; }
+  #hh-song-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  .hh-song-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: background 0.12s;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    text-shadow: none;
+    animation: none;
+  }
+  .hh-song-item:hover { background: rgba(255,255,255,0.05); }
+  .hh-song-item.current { background: rgba(110,158,132,0.1); }
+  .hh-song-item img {
+    width: 30px; height: 30px;
+    border-radius: 3px;
+    object-fit: cover;
+    background: #1c2529;
+    flex-shrink: 0;
+  }
+  .hh-song-item .hsi-info { flex: 1; min-width: 0; }
+  .hh-song-item .hsi-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    color: #cdc4ad;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .hh-song-item.current .hsi-title { color: #92c0a6; }
+  .hh-song-item .hsi-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: #4c5a60;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-top: 1px;
+  }
+  .hh-song-item .hsi-dur {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: #4c5a60;
+    flex-shrink: 0;
+  }
+  #hh-song-empty { padding:20px; text-align:center; font-size:11px; color:#4c5a60; font-family:'JetBrains Mono',monospace; text-shadow:none; animation:none; }
+</style>
+</head>
+
+<body>
+
+  <!-- ══ MUSIC PLAYER ══ -->
+  <div id="hh-player">
+
+    <div id="hh-brand">Huntress Harmonies</div>
+
+    <div class="hh-sep"></div>
+
+    <!-- Mini progress line (visible when minimized) -->
+    <div id="hh-mini-prog"><div id="hh-mini-prog-fill"></div></div>
+
+    <!-- Vinyl -->
+    <div id="hh-vinyl">
+      <div id="hh-vinyl-disc"></div>
+      <img id="hh-vinyl-label" src="" alt="">
+    </div>
+
+    <!-- Song info + progress -->
+    <div id="hh-info">
+      <div id="hh-title">—</div>
+      <div id="hh-artist">Press play to listen</div>
+      <div id="hh-prog-row">
+        <span class="hh-tlbl" id="hh-cur">0:00</span>
+        <div id="hh-progress"><div id="hh-prog-fill"></div></div>
+        <span class="hh-tlbl" id="hh-tot">0:00</span>
+      </div>
+    </div>
+
+    <!-- Mini title (visible when minimized) -->
+    <div id="hh-mini-title">—</div>
+    <button id="hh-mini-pp">
+      <svg id="hh-mini-ico-play" width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="hh-mini-ico-pause" width="10" height="10" fill="currentColor" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+
+    <!-- Controls -->
+    <div id="hh-controls">
+      <button class="hh-ctrl" id="hh-prev" title="Previous">
+        <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>
+        </svg>
+      </button>
+      <button class="hh-ctrl pp" id="hh-pp" title="Play / Pause">
+        <svg id="hh-ico-play" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="hh-ico-pause" width="13" height="13" fill="currentColor" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      </button>
+      <button class="hh-ctrl" id="hh-next" title="Next">
+        <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M6 18l8.5-6L6 6v12zm2.5-6 5.5 4V8l-5.5 4zM16 6h2v12h-2z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="hh-sep"></div>
+
+    <!-- Volume -->
+    <div id="hh-vol">
+      <button id="hh-vol-btn" title="Mute">
+        <svg id="hh-ico-vol" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polygon points="11,5 6,9 2,9 2,15 6,15 11,19 11,5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+        <svg id="hh-ico-mute" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none">
+          <polygon points="11,5 6,9 2,9 2,15 6,15 11,19 11,5"/>
+          <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+      </button>
+      <input type="range" id="hh-vol-slider" min="0" max="1" step="0.02" value="0.8">
+    </div>
+
+    <div class="hh-sep"></div>
+
+    <!-- Extra controls: song list + minimize -->
+    <div id="hh-extra">
+      <button id="hh-list-btn" title="Song list">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="8" y1="6"  x2="21" y2="6"/>
+          <line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <circle cx="3" cy="6"  r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="3" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="3" cy="18" r="1.2" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
+      <button id="hh-min-btn" title="Minimize">
+        <svg id="hh-min-ico" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <polyline points="18,15 12,21 6,15"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ══ SONG LIST PANEL ══ -->
+  <div id="hh-song-panel">
+    <div id="hh-song-panel-head">
+      <span id="hh-song-panel-title">Songs</span>
+      <input type="text" id="hh-song-search" placeholder="Filter…">
+      <button id="hh-song-close">✕</button>
+    </div>
+    <div id="hh-song-list"></div>
+  </div>
+
+  <!-- ══ MARQUEE ══ -->
+  <div class="lair-marquee" role="region" aria-label="Room announcements">
+    <div class="lair-marquee__viewport" id="lairViewport">
+      <div class="lair-marquee__track" id="lairTrack">
+
+        <span class="lair-marquee__segment">
+          NEXT EVENT: Get lucky🍀 at the Lair - Sunday, March 22 @ 6pm Pacific / 9pm Eastern!
+        </span>
+        <span class="sep" aria-hidden="true"></span>
+
+        <span class="lair-marquee__segment">
+          Every Tuesday is <b>Tushday</b> - wear a fantASStic look and c'mon by!
+        </span>
+        <span class="sep" aria-hidden="true"></span>
+
+        <span class="lair-marquee__segment quote">
+          Welcome to Our House. Come freely. Go safely; and leave something of the happiness you bring!
+        </span>
+        <span class="sep" aria-hidden="true"></span>
+
+        <span class="lair-marquee__segment">
+          Your Room Moddesses are <b>Mollie Jean</b>, <b>Miss Dorothy</b>, <b>- Gemini -</b>, <b>Shan</b> & <b>Kristy</b>
+        </span>
+        <span class="sep" aria-hidden="true"></span>
+
+        <span class="lair-marquee__segment">
+          Reserve your spot in our home & enjoy fringe benefits - email
+          <a href="mailto:thelairchat@gmail.com?Subject=Membership%20Request" target="_blank" rel="noopener">TheLairChat@gmail.com</a> today!
+        </span>
+        <span class="sep" aria-hidden="true"></span>
+
+        <span class="lair-marquee__segment">
+          COMING SOON: April Showers💦 bring May Deflowers🥀 .... a BONUS Star Wars-themed D/s auction .... and MORE divine mischief ahead!
+        </span>
+        <span class="sep" aria-hidden="true"></span>
+
+      </div>
+    </div>
+  </div>
+
+<!-- ══════════════════════════════════════════════
+     PLAYER SCRIPT
+     Replace YOUR_USERNAME and YOUR_REPO below
+     with your actual GitHub username and repo name
+══════════════════════════════════════════════ -->
+<script>
+// ══════════════════════════════════════════════
+//  ★ YOUR GITHUB PAGES URL — edit this line ★
+// ══════════════════════════════════════════════
+var HH_BASE = 'https://kc-206.github.io/NNR/Songplayer/';
+
+// ══════════════════════════════════════════════
+//  ST PATRICK'S DAY PLAYLIST
+//  Add your song IDs here, or leave empty for all songs
+// ══════════════════════════════════════════════
+var HH_PLAYLIST_IDS = [
+  // 's001',
+  // 's003',
+  // 's006',
+];
+
+// ══════════════════════════════════════════════
+//  PLAYER ENGINE — loads songs via fetch()
+//  so no external <script src> tags are needed
+// ══════════════════════════════════════════════
+(function() {
+
+  // Load config.js then songs.js via fetch, extract the data, then boot
+  function fetchText(url) {
+    return fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('Failed to load ' + url);
+      return r.text();
+    });
+  }
+
+  function extractVar(text, varName) {
+    // Safely evaluate just the variable assignment using Function()
+    try {
+      var match = text.match(new RegExp('(?:const|let|var)\\s+' + varName + '\\s*=\\s*([\\s\\S]+?);?\\s*$', 'm'));
+      if (!match) throw new Error(varName + ' not found');
+      // Use Function to evaluate the RHS in isolation
+      return (new Function('return ' + match[1] + ';'))();
+    } catch(e) {
+      // Fallback: run the whole script text in a sandboxed Function and grab the variable
+      try {
+        var fn = new Function(text + '\n return ' + varName + ';');
+        return fn();
+      } catch(e2) {
+        throw new Error('Could not extract ' + varName + ': ' + e2.message);
+      }
+    }
+  }
+
+  var SONGS  = null;
+  var Config = null;
+
+  function showError(msg) {
+    document.getElementById('hh-title').textContent  = msg;
+    document.getElementById('hh-artist').textContent = 'Check HH_BASE URL in lair-bottom-frame.html';
+  }
+
+  // Fetch both files, then init the player
+  Promise.all([
+    fetchText(HH_BASE + 'js/config.js'),
+    fetchText(HH_BASE + 'js/songs.js'),
+  ]).then(function(texts) {
+    try {
+      Config = extractVar(texts[0], 'Config');
+      SONGS  = extractVar(texts[1], 'SONGS');
+    } catch(e) {
+      showError('Could not parse songs data');
+      console.error(e);
+      return;
+    }
+    bootPlayer();
+  }).catch(function(e) {
+    showError('Could not load songs');
+    console.error('HH load error:', e);
+  });
+
+  function bootPlayer() {
+    // Build playlist from IDs, or fall back to all songs
+    var playlist = HH_PLAYLIST_IDS.length
+      ? HH_PLAYLIST_IDS.map(function(id) {
+          return SONGS.find(function(s) { return s.id === id; });
+        }).filter(Boolean)
+      : SONGS.slice();
+
+    if (!playlist.length) {
+      showError('No songs found');
+      return;
+    }
+
+    var audio    = new Audio();
+    audio.preload = 'metadata';
+    var idx      = 0;
+    var playing  = false;
+    var muted    = false;
+    var volume   = 0.8;
+
+    var GITHUB_BASE = HH_BASE;
+
+    var blank = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%231c1c1c' width='100' height='100'/%3E%3C/svg%3E";
+
+  function fmt(s) {
+    s = Math.floor(s || 0);
+    return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+  }
+
+  function loadSong(i, autoplay) {
+    idx = ((i % playlist.length) + playlist.length) % playlist.length;
+    var song = playlist[idx];
+
+    // Resolve audio src — prepend GitHub base if it's a relative path
+    var src = song.src;
+    if (src && !src.startsWith('http')) src = GITHUB_BASE + src;
+    audio.src = src;
+    audio.volume = muted ? 0 : volume;
+
+    // Resolve artwork
+    var art = song.artwork || '';
+    if (art && !art.startsWith('http') && !art.startsWith('data:')) art = GITHUB_BASE + art;
+
+    document.getElementById('hh-title').textContent  = song.title;
+    document.getElementById('hh-artist').textContent = song.artist;
+    document.getElementById('hh-vinyl-label').src    = art || blank;
+    document.getElementById('hh-tot').textContent    = fmt(song.duration);
+    document.getElementById('hh-prog-fill').style.width = '0%';
+    document.getElementById('hh-mini-prog-fill').style.width = '0%';
+    document.getElementById('hh-cur').textContent   = '0:00';
+    document.getElementById('hh-mini-title').textContent = song.title + ' · ' + song.artist;
+    renderSongList(); // refresh active highlight
+
+    if (autoplay) {
+      audio.play().catch(function(){});
+      setPlaying(true);
+    } else {
+      setPlaying(false);
+    }
+  }
+
+  function setPlaying(val) {
+    playing = val;
+    document.getElementById('hh-ico-play').style.display      = val ? 'none' : '';
+    document.getElementById('hh-ico-pause').style.display     = val ? '' : 'none';
+    document.getElementById('hh-mini-ico-play').style.display  = val ? 'none' : '';
+    document.getElementById('hh-mini-ico-pause').style.display = val ? '' : 'none';
+    document.getElementById('hh-vinyl').classList.toggle('spinning', val);
+    document.getElementById('hh-title').classList.toggle('playing', val);
+  }
+
+  function togglePlay() {
+    if (playing) {
+      audio.pause();
+      setPlaying(false);
+    } else {
+      audio.play().catch(function(){});
+      setPlaying(true);
+    }
+  }
+
+  // Audio events
+  audio.addEventListener('timeupdate', function() {
+    if (!audio.duration) return;
+    var pct = (audio.currentTime / audio.duration * 100) + '%';
+    document.getElementById('hh-prog-fill').style.width      = pct;
+    document.getElementById('hh-mini-prog-fill').style.width = pct;
+    document.getElementById('hh-cur').textContent = fmt(audio.currentTime);
+  });
+
+  audio.addEventListener('loadedmetadata', function() {
+    document.getElementById('hh-tot').textContent = fmt(audio.duration);
+  });
+
+  audio.addEventListener('ended', function() {
+    loadSong(idx + 1, true);
+  });
+
+  // Progress seek
+  document.getElementById('hh-progress').addEventListener('click', function(e) {
+    if (!audio.duration) return;
+    var r = this.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+  });
+
+  // Buttons
+  document.getElementById('hh-pp').addEventListener('click',   togglePlay);
+  document.getElementById('hh-prev').addEventListener('click', function() { loadSong(idx - 1, playing); });
+  document.getElementById('hh-next').addEventListener('click', function() { loadSong(idx + 1, playing); });
+
+  // Volume
+  document.getElementById('hh-vol-slider').addEventListener('input', function() {
+    volume = parseFloat(this.value);
+    audio.volume = volume;
+    if (volume > 0) { muted = false; syncVol(); }
+  });
+  document.getElementById('hh-vol-btn').addEventListener('click', function() {
+    muted = !muted;
+    audio.volume = muted ? 0 : volume;
+    syncVol();
+  });
+
+  function syncVol() {
+    document.getElementById('hh-ico-vol').style.display  = muted ? 'none' : '';
+    document.getElementById('hh-ico-mute').style.display = muted ? '' : 'none';
+  }
+
+  // ── Minimize ──────────────────────────────────────────
+  var minimized = false;
+  document.getElementById('hh-min-btn').addEventListener('click', function() {
+    minimized = !minimized;
+    document.getElementById('hh-player').classList.toggle('minimized', minimized);
+    this.title = minimized ? 'Expand player' : 'Minimize player';
+    // Close song panel when minimizing
+    if (minimized) closeSongList();
+  });
+
+  // Mini play/pause button (shown only when minimized)
+  document.getElementById('hh-mini-pp').addEventListener('click', togglePlay);
+
+  // ── Song list ─────────────────────────────────────────
+  var songListOpen = false;
+
+  function renderSongList() {
+    var q     = (document.getElementById('hh-song-search').value || '').toLowerCase().trim();
+    var list  = document.getElementById('hh-song-list');
+    var songs = playlist.filter(function(s) {
+      if (!q) return true;
+      return (s.title  || '').toLowerCase().includes(q) ||
+             (s.artist || '').toLowerCase().includes(q) ||
+             (s.album  || '').toLowerCase().includes(q);
+    });
+
+    document.getElementById('hh-song-panel-title').textContent =
+      q ? (songs.length + ' result' + (songs.length !== 1 ? 's' : '')) : ('Songs · ' + playlist.length);
+
+    if (!songs.length) {
+      list.innerHTML = '<div id="hh-song-empty">No songs match "' + q + '"</div>';
+      return;
+    }
+
+    var currentSong = playlist[idx];
+    list.innerHTML = songs.map(function(s) {
+      var art = s.artwork || '';
+      if (art && !art.startsWith('http') && !art.startsWith('data:')) art = GITHUB_BASE + art;
+      var isCurrent = currentSong && s.id === currentSong.id;
+      var songIdx   = playlist.indexOf(s);
+      return '<div class="hh-song-item' + (isCurrent ? ' current' : '') + '" onclick="hhPickSong(' + songIdx + ')">' +
+        '<img src="' + (art || blank) + '" onerror="this.src=\'' + blank + '\'" alt="">' +
+        '<div class="hsi-info">' +
+          '<div class="hsi-title">' + (s.title || '—') + '</div>' +
+          '<div class="hsi-sub">'  + (s.artist || '') + (s.album ? ' · ' + s.album : '') + '</div>' +
+        '</div>' +
+        '<div class="hsi-dur">' + fmt(s.duration || 0) + '</div>' +
+      '</div>';
+    }).join('');
+
+    // Scroll active item into view
+    var cur = list.querySelector('.current');
+    if (cur) setTimeout(function() { cur.scrollIntoView({ block: 'nearest' }); }, 40);
+  }
+
+  // Expose pick function to onclick in rendered HTML
+  window.hhPickSong = function(i) {
+    loadSong(i, true);
+    closeSongList();
+  };
+
+  function openSongList() {
+    songListOpen = true;
+    renderSongList();
+    document.getElementById('hh-song-panel').classList.add('open');
+    document.getElementById('hh-list-btn').classList.add('active');
+    setTimeout(function() { document.getElementById('hh-song-search').focus(); }, 180);
+  }
+
+  function closeSongList() {
+    songListOpen = false;
+    document.getElementById('hh-song-panel').classList.remove('open');
+    document.getElementById('hh-list-btn').classList.remove('active');
+    document.getElementById('hh-song-search').value = '';
+  }
+
+  document.getElementById('hh-list-btn').addEventListener('click', function() {
+    songListOpen ? closeSongList() : openSongList();
+  });
+  document.getElementById('hh-song-close').addEventListener('click', closeSongList);
+  document.getElementById('hh-song-search').addEventListener('input', function() {
+    renderSongList();
+  });
+
+  // Init
+  loadSong(0, false);
+
+  } // end bootPlayer
+
+})();
+</script>
+
+<!-- ══ MARQUEE SCRIPT (unchanged) ══ -->
+<script>
+(function() {
+  var viewport = document.getElementById('lairViewport');
+  var track = document.getElementById('lairTrack');
+  document.documentElement.classList.remove('no-js');
+
+  function ensureDuplicate() {
+    if (track.dataset.duplicated === 'true') return;
+    var originalHTML = track.innerHTML;
+    track.innerHTML = originalHTML + originalHTML;
+    track.dataset.duplicated = 'true';
+  }
+
+  var animation = null;
+  function startMarquee() {
+    if (!track || !viewport) return;
+    if (animation) { animation.cancel(); animation = null; }
+
+    var viewportWidth = Math.max(viewport.clientWidth, 1);
+    var trackWidth = track.scrollWidth;
+    var singleWidth = trackWidth / 2;
+    var PIXELS_PER_SECOND = 60;
+    var durationMs = Math.max((singleWidth + viewportWidth) / PIXELS_PER_SECOND * 1000, 8000);
+
+    animation = track.animate(
+      [
+        { transform: 'translateX(' + viewportWidth + 'px)' },
+        { transform: 'translateX(' + (-singleWidth) + 'px)' }
+      ],
+      { duration: durationMs, iterations: Infinity, easing: 'linear' }
+    );
+  }
+
+  function addHoverControls() {
+    if (!viewport) return;
+    viewport.addEventListener('mouseenter', function() { if (animation) animation.pause(); });
+    viewport.addEventListener('mouseleave', function() { if (animation) animation.play(); });
+  }
+
+  var resizeTimer = null;
+  function handleResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() { startMarquee(); }, 250);
+  }
+
+  function init() {
+    ensureDuplicate();
+    startMarquee();
+    addHoverControls();
+    window.addEventListener('resize', handleResize);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+</body>
+</html>
