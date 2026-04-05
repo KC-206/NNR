@@ -494,6 +494,13 @@ var HH_PLAYLIST_IDS = [];
     showError('Could not load songs');
   });
 
+  function slugify(title) {
+    return (title || '').toLowerCase()
+      .replace(/[''`]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
   function bootPlayer() {
     var playlist = HH_PLAYLIST_IDS.length
       ? HH_PLAYLIST_IDS.map(function(id) { return SONGS.find(function(s) { return s.id === id; }); }).filter(Boolean)
@@ -670,7 +677,17 @@ var HH_PLAYLIST_IDS = [];
     document.getElementById('hh-song-close').addEventListener('click', closeSongList);
     document.getElementById('hh-song-search').addEventListener('input', renderSongList);
 
-    loadSong(0, false);
+    // Check for ?song= URL parameter to start on a specific song
+    var startParam = new URLSearchParams(window.location.search).get('song');
+    var startIdx   = 0;
+    if (startParam) {
+      var found = playlist.findIndex(function(s) {
+        return s.id === startParam || slugify(s.title) === startParam;
+      });
+      if (found >= 0) startIdx = found;
+    }
+
+    loadSong(startIdx, false);
   }
 
 })();
