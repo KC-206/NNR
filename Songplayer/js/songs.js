@@ -585,4 +585,17 @@ const SONGS = [
     dateAdded: "2026-04-1",
     downloadable: true,
   },
+  {
+    id: "s043",
+    title: "Back in my day",
+    artist: "",
+    album: "",
+    duration: 159,
+    src: "audio/back in my day.mp3",
+    artwork: "art/back_in_my_day.png",
+    tags: ["laurie"],
+    notes: "",
+    dateAdded: "2026-04-11",
+    downloadable: true,
+  },
 ];
