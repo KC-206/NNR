@@ -598,4 +598,17 @@ const SONGS = [
     dateAdded: "2026-04-11",
     downloadable: true,
   },
+  {
+    id: "s044",
+    title: "Hot Mess Goddess",
+    artist: "",
+    album: "",
+    duration: 195,
+    src: "audio/goddess.mp3",
+    artwork: "art/goddess.png",
+    tags: [],
+    notes: "",
+    dateAdded: "2026-04-13",
+    downloadable: true,
+  },
 ];
