@@ -1,0 +1,16 @@
+<svg width="1200" height="1500" viewBox="0 0 1200 1500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="1500" fill="#040404"/>
+  <rect width="1200" height="1500" fill="url(#paint0_linear_5_2)"/>
+  <circle cx="897" cy="322" r="266" fill="#8A103C" fill-opacity="0.38"/>
+  <circle cx="301" cy="1134" r="354" fill="#182634" fill-opacity="0.68"/>
+  <path d="M574 198C741 190 949 314 988 495C1027 676 877 895 704 963C530 1031 314 949 199 811C84 674 125 429 257 305C388 181 406 205 574 198Z" fill="white" fill-opacity="0.05"/>
+  <text x="114" y="1220" fill="white" fill-opacity="0.94" font-family="Georgia, serif" font-size="86" letter-spacing="2">Hidden Memory</text>
+  <text x="116" y="1302" fill="white" fill-opacity="0.58" font-family="Arial, sans-serif" font-size="33" letter-spacing="14">UNLOCKED ON THE FINAL SLIDE</text>
+  <defs>
+    <linearGradient id="paint0_linear_5_2" x1="94" y1="89" x2="1112" y2="1406" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#090909"/>
+      <stop offset="0.47" stop-color="#5E0F30"/>
+      <stop offset="1" stop-color="#101C29"/>
+    </linearGradient>
+  </defs>
+</svg>
