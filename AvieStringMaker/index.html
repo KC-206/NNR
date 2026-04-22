@@ -21,12 +21,13 @@
       <header class="hero">
         <div class="hero-copy">
           <p class="eyebrow">Avatar Formatting Tool</p>
-          <h1>Build clean avie strings for HTML or BBCode in seconds.</h1>
-          <p class="hero-text">
-            Drop in an avatar image URL, add a display name, tweak alignment and
-            size, then copy a ready-to-paste string with the exact format your
-            site needs.
-          </p>
+          <div class="hero-copy__row">
+            <h1>Build avie strings</h1>
+            <p class="hero-text">
+              Paste your avatar image URL and display name, choose upstairs or
+              downstairs, then copy the finished string.
+            </p>
+          </div>
         </div>
         <div class="hero-card">
           <div class="hero-card__glow"></div>
@@ -53,7 +54,7 @@
           </div>
 
           <form id="builder-form" class="builder-form" novalidate>
-            <label class="field">
+            <label class="field field--priority">
               <span>Avatar Image URL</span>
               <input
                 id="avatar-url"
@@ -64,7 +65,7 @@
               />
             </label>
 
-            <label class="field">
+            <label class="field field--priority">
               <span>Display Name</span>
               <input
                 id="display-name"

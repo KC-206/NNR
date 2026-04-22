@@ -63,15 +63,15 @@ body::after {
 .page-shell {
   width: min(1180px, calc(100% - 2rem));
   margin: 0 auto;
-  padding: 2rem 0 3rem;
+  padding: 0.9rem 0 3rem;
 }
 
 .hero {
   display: grid;
-  grid-template-columns: 1.25fr 0.9fr;
-  gap: 1.5rem;
+  grid-template-columns: 1.45fr 0.65fr;
+  gap: 0.8rem;
   align-items: stretch;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.7rem;
 }
 
 .hero-copy,
@@ -87,16 +87,26 @@ body::after {
 }
 
 .hero-copy {
-  padding: 2.25rem;
+  padding: 0.85rem 1.1rem;
+  display: flex;
+  align-items: center;
+}
+
+.hero-copy__row {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.7fr) minmax(360px, 1.3fr);
+  gap: 0.9rem;
+  align-items: center;
+  width: 100%;
 }
 
 .eyebrow,
 .section-kicker,
 .hero-card__label {
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.35rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  font-size: 0.78rem;
+  font-size: 0.73rem;
   font-weight: 700;
   color: var(--brand);
 }
@@ -110,8 +120,10 @@ h2 {
 }
 
 h1 {
-  max-width: 11ch;
-  font-size: clamp(2.8rem, 4vw, 4.5rem);
+  max-width: 10ch;
+  font-size: clamp(1.35rem, 1.7vw, 1.85rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
 }
 
 h2 {
@@ -119,19 +131,19 @@ h2 {
 }
 
 .hero-text {
-  max-width: 60ch;
-  margin: 1rem 0 0;
-  font-size: 1.05rem;
-  line-height: 1.75;
+  max-width: 46ch;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
   color: var(--muted);
 }
 
 .hero-card {
-  padding: 1.75rem;
+  padding: 0.75rem 0.85rem;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: 260px;
+  min-height: 104px;
   background:
     linear-gradient(160deg, rgba(255, 248, 237, 0.95), rgba(244, 223, 206, 0.9)),
     var(--surface);
@@ -139,9 +151,9 @@ h2 {
 
 .hero-card__glow {
   position: absolute;
-  inset: 1rem auto auto 1rem;
-  width: 7rem;
-  height: 7rem;
+  inset: 0.3rem auto auto 0.5rem;
+  width: 4rem;
+  height: 4rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.8);
   filter: blur(14px);
@@ -150,24 +162,24 @@ h2 {
 .hero-card code {
   position: relative;
   display: block;
-  margin-top: 0.25rem;
-  padding: 1rem 1.1rem;
-  border-radius: var(--radius-lg);
+  margin-top: 0.1rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 16px;
   background: rgba(64, 33, 13, 0.92);
   color: #fff4e7;
-  font-size: 0.95rem;
-  line-height: 1.7;
+  font-size: 0.72rem;
+  line-height: 1.35;
   word-break: break-word;
 }
 
 .workspace {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .panel {
-  padding: 1.5rem;
+  padding: 1.35rem;
 }
 
 .panel-heading {
@@ -228,6 +240,33 @@ h2 {
   gap: 0.5rem;
 }
 
+.field--priority {
+  padding: 0.7rem;
+  border: 1px solid rgba(156, 79, 47, 0.12);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 251, 246, 0.96), rgba(248, 240, 230, 0.82));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 8px 18px rgba(123, 53, 25, 0.05);
+}
+
+.field--priority span {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--brand-strong);
+}
+
+.field--priority span::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand) 0%, #cf8c5e 100%);
+  box-shadow: 0 0 0 4px rgba(156, 79, 47, 0.08);
+}
+
 .field span {
   font-size: 0.92rem;
   font-weight: 700;
@@ -263,6 +302,18 @@ select:focus,
 textarea:focus {
   outline: 2px solid rgba(156, 79, 47, 0.18);
   border-color: rgba(156, 79, 47, 0.35);
+}
+
+.field--priority:focus-within {
+  border-color: rgba(156, 79, 47, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 10px 22px rgba(123, 53, 25, 0.08);
+}
+
+.field--priority input {
+  background: rgba(255, 253, 249, 0.98);
+  border-color: rgba(156, 79, 47, 0.18);
 }
 
 .checkbox-field {
@@ -384,8 +435,13 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
+  .hero-copy__row {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
   h1 {
-    max-width: 14ch;
+    max-width: none;
   }
 }
 
